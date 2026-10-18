@@ -1,7 +1,14 @@
 extends Node
-## Screenshots of the character creation screen with a few looks. Run:
+## Screenshots of the character creation screen with a few looks, then close-ups of every
+## face (each with another eye colour). Run:
 ##   Godot.exe --path game -- --creation-shots=<output folder>
 
+const FACES := [
+	{"gender": "male", "face": 0, "eyes": 1}, {"gender": "male", "face": 1, "eyes": 0},
+	{"gender": "male", "face": 2, "eyes": 6}, {"gender": "male", "face": 3, "eyes": 8},
+	{"gender": "female", "face": 0, "eyes": 4}, {"gender": "female", "face": 1, "eyes": 5},
+	{"gender": "female", "face": 2, "eyes": 7}, {"gender": "female", "face": 3, "eyes": 3},
+]
 const LOOKS := [
 	{"gender": "male", "hair": 0, "hair_color": 1, "skin": 0, "beard": 0},
 	{"gender": "male", "hair": 1, "hair_color": 0, "skin": 2, "beard": 1},
@@ -34,4 +41,13 @@ func _run() -> void:
 		await get_tree().create_timer(1.0, true).timeout
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png(folder.path_join("creation_%d.png" % i))
+	for i in FACES.size():
+		screen.look = CharacterModel.DEFAULT_LOOK.duplicate()
+		screen.look.merge(FACES[i], true)
+		screen._refresh()
+		screen._zoom = 1.0
+		screen._zoom_to = 1.0
+		await get_tree().create_timer(1.0, true).timeout
+		await RenderingServer.frame_post_draw
+		get_viewport().get_texture().get_image().save_png(folder.path_join("face_%d.png" % i))
 	get_tree().quit()

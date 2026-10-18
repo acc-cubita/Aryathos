@@ -28,8 +28,11 @@ PACKS = ["makehuman_system_assets_cc0", "skins02_cc0", "skins01_cc0", "bodyparts
          "suits02_cc0", "shoes01_cc0", "hair02_ccby", "bodyparts06_cc-by"]
 
 from bl_ext.user_default.mpfb.services.assetservice import AssetService  # noqa: E402
+from bl_ext.user_default.mpfb.services.clothesservice import ClothesService  # noqa: E402
 from bl_ext.user_default.mpfb.services.humanservice import HumanService  # noqa: E402
 from bl_ext.user_default.mpfb.services.locationservice import LocationService  # noqa: E402
+from bl_ext.user_default.mpfb.services.objectservice import ObjectService  # noqa: E402
+from bl_ext.user_default.mpfb.services.targetservice import TargetService  # noqa: E402
 
 # MakeHuman macro sliders (0..1; age 0.5 = 25 years, 1.0 = 90) and the CC0 assets each
 # body wears (paths relative to MPFB's data/<kind> folders).
@@ -61,6 +64,27 @@ BODIES = {
         # parts left as their own meshes so the game can show or hide them
         "variant_parts": ["ponytail01", "short02", "long01", "braid01", "elvs_scruffy_beard1",
                           "rehmanpolanski_moustache_viking", "grinsegold_full_beard", "rehmanpolanski_beard_viking"],
+        # the other faces of character creation, as target changes on top of "targets"
+        # (the weathered face above is the first)
+        "faces": {
+            # long and fine: oval head, narrow straight nose, high cheekbones
+            "noble": {"head-square": 0.0, "head-oval": 0.8, "nose-width1-incr": 0.0, "nose-width1-decr": 0.5,
+                      "nose-flaring-incr": 0.0, "nose-hump-incr": 0.0, "nose-scale-vert-incr": 0.5,
+                      "nose-point-width-decr": 0.5, "l-cheek-bones-incr": 0.8, "r-cheek-bones-incr": 0.8,
+                      "chin-width-incr": 0.0, "chin-height-incr": 0.4, "chin-bones-incr": 0.2,
+                      "eyebrows-trans-down": 0.1, "forehead-trans-forward": 0.1},
+            # heavy and hard: jutting brow over narrowed eyes, thin set mouth, big jaw
+            "stern": {"head-rectangular": 0.7, "forehead-trans-forward": 1.0, "eyebrows-trans-down": 1.0,
+                      "eyebrows-angle-down": 1.0, "l-eye-height2-decr": 0.6, "r-eye-height2-decr": 0.6,
+                      "mouth-upperlip-volume-decr": 0.7, "mouth-lowerlip-volume-decr": 0.5, "nose-width1-incr": 0.6,
+                      "chin-prominent-incr": 0.9, "chin-width-incr": 1.0, "chin-bones-incr": 1.0},
+            # gaunt and sharp: hooked nose, hollow cheeks under hard cheekbones, narrow chin
+            "hawk": {"head-square": 0.1, "head-triangular": 0.6, "nose-hump-incr": 1.0, "nose-point-down": 0.8,
+                     "nose-curve-convex": 0.8, "nose-width1-incr": 0.0, "nose-scale-vert-incr": 0.6,
+                     "nose-scale-depth-incr": 0.5, "l-cheek-volume-decr": 1.0, "r-cheek-volume-decr": 1.0,
+                     "l-cheek-bones-incr": 0.9, "r-cheek-bones-incr": 0.9, "chin-width-incr": 0.0,
+                     "chin-width-decr": 0.3, "chin-prominent-incr": 0.7, "eyebrows-angle-down": 0.6},
+        },
     },
     "female": {
         "phenotype": {"gender": 0.0, "age": 0.55, "muscle": 0.72, "weight": 0.5, "proportions": 0.85,
@@ -84,6 +108,27 @@ BODIES = {
         "variants": {"hair": ["long01/long01.mhclo", "braid01/braid01.mhclo",
                               "short03/short03.mhclo"]},
         "variant_parts": ["elvs_braid_bun", "long01", "braid01", "short03"],
+        "faces": {
+            # fine and high-born: high cheekbones, long straight nose, full upper lip
+            "noble": {"head-oval": 0.9, "l-cheek-bones-incr": 0.9, "r-cheek-bones-incr": 0.9,
+                      "nose-scale-vert-incr": 0.4, "nose-width1-decr": 0.5, "nose-point-up": 0.3,
+                      "nose-scale-depth-incr": 0.3, "mouth-upperlip-volume-incr": 0.5,
+                      "mouth-lowerlip-volume-incr": 0.3, "chin-height-incr": 0.4, "chin-width-decr": 0.3,
+                      "eyebrows-angle-up": 0.5},
+            # sharp and fierce: diamond head, brows pulled down over narrowed eyes, lean cheeks, strong chin
+            "fierce": {"head-oval": 0.0, "head-diamond": 0.8, "eyebrows-angle-up": 0.0, "eyebrows-angle-down": 0.9,
+                       "eyebrows-trans-down": 0.7, "l-eye-height2-decr": 0.4, "r-eye-height2-decr": 0.4,
+                       "l-cheek-bones-incr": 0.9, "r-cheek-bones-incr": 0.9, "l-cheek-volume-decr": 0.7,
+                       "r-cheek-volume-decr": 0.7, "chin-prominent-incr": 0.9, "nose-hump-incr": 0.6,
+                       "nose-scale-vert-incr": 0.3, "mouth-scale-horiz-decr": 0.3, "mouth-upperlip-volume-decr": 0.3},
+            # soft and kind: rounder face, wider eyes, small upturned nose, fuller lips, raised brows
+            "gentle": {"head-oval": 0.1, "head-round": 0.8, "l-cheek-volume-incr": 0.8, "r-cheek-volume-incr": 0.8,
+                       "l-eye-scale-incr": 0.4, "r-eye-scale-incr": 0.4, "l-eye-height2-incr": 0.3,
+                       "r-eye-height2-incr": 0.3, "nose-scale-vert-decr": 0.4, "nose-point-up": 0.7,
+                       "nose-point-width-decr": 0.0, "nose-width1-decr": 0.2, "mouth-upperlip-volume-incr": 0.6,
+                       "mouth-lowerlip-volume-incr": 0.7, "eyebrows-angle-up": 0.7, "chin-prominent-incr": 0.0,
+                       "chin-prominent-decr": 0.3},
+        },
     },
 }
 
@@ -155,6 +200,8 @@ def build(key, spec=None):
         for asset in assets:
             path = AssetService.find_asset_absolute_path(asset, asset_subdir=kind)
             HumanService.add_mhclo_asset(path, basemesh, asset_type=kind, subdiv_levels=0, material_type="MAKESKIN")
+    if spec.get("faces"):
+        face_moves(basemesh, rig, spec["targets"], spec["faces"])
     rig.location.x = spec["x"]
     if spec.get("silver", True):
         silver(rig)
@@ -167,6 +214,41 @@ def build(key, spec=None):
         mod.strength = distance
         mod.mid_level = 0.0
     return basemesh, rig
+
+
+def coords(vertices):
+    out = np.empty(len(vertices) * 3, np.float32)
+    vertices.foreach_get("co", out)
+    return out
+
+
+def face_moves(basemesh, rig, targets, faces):
+    """Each of `faces` (target values on top of `targets`) stored on the body and on every
+    part fitted to it (eyes, brows, lashes, hair, beards, clothes) as a point attribute
+    face_<name>: how far each vertex moves to make that face. arkanor_game turns them into
+    shape keys, the face presets of character creation. The parts are refitted for each
+    face, so brows, beards and hair follow it; the bones stay where they are."""
+    names = set(targets).union(*faces.values())
+    TargetService.bulk_load_targets(basemesh, [{"target": n, "value": 0.0} for n in sorted(names - set(targets))])
+    parts = [basemesh] + list(ObjectService.find_related_mesh_assets(rig, only_children=True))
+
+    def shape(values):
+        for name in names:
+            TargetService.set_target_value(basemesh, name, values.get(name, 0.0))
+        for part in parts[1:]:
+            ClothesService.fit_clothes_to_human(part, basemesh, set_parent=False)
+        mix = basemesh.shape_key_add(name="face_mix", from_mix=True)
+        out = [coords(mix.data)]
+        basemesh.shape_key_remove(mix)
+        return out + [coords(part.data.vertices) for part in parts[1:]]
+
+    rest = shape(targets)
+    for face, changes in faces.items():
+        moved = shape(dict(targets, **changes))
+        for part, before, after in zip(parts, rest, moved):
+            part.data.attributes.new("face_" + face, "FLOAT_VECTOR", "POINT").data.foreach_set("vector", after - before)
+        print("mh: face", face, "moves the body up to %.1f mm" % (np.abs(moved[0] - rest[0]).max() * 1000))
+    shape(targets)
 
 
 FABRIC = ROOT / "game" / "art" / "textures" / "props_pbr" / "canvas_albedo.png"

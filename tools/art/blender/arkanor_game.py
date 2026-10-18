@@ -6,7 +6,8 @@ Reads art/characters/arkanor/arkanor_mh.blend and, per body:
   * renames the bones to Godot's humanoid names (Hips, Spine, ..., LeftIndexProximal) and
     drops MakeHuman's Root, so animations retarget onto it in Godot;
   * bakes the shape keys and modifiers, joins every piece into one skinned mesh and gives
-    each part a plain glTF material (colour, alpha, normal map) named after the part;
+    each part a plain glTF material (colour, alpha, normal map) named after the part; the
+    face presets stay as shape keys (face_<name>, glTF morph targets);
     hair is greyed to silver in its texture (art/characters/arkanor/tex/mh_<key>_*.png);
   * adds grip markers in each fist (RightGrip -> RightGripTip, LeftGrip -> LeftGripTip):
     the weapon's handle runs through them;
@@ -62,7 +63,8 @@ def rename_bones(rig):
 
 
 def bake_mesh(obj):
-    """Shape keys mixed in, every modifier but the armature applied."""
+    """Shape keys mixed in, every modifier but the armature applied; the face presets
+    (arkanor_mh's face_<name> point attributes) then become shape keys of their own."""
     obj.data = obj.data.copy()
     bpy.context.view_layer.objects.active = obj
     if obj.data.shape_keys:
@@ -72,6 +74,16 @@ def bake_mesh(obj):
         if mod.type != "ARMATURE":
             with bpy.context.temp_override(object=obj, active_object=obj):
                 bpy.ops.object.modifier_apply(modifier=mod.name)
+    faces = sorted(a.name for a in obj.data.attributes if a.name.startswith("face_"))
+    if faces:
+        rest = np.empty(len(obj.data.vertices) * 3, np.float32)
+        obj.data.vertices.foreach_get("co", rest)
+        obj.shape_key_add(name="Basis", from_mix=False)
+        for name in faces:
+            move = np.empty_like(rest)
+            obj.data.attributes[name].data.foreach_get("vector", move)
+            obj.shape_key_add(name=name, from_mix=False).data.foreach_set("co", rest + move)
+            obj.data.attributes.remove(obj.data.attributes[name])
 
 
 def pixels_of(image):
@@ -238,7 +250,8 @@ def export(name, folder=GAME_ART):
     path = folder / (name + ".glb")
     bpy.ops.export_scene.gltf(filepath=str(path), use_selection=True, export_format="GLB", export_yup=True,
                               export_apply=False, export_skins=True, export_animations=False,
-                              export_def_bones=True, export_morph=False, export_image_format="AUTO")
+                              export_def_bones=True, export_morph=True, export_morph_normal=True,
+                              export_image_format="AUTO")
     rig.location.x = x
     return path
 

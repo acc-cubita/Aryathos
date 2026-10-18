@@ -338,12 +338,24 @@ func _creation_checks(player: Player) -> void:
 	var old_name := player.unit_name
 	var screen := CharacterCreation.new(player)
 	add_child(screen)
-	screen.look = {"gender": "female", "hair": 3, "hair_color": 2, "skin": 1, "beard": 0}
+	screen.look = {"gender": "female", "face": 2, "hair": 3, "hair_color": 2, "skin": 1, "eyes": 5, "beard": 0}
 	_check(screen.create("x") != "" and screen.create("Ly ra") != "", "names that are too short or not letters are refused")
 	_check(screen.create("seraphine") == "" and player.unit_name == "Seraphine" and player.look.gender == "female",
 			"Create names the hero (Seraphine) and gives her the chosen look")
 	var shown: Array = hairs.call(player.model)
 	_check(shown.size() == 1 and String(shown[0].name).ends_with("_short03"), "her chosen short hair is the only one showing")
+	var fierce := func(mesh: MeshInstance3D) -> bool:
+		var shape := mesh.find_blend_shape_by_name("face_fierce")
+		var other := mesh.find_blend_shape_by_name("face_gentle")
+		return shape >= 0 and mesh.get_blend_shape_value(shape) == 1.0 and mesh.get_blend_shape_value(other) == 0.0
+	var body: MeshInstance3D = player.model.find_children("arkanor_female", "MeshInstance3D", true, false)[0]
+	_check(fierce.call(body) and fierce.call(shown[0]), "her Fierce face shapes the body and the hair fitted to it")
+	var eyes: StandardMaterial3D
+	for surface in body.mesh.get_surface_count():
+		var material := body.get_surface_override_material(surface) as StandardMaterial3D
+		if material.resource_name.begins_with("high-poly"):
+			eyes = material
+	_check(eyes != null and eyes.albedo_texture.resource_path.ends_with("/green.png"), "her eyes are the green she chose")
 	_check(not get_tree().paused, "the game goes on after Create")
 	var saved: Variant = JSON.parse_string(FileAccess.get_file_as_string(Game.save_path))
 	_check(saved is Dictionary and saved.get("name") == "Seraphine" and (saved.get("look") as Dictionary).get("hair") == 3,

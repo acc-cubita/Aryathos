@@ -2,8 +2,9 @@ class_name CharacterCreation
 extends Control
 ## The character creation screen of a new game: race and class (an Arkanor Runeknight for
 ## now; the Covenant's other races are shown as still to come), gender, hair, hair colour,
-## skin, beard and a name, with the hero turning in a preview (drag to turn it). The game
-## waits (paused) until Create; then the hero takes the name and the look and is saved.
+## face, eyes, skin, beard and a name, with the hero turning in a preview (drag to turn it,
+## scroll to zoom; choosing a face or eyes moves in on the face). The game waits (paused)
+## until Create; then the hero takes the name and the look and is saved.
 
 signal created
 
@@ -22,6 +23,11 @@ const NAMES := {
 			"Nimra", "Orla", "Kaelith", "Sarai", "Liora", "Brynja", "Edda"],
 }
 const PANEL_WIDTH := 360.0
+## The preview camera's full-body spot; the face spot follows the hero's head as it moves
+## (EYES up the head bone from the neck, FACE_DISTANCE in front).
+const FULL_VIEW := Vector3(0, 1.05, 3.6)
+const EYES := Vector3(0, 0.09, 0)
+const FACE_DISTANCE := 1.0
 
 var look := CharacterModel.DEFAULT_LOOK.duplicate()
 
@@ -32,6 +38,11 @@ var _error := Hud.make_label("", 14, Color(1, 0.4, 0.35))
 var _values := {}
 var _gender_buttons := {}
 var _beard_row: Control
+var _camera := Camera3D.new()
+var _face_view := Vector3(0, 1.6, FACE_DISTANCE)
+var _skeleton: Skeleton3D  # the previewed hero's
+var _zoom := 0.0  # 0 the whole hero, 1 the face
+var _zoom_to := 0.0
 
 
 func _init(player: Player) -> void:
@@ -67,6 +78,15 @@ func create(hero_name: String) -> String:
 	Game.chat("Welcome to Aryathos, %s." % _player.unit_name)
 	created.emit()
 	return ""
+
+
+func _process(delta: float) -> void:
+	_zoom = move_toward(_zoom, _zoom_to, delta * 2.5)
+	if is_instance_valid(_skeleton):
+		var head := _skeleton.get_bone_global_pose(_skeleton.find_bone("Head"))
+		var face := _skeleton.to_global(head * EYES) - _pivot.global_position
+		_face_view = _face_view.lerp(face + Vector3(0, 0, FACE_DISTANCE), minf(delta * 4.0, 1.0))
+	_camera.position = FULL_VIEW.lerp(_face_view, smoothstep(0.0, 1.0, _zoom))
 
 
 func _build() -> void:
@@ -154,23 +174,28 @@ func _look_panel() -> Control:
 		button.pressed.connect(func() -> void:
 			if look.gender != gender:
 				look.gender = gender
+				look.face = 0
 				look.hair = 0
 				look.beard = 0
 				_name.text = _random_name()
+			_zoom_to = 0.0
 			_refresh())
 		_gender_buttons[gender] = button
 		genders.add_child(button)
 	box.add_child(genders)
-	box.add_child(_option_row("Hair", "hair", func() -> Array: return CharacterModel.LOOKS[look.gender].hair))
-	box.add_child(_option_row("Hair colour", "hair_color", func() -> Array: return CharacterModel.HAIR_COLORS))
+	box.add_child(_option_row("Face", "face", func() -> Array: return CharacterModel.LOOKS[look.gender].face, 1.0))
+	box.add_child(_option_row("Eyes", "eyes", func() -> Array: return CharacterModel.EYE_COLORS, 1.0))
+	box.add_child(_option_row("Hair", "hair", func() -> Array: return CharacterModel.LOOKS[look.gender].hair, 0.55))
+	box.add_child(_option_row("Hair colour", "hair_color", func() -> Array: return CharacterModel.HAIR_COLORS, 0.55))
 	box.add_child(_option_row("Skin", "skin", func() -> Array: return CharacterModel.SKIN_TONES))
-	_beard_row = _option_row("Beard", "beard", func() -> Array: return CharacterModel.LOOKS[look.gender].beard)
+	_beard_row = _option_row("Beard", "beard", func() -> Array: return CharacterModel.LOOKS[look.gender].beard, 0.75)
 	box.add_child(_beard_row)
 	return frame
 
 
-## "Hair   <  Ponytail  >": the arrows step through options() (each [shown name, ...]).
-func _option_row(title: String, key: String, options: Callable) -> Control:
+## "Hair   <  Ponytail  >": the arrows step through options() (each [shown name, ...]) and
+## bring the preview camera to `zoom` (0 the whole hero, 1 the face).
+func _option_row(title: String, key: String, options: Callable, zoom := 0.0) -> Control:
 	var line := HBoxContainer.new()
 	var label := Hud.make_label(title, 15, Color.WHITE)
 	label.custom_minimum_size.x = 110.0
@@ -185,6 +210,7 @@ func _option_row(title: String, key: String, options: Callable) -> Control:
 		button.pressed.connect(func() -> void:
 			var count: int = (options.call() as Array).size()
 			look[key] = posmod(int(look[key]) + step, count)
+			_zoom_to = zoom
 			_refresh())
 		line.add_child(button)
 		if step < 0:
@@ -194,9 +220,15 @@ func _option_row(title: String, key: String, options: Callable) -> Control:
 
 
 func _preview() -> Control:
+	var column := VBoxContainer.new()
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var container := SubViewportContainer.new()
 	container.stretch = true
-	container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	column.add_child(container)
+	var hint := Hud.make_label("Drag to turn  -  scroll to zoom", 13, Color(0.6, 0.62, 0.66))
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(hint)
 	var viewport := SubViewport.new()
 	viewport.own_world_3d = true
 	viewport.transparent_bg = true
@@ -220,15 +252,17 @@ func _preview() -> Control:
 	viewport.add_child(rim)
 	_pivot.rotation.y = PI
 	viewport.add_child(_pivot)
-	var camera := Camera3D.new()
-	camera.position = Vector3(0, 1.05, 3.6)
-	camera.fov = 36.0
-	viewport.add_child(camera)
+	_camera.position = FULL_VIEW
+	_camera.fov = 36.0
+	viewport.add_child(_camera)
 	container.gui_input.connect(func(event: InputEvent) -> void:
 		var motion := event as InputEventMouseMotion
 		if motion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-			_pivot.rotation.y += motion.relative.x * 0.01)
-	return container
+			_pivot.rotation.y += motion.relative.x * 0.01
+		var wheel := event as InputEventMouseButton
+		if wheel and wheel.pressed and wheel.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+			_zoom_to = clampf(_zoom_to + (0.2 if wheel.button_index == MOUSE_BUTTON_WHEEL_UP else -0.2), 0.0, 1.0))
+	return column
 
 
 func _name_row() -> Control:
@@ -266,11 +300,13 @@ func _refresh() -> void:
 	for key: String in _values:
 		var entry: Array = _values[key]
 		var options: Array = (entry[1] as Callable).call()
-		look[key] = clampi(int(look[key]), 0, options.size() - 1)
+		look[key] = clampi(int(look.get(key, 0)), 0, options.size() - 1)
 		(entry[0] as Label).text = options[look[key]][0]
 	for old in _pivot.get_children():
 		old.queue_free()
-	_pivot.add_child(CharacterModel.create_hero(look, _player.glow_color))
+	var hero := CharacterModel.create_hero(look, _player.glow_color)
+	_pivot.add_child(hero)
+	_skeleton = hero.find_children("*", "Skeleton3D", true, false)[0]
 
 
 func _random_name() -> String:

@@ -13,16 +13,19 @@ extends Node3D
 const ARKANOR_MALE := "res://art/characters/arkanor/arkanor_male.glb"
 const ARKANOR_FEMALE := "res://art/characters/arkanor/arkanor_female.glb"
 ## A hero's look (character creation): which hair and beard meshes show, by the MakeHuman
-## asset they were made from (tools/art/blender/arkanor_game.py HERO_VARIANTS), and the
-## hair and skin tints. Options are [shown name, parts].
+## asset they were made from (tools/art/blender/arkanor_game.py HERO_VARIANTS), the face
+## (a blend shape made from MakeHuman's face sliders, arkanor_mh.py "faces"; the first face
+## is the model as built), and the hair, skin and eye colours. Options are [shown name, parts].
 const LOOKS := {
 	"male": {"path": ARKANOR_MALE,
 		"hair": [["Ponytail", ["ponytail01"]], ["Short", ["short02"]], ["Long", ["long01"]], ["Braid", ["braid01"]]],
 		"beard": [["Scruffy", ["elvs_scruffy_beard1", "rehmanpolanski_moustache_viking"]], ["Full", ["grinsegold_full_beard"]],
-				["Braided", ["rehmanpolanski_beard_viking"]], ["None", []]]},
+				["Braided", ["rehmanpolanski_beard_viking"]], ["None", []]],
+		"face": [["Weathered", ""], ["Noble", "face_noble"], ["Stern", "face_stern"], ["Hawk", "face_hawk"]]},
 	"female": {"path": ARKANOR_FEMALE, "grip_roll": 13.0,
 		"hair": [["Braided Bun", ["elvs_braid_bun"]], ["Long", ["long01"]], ["Braid", ["braid01"]], ["Short", ["short03"]]],
-		"beard": [["None", []]]},
+		"beard": [["None", []]],
+		"face": [["Determined", ""], ["Noble", "face_noble"], ["Fierce", "face_fierce"], ["Gentle", "face_gentle"]]},
 }
 ## (grip_roll: degrees the weapon turns about the fingers in that model's fist; the female
 ## wrist rests rolled 13 degrees further in, which would tip the axe across her body.)
@@ -31,7 +34,11 @@ const HAIR_COLORS := [["White", Color(1, 1, 1)], ["Silver", Color(0.78, 0.79, 0.
 		["Steel", Color(0.55, 0.62, 0.74)], ["Smoke", Color(0.42, 0.42, 0.44)]]
 const SKIN_TONES := [["Fair", Color(1, 1, 1)], ["Light", Color(0.94, 0.86, 0.78)], ["Tan", Color(0.82, 0.68, 0.56)],
 		["Bronze", Color(0.66, 0.52, 0.42)]]
-const DEFAULT_LOOK := {"gender": "male", "hair": 0, "hair_color": 1, "skin": 0, "beard": 0}
+## MakeHuman's eye textures (CC0), art/characters/arkanor/eyes/<file>.png.
+const EYE_COLORS := [["Ice", "ice"], ["Pale Blue", "lightblue"], ["Blue", "blue"], ["Deep Blue", "deepblue"],
+		["Blue-Green", "bluegreen"], ["Green", "green"], ["Grey", "grey"], ["Amber", "brownlight"], ["Brown", "brown"]]
+const EYES := "res://art/characters/arkanor/eyes/%s.png"
+const DEFAULT_LOOK := {"gender": "male", "face": 0, "hair": 0, "hair_color": 1, "skin": 0, "eyes": 1, "beard": 0}
 const LIBRARIES := {
 	"ual1": "res://art/animations/ual1.glb",
 	"ual2": "res://art/animations/ual2.glb",
@@ -187,13 +194,16 @@ static func create_hero(look: Dictionary, glow := Color(0.4, 0.85, 1.0), weapon 
 	return create(LOOKS.get(gender, LOOKS.male).path, glow, weapon, look)
 
 
-## Shows the chosen hair and beard (hides the others) and tints hair, brows and skin.
+## Shows the chosen hair and beard (hides the others), shapes the chosen face (on the body
+## and every part fitted to it) and colours hair, brows, skin and eyes.
 func apply_look(look: Dictionary) -> void:
 	var spec: Dictionary = LOOKS.get(look.get("gender", "male"), LOOKS.male)
 	var hair: Array = spec.hair[clampi(int(look.get("hair", 0)), 0, spec.hair.size() - 1)][1]
 	var beard: Array = spec.beard[clampi(int(look.get("beard", 0)), 0, spec.beard.size() - 1)][1]
+	var face: String = spec.face[clampi(int(look.get("face", 0)), 0, spec.face.size() - 1)][1]
 	var hair_tint: Color = HAIR_COLORS[clampi(int(look.get("hair_color", 1)), 0, HAIR_COLORS.size() - 1)][1]
 	var skin_tint: Color = SKIN_TONES[clampi(int(look.get("skin", 0)), 0, SKIN_TONES.size() - 1)][1]
+	var eyes := load(EYES % EYE_COLORS[clampi(int(look.get("eyes", 1)), 0, EYE_COLORS.size() - 1)][1]) as Texture2D
 	var variants := []
 	for option: Array in spec.hair + spec.beard:
 		variants.append_array(option[1])
@@ -206,6 +216,10 @@ func apply_look(look: Dictionary) -> void:
 				part = each
 		if part != "":
 			mesh.visible = part in hair or part in beard
+		for option: Array in spec.face:
+			var shape := mesh.find_blend_shape_by_name(option[1]) if option[1] != "" else -1
+			if shape >= 0:
+				mesh.set_blend_shape_value(shape, 1.0 if option[1] == face else 0.0)
 		for surface in mesh.mesh.get_surface_count():
 			var material := mesh.get_surface_override_material(surface) as StandardMaterial3D
 			if material == null:
@@ -215,6 +229,8 @@ func apply_look(look: Dictionary) -> void:
 				material.albedo_color = hair_tint
 			elif name.begins_with("body"):
 				material.albedo_color = skin_tint
+			elif name.begins_with("high-poly"):
+				material.albedo_texture = eyes
 
 
 ## Hand-painted look for every mesh of an imported scene (the rune axe): the baked colour
