@@ -32,6 +32,7 @@ abilities = Array[ExtResource("1_ability")]([ExtResource("2"), ExtResource("3"),
 talent_trees = Array[String](["Aether", "Crystal", "Warding"])
 talents = Array[ExtResource("1_talent")]([ExtResource("6"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("10"), ExtResource("11"), ExtResource("12"), ExtResource("13"), ExtResource("14"), ExtResource("15"), ExtResource("16"), ExtResource("17"), ExtResource("18")])
 starting_weapon = ExtResource("19")
+outfit = "aethermancer"
 glow_color = Color(0.55, 0.62, 1, 1)
 base_health = 110
 health_per_level = 18

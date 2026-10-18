@@ -750,7 +750,7 @@ func set_class(data: ClassData) -> void:
 
 ## The hero's model as they look now, holding the weapon they wear (previews make one too).
 func make_model() -> CharacterModel:
-	return CharacterModel.create_hero(look, glow_color, _weapon_model())
+	return CharacterModel.create_hero(look.merged({"outfit": hero_class.outfit}), glow_color, _weapon_model())
 
 
 ## What the hero holds: the worn weapon's model, or nothing (fists).

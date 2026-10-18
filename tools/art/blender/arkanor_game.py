@@ -216,17 +216,20 @@ def convert(key, name=None, silver=True, variants=(), level=SILVER_LEVEL):
 
 
 ## Largest texture side exported: 4K cloth and skin scans are wasted on a game character.
+## Parts named in SMALL_TEXTURES get less (one-colour cloth: its normal map carries the folds).
 MAX_TEXTURE = 2048
+SMALL_TEXTURES = {"donitz_monk_robe": 1024}
 
 
 def shrink_textures(obj):
+    limit = next((size for part, size in SMALL_TEXTURES.items() if part in obj.name), MAX_TEXTURE)
     for slot in obj.material_slots:
         if slot.material is None or not slot.material.use_nodes:
             continue
         for node in slot.material.node_tree.nodes:
             image = node.image if node.type == "TEX_IMAGE" else None
-            if image is not None and max(image.size) > MAX_TEXTURE:
-                factor = MAX_TEXTURE / max(image.size)
+            if image is not None and max(image.size) > limit:
+                factor = limit / max(image.size)
                 image.scale(int(image.size[0] * factor), int(image.size[1] * factor))
 
 
@@ -256,13 +259,15 @@ def export(name, folder=GAME_ART):
     return path
 
 
-## The heroes' hair styles and beards, kept as their own meshes for character creation
-## (as arkanor_mh.BODIES[key]["variant_parts"]); their hair is silvered brighter than the
+## The heroes' hair styles, beards and class outfits, kept as their own meshes for character
+## creation (as arkanor_mh.BODIES[key]["variant_parts"]); their hair is silvered brighter than the
 ## NPCs' (HERO_SILVER) for the game to tint it down to the chosen colour.
 HERO_VARIANTS = {
     "male": ["ponytail01", "short02", "long01", "braid01", "elvs_scruffy_beard1",
-             "rehmanpolanski_moustache_viking", "grinsegold_full_beard", "rehmanpolanski_beard_viking"],
-    "female": ["elvs_braid_bun", "long01", "braid01", "short03"],
+             "rehmanpolanski_moustache_viking", "grinsegold_full_beard", "rehmanpolanski_beard_viking",
+             "rehmanpolanski_viking_tunic", "rehmanpolanski_viking_pants", "donitz_monk_robe", "donitz_monk_robe_hood_off"],
+    "female": ["elvs_braid_bun", "long01", "braid01", "short03", "culturalibre_heroine_boots_1", "donitz_monk_robe",
+               "donitz_monk_robe_hood_off", "toigo_ankle_boots_female"],
 }
 HERO_SILVER = 0.85
 

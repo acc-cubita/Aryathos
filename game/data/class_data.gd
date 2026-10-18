@@ -15,6 +15,8 @@ extends Resource
 @export var talent_trees: Array[String] = []
 @export var talents: Array[TalentData] = []
 @export var starting_weapon: ItemData
+## What the class wears: a CharacterModel.LOOKS outfits key.
+@export var outfit := "runeknight"
 ## Swing arcs, hand glow while casting.
 @export var glow_color := Color(0.3, 0.7, 1.0)
 @export_group("Stats")

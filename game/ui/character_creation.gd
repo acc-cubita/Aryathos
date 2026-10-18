@@ -319,7 +319,8 @@ func _refresh() -> void:
 	for each: ClassData in _class_buttons:
 		(_class_buttons[each] as Button).set_pressed_no_signal(each == hero_class)
 	_class_text.text = hero_class.description
-	var hero := CharacterModel.create_hero(look, hero_class.glow_color, hero_class.starting_weapon.weapon_model)
+	var hero := CharacterModel.create_hero(look.merged({"outfit": hero_class.outfit}), hero_class.glow_color,
+			hero_class.starting_weapon.weapon_model)
 	_pivot.add_child(hero)
 	_skeleton = hero.find_children("*", "Skeleton3D", true, false)[0]
 

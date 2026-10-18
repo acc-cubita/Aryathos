@@ -34,6 +34,13 @@ from bl_ext.user_default.mpfb.services.locationservice import LocationService  #
 from bl_ext.user_default.mpfb.services.objectservice import ObjectService  # noqa: E402
 from bl_ext.user_default.mpfb.services.targetservice import TargetService  # noqa: E402
 
+# The Aethermancer's robe (CC0 Donitz) with its hood down about the shoulders, dyed in the
+# Azure Concord's colours: a deep azure robe and a silver-grey cowl (Magister Ivren, of the
+# same order, wears the reverse).
+MAGE_ROBES = ["donitz_monk_robe/donitz_monk_robe.mhclo", "donitz_monk_robe_hood_off/donitz_monk_robe_hood_off.mhclo"]
+MAGE_DYES = {"donitz_monk_robe": (0.08, 0.14, 0.3), "donitz_monk_robe_hood_off": (0.6, 0.62, 0.68)}
+MAGE_DECIMATE = {"donitz_monk_robe": 0.5, "donitz_monk_robe_hood_off": 0.5}  # 20k and 9k triangles as made
+
 # MakeHuman macro sliders (0..1; age 0.5 = 25 years, 1.0 = 90) and the CC0 assets each
 # body wears (paths relative to MPFB's data/<kind> folders).
 BODIES = {
@@ -60,10 +67,15 @@ BODIES = {
         # chosen (CharacterModel.LOOKS): hair styles and beards
         "variants": {"hair": ["short02/short02.mhclo", "long01/long01.mhclo", "braid01/braid01.mhclo"],
                      "clothes": ["grinsegold_full_beard/grinsegold_full_beard.mhclo",  # CC-BY grinsegold
-                                 "rehmanpolanski_beard_viking/rehmanpolanski_beard_viking.mhclo"]},
-        # parts left as their own meshes so the game can show or hide them
+                                 "rehmanpolanski_beard_viking/rehmanpolanski_beard_viking.mhclo"] + MAGE_ROBES},
+        # parts left as their own meshes so the game can show or hide them (tunic and
+        # trousers give way to the robe of the Aethermancer, over the same boots)
         "variant_parts": ["ponytail01", "short02", "long01", "braid01", "elvs_scruffy_beard1",
-                          "rehmanpolanski_moustache_viking", "grinsegold_full_beard", "rehmanpolanski_beard_viking"],
+                          "rehmanpolanski_moustache_viking", "grinsegold_full_beard", "rehmanpolanski_beard_viking",
+                          "rehmanpolanski_viking_tunic", "rehmanpolanski_viking_pants", "donitz_monk_robe",
+                          "donitz_monk_robe_hood_off"],
+        "dye": MAGE_DYES,
+        "decimate": MAGE_DECIMATE,
         # the other faces of character creation, as target changes on top of "targets"
         # (the weathered face above is the first)
         "faces": {
@@ -106,8 +118,13 @@ BODIES = {
         "push": {"culturalibre_heroine_boots_1": 0.006},
         "x": 0.55,
         "variants": {"hair": ["long01/long01.mhclo", "braid01/braid01.mhclo",
-                              "short03/short03.mhclo"]},
-        "variant_parts": ["elvs_braid_bun", "long01", "braid01", "short03"],
+                              "short03/short03.mhclo"],
+                     # over the suit, with ankle boots for the thigh-high ones (which show through)
+                     "clothes": MAGE_ROBES + ["toigo_ankle_boots_female/toigo_ankle_boots_female.mhclo"]},
+        "variant_parts": ["elvs_braid_bun", "long01", "braid01", "short03", "culturalibre_heroine_boots_1",
+                          "donitz_monk_robe", "donitz_monk_robe_hood_off", "toigo_ankle_boots_female"],
+        "dye": dict(MAGE_DYES, toigo_ankle_boots_female=(0.1, 0.1, 0.13)),
+        "decimate": dict(MAGE_DECIMATE, toigo_ankle_boots_female=0.2),  # 30k triangles as made
         "faces": {
             # fine and high-born: high cheekbones, long straight nose, full upper lip
             "noble": {"head-oval": 0.9, "l-cheek-bones-incr": 0.9, "r-cheek-bones-incr": 0.9,
@@ -196,10 +213,15 @@ def build(key, spec=None):
     settings["subdiv_levels"] = 0
     basemesh = HumanService.deserialize_from_dict(info, settings)
     rig = basemesh.parent
+    base_masks = {m.name for m in basemesh.modifiers}
     for kind, assets in spec.get("variants", {}).items():
         for asset in assets:
             path = AssetService.find_asset_absolute_path(asset, asset_subdir=kind)
             HumanService.add_mhclo_asset(path, basemesh, asset_type=kind, subdiv_levels=0, material_type="MAKESKIN")
+    # variants are worn one at a time: only the base clothes hide the skin under them, so
+    # taking a robe off shows no holes where it was
+    for mod in [m for m in basemesh.modifiers if m.type == "MASK" and m.name not in base_masks]:
+        basemesh.modifiers.remove(mod)
     if spec.get("faces"):
         face_moves(basemesh, rig, spec["targets"], spec["faces"])
     rig.location.x = spec["x"]
@@ -208,6 +230,11 @@ def build(key, spec=None):
     eyes(rig, spec["eyes"])
     for name, colours in spec.get("recolour", {}).items():
         recolour(rig, name, *colours)
+    for name, colour in spec.get("dye", {}).items():
+        dye(rig, key, name, colour)
+    for name, ratio in spec.get("decimate", {}).items():
+        obj = next(o for o in rig.children_recursive if o.type == "MESH" and o.name.endswith(name))
+        obj.modifiers.new("decimate", "DECIMATE").ratio = ratio  # applied by arkanor_game.bake_mesh
     for name, distance in spec.get("push", {}).items():
         obj = next(o for o in rig.children_recursive if o.type == "MESH" and o.name.endswith(name))
         mod = obj.modifiers.new("push out", "DISPLACE")
@@ -286,6 +313,28 @@ def recolour(rig, asset, base, accent, repeats=5):
         out = bpy.data.images.new("mh_%s" % asset, w, h, alpha=True)
         out.pixels.foreach_set(np.dstack([np.clip(colour, 0, 1), pixels[..., 3:]]).astype(np.float32).ravel())
         out.filepath_raw = str(OUT / "tex" / ("mh_%s.png" % asset))
+        out.file_format = "PNG"
+        out.save()
+        node.image = out
+
+
+def dye(rig, key, asset, colour):
+    """Dyes a cloth texture in `colour` (sRGB 0..1), keeping its folds and weave: each texel
+    keeps its brightness against the texture's mean. Saved to tex/mh_<key>_<asset>.png."""
+    obj = next(o for o in rig.children_recursive if o.type == "MESH" and o.name.endswith(asset))
+    for slot in obj.material_slots:
+        slot.material = slot.material.copy()  # robe and cowl share one material as loaded
+        node = next(n for n in slot.material.node_tree.nodes if n.type == "TEX_IMAGE" and n.name == "diffuseTexture")
+        w, h = node.image.size
+        pixels = np.empty(w * h * 4, np.float32)
+        node.image.pixels.foreach_get(pixels)
+        pixels = pixels.reshape(h, w, 4)
+        luma = pixels[..., :3] @ np.array([0.3, 0.59, 0.11], np.float32)
+        shade = np.clip(luma / mean_brightness(node.image), 0.0, 1.6)[..., None]
+        out = bpy.data.images.new("mh_%s_%s" % (key, asset), w, h, alpha=True)
+        out.pixels.foreach_set(np.dstack([np.clip(np.array(colour) * shade, 0, 1), pixels[..., 3:]])
+                               .astype(np.float32).ravel())
+        out.filepath_raw = str(OUT / "tex" / ("mh_%s_%s.png" % (key, asset)))
         out.file_format = "PNG"
         out.save()
         node.image = out

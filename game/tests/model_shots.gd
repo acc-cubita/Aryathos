@@ -1,6 +1,6 @@
 extends Node
 ## Close-up shots of the player model's animations in the real zone. Run:
-##   Godot.exe --path game -- --model-shots=<output folder>
+##   Godot.exe --path game -- --model-shots=<output folder> [--hero=<class>[,female]]
 
 var _camera := Camera3D.new()
 
@@ -22,6 +22,76 @@ func _run() -> void:
 	_camera.fov = 40.0
 	_camera.make_current()
 	await _wait(1.5)
+	# --hero=<class>[,female]: only the player's shots, as that class
+	var hero_only := false
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--hero="):
+			var parts := arg.get_slice("=", 1).split(",")
+			player.set_class(Database.hero_class(StringName(parts[0])))
+			if parts.has("female"):
+				player.set_look({"gender": "female"})
+			hero_only = true
+			await _wait(0.5)
+	if not hero_only:
+		await _world_shots(folder, player)
+	await _shot(player, folder, "idle", 2.8)
+	player.autorun = true
+	await _wait(0.9)
+	await _shot(player, folder, "run", 3.6)
+	player.autorun = false
+	await _wait(0.8)
+	player.attacked.emit()
+	await _wait(0.28)
+	await _shot(player, folder, "attack_windup", 2.8)
+	await _wait(0.12)
+	await _shot(player, folder, "attack_strike", 2.8)
+	for swing in 2:  # the next two swings in the rotation
+		await _wait(0.9)
+		player.attacked.emit()
+		await _wait(0.42)
+		await _shot(player, folder, "attack%d_strike" % (swing + 2), 2.8)
+	await _wait(0.8)
+	player.casting = player.abilities[1]
+	player._cast_target = player
+	player._cast_end = Game.time + 30.0
+	await _wait(0.8)
+	await _shot(player, folder, "cast", 2.8)
+	player.interrupt_cast()
+	# the head turns toward a target standing off to the side
+	var npc := Game.zone.get_node("NPCs/HerbalistMira") as Unit
+	player.target = npc
+	player.look_at(npc.global_position + (npc.global_position - player.global_position).cross(Vector3.UP).normalized() * 6.0, Vector3.UP)
+	await _wait(1.0)
+	await _shot(player, folder, "look", 2.4)
+	player.target = null
+	# standing across a slope: the feet should rest on the ground, not in it or above it
+	var slope := _find_slope()
+	if slope.is_finite():
+		player.teleport(slope, 0.0)
+		await _wait(1.2)
+		await _shot(player, folder, "slope", 2.6)
+		var skeleton := player.model.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
+		await skeleton.skeleton_updated  # after the modifiers (feet planted)
+		var gaps := []
+		for foot_name in ["LeftFoot", "RightFoot", "LeftToes", "RightToes"]:
+			var p := skeleton.global_transform * skeleton.get_bone_global_pose(skeleton.find_bone(foot_name)).origin
+			gaps.append(snappedf(p.y - Game.zone.terrain.get_height(p.x, p.z), 0.005))
+		print("slope %.2f: ankle / toe heights above the ground (m) L, R, L toe, R toe: %s" % [Game.zone.terrain.get_slope(slope.x, slope.z), gaps])
+		# running on from there in the open: about 2.5 steps a second should be heard
+		var steps_before := _steps_heard()
+		var start := player.global_position
+		player.autorun = true
+		await _wait(3.0)
+		player.autorun = false
+		print("footsteps heard running 3 s (%.1f m): %d" % [player.global_position.distance_to(start), _steps_heard() - steps_before])
+	player.die(null)
+	await _wait(1.8)
+	await _shot(player, folder, "death", 3.4)
+	get_tree().quit()
+
+
+## The NPCs and creatures.
+func _world_shots(folder: String, player: Player) -> void:
 	await _shot(Game.zone.get_node("NPCs/HerbalistMira"), folder, "mira", 2.6)
 	for npc_name in ["WardenThalos", "MagisterIvren", "QuartermasterBren"]:
 		await _shot(Game.zone.get_node("NPCs/" + npc_name), folder, npc_name.to_lower(), 2.6)
@@ -78,60 +148,6 @@ func _run() -> void:
 		wolf.die(null)
 		await _wait(1.6)
 		await _shot(wolf, folder, "wolf_death", 2.6)
-	await _shot(player, folder, "idle", 2.8)
-	player.autorun = true
-	await _wait(0.9)
-	await _shot(player, folder, "run", 3.6)
-	player.autorun = false
-	await _wait(0.8)
-	player.attacked.emit()
-	await _wait(0.28)
-	await _shot(player, folder, "attack_windup", 2.8)
-	await _wait(0.12)
-	await _shot(player, folder, "attack_strike", 2.8)
-	for swing in 2:  # the next two swings in the rotation
-		await _wait(0.9)
-		player.attacked.emit()
-		await _wait(0.42)
-		await _shot(player, folder, "attack%d_strike" % (swing + 2), 2.8)
-	await _wait(0.8)
-	player.casting = player.abilities[1]
-	player._cast_target = player
-	player._cast_end = Game.time + 30.0
-	await _wait(0.8)
-	await _shot(player, folder, "cast", 2.8)
-	player.interrupt_cast()
-	# the head turns toward a target standing off to the side
-	var npc := Game.zone.get_node("NPCs/HerbalistMira") as Unit
-	player.target = npc
-	player.look_at(npc.global_position + (npc.global_position - player.global_position).cross(Vector3.UP).normalized() * 6.0, Vector3.UP)
-	await _wait(1.0)
-	await _shot(player, folder, "look", 2.4)
-	player.target = null
-	# standing across a slope: the feet should rest on the ground, not in it or above it
-	var slope := _find_slope()
-	if slope.is_finite():
-		player.teleport(slope, 0.0)
-		await _wait(1.2)
-		await _shot(player, folder, "slope", 2.6)
-		var skeleton := player.model.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
-		await skeleton.skeleton_updated  # after the modifiers (feet planted)
-		var gaps := []
-		for foot_name in ["LeftFoot", "RightFoot", "LeftToes", "RightToes"]:
-			var p := skeleton.global_transform * skeleton.get_bone_global_pose(skeleton.find_bone(foot_name)).origin
-			gaps.append(snappedf(p.y - Game.zone.terrain.get_height(p.x, p.z), 0.005))
-		print("slope %.2f: ankle / toe heights above the ground (m) L, R, L toe, R toe: %s" % [Game.zone.terrain.get_slope(slope.x, slope.z), gaps])
-		# running on from there in the open: about 2.5 steps a second should be heard
-		var steps_before := _steps_heard()
-		var start := player.global_position
-		player.autorun = true
-		await _wait(3.0)
-		player.autorun = false
-		print("footsteps heard running 3 s (%.1f m): %d" % [player.global_position.distance_to(start), _steps_heard() - steps_before])
-	player.die(null)
-	await _wait(1.8)
-	await _shot(player, folder, "death", 3.4)
-	get_tree().quit()
 
 
 func _shot(unit: Node3D, folder: String, view_name: String, distance: float, height := 1.0) -> void:

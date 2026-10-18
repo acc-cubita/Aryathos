@@ -16,16 +16,21 @@ const ARKANOR_FEMALE := "res://art/characters/arkanor/arkanor_female.glb"
 ## asset they were made from (tools/art/blender/arkanor_game.py HERO_VARIANTS), the face
 ## (a blend shape made from MakeHuman's face sliders, arkanor_mh.py "faces"; the first face
 ## is the model as built), and the hair, skin and eye colours. Options are [shown name, parts].
+## outfits: the parts each class wears (ClassData.outfit) over what every hero wears.
 const LOOKS := {
 	"male": {"path": ARKANOR_MALE,
 		"hair": [["Ponytail", ["ponytail01"]], ["Short", ["short02"]], ["Long", ["long01"]], ["Braid", ["braid01"]]],
 		"beard": [["Scruffy", ["elvs_scruffy_beard1", "rehmanpolanski_moustache_viking"]], ["Full", ["grinsegold_full_beard"]],
 				["Braided", ["rehmanpolanski_beard_viking"]], ["None", []]],
-		"face": [["Weathered", ""], ["Noble", "face_noble"], ["Stern", "face_stern"], ["Hawk", "face_hawk"]]},
+		"face": [["Weathered", ""], ["Noble", "face_noble"], ["Stern", "face_stern"], ["Hawk", "face_hawk"]],
+		"outfits": {"runeknight": ["rehmanpolanski_viking_tunic", "rehmanpolanski_viking_pants"],
+				"aethermancer": ["donitz_monk_robe", "donitz_monk_robe_hood_off"]}},
 	"female": {"path": ARKANOR_FEMALE, "grip_roll": 13.0,
 		"hair": [["Braided Bun", ["elvs_braid_bun"]], ["Long", ["long01"]], ["Braid", ["braid01"]], ["Short", ["short03"]]],
 		"beard": [["None", []]],
-		"face": [["Determined", ""], ["Noble", "face_noble"], ["Fierce", "face_fierce"], ["Gentle", "face_gentle"]]},
+		"face": [["Determined", ""], ["Noble", "face_noble"], ["Fierce", "face_fierce"], ["Gentle", "face_gentle"]],
+		"outfits": {"runeknight": ["culturalibre_heroine_boots_1"],
+				"aethermancer": ["donitz_monk_robe", "donitz_monk_robe_hood_off", "toigo_ankle_boots_female"]}},
 }
 ## (grip_roll: degrees the weapon turns about the fingers in that model's fist; the female
 ## wrist rests rolled 13 degrees further in, which would tip the axe across her body.)
@@ -72,7 +77,7 @@ const WEAPONS := {
 	"pick": {"path": "res://art/weapons/pick.glb", "painted": false,  # tools/art/blender/scavenger.py
 			"root": Vector3(0, 0.77, 0), "edge": Vector3(0, 0.78, -0.24)},
 	"crystal_staff": {"path": "res://art/weapons/crystal_staff.glb", "painted": false,  # tools/art/blender/staff.py
-			"root": Vector3(0, 0.6, 0), "edge": Vector3(0, 1.12, 0)},
+			"root": Vector3(0, 0.6, 0), "edge": Vector3(0, 1.12, 0), "channel": "ual1/Idle_Torch"},
 }
 const UPPER_BODY := ["Spine", "Chest", "UpperChest", "Neck", "Head", "LeftShoulder", "LeftUpperArm",
 		"LeftLowerArm", "LeftHand", "RightShoulder", "RightUpperArm", "RightLowerArm", "RightHand"]
@@ -200,8 +205,9 @@ static func create_hero(look: Dictionary, glow := Color(0.4, 0.85, 1.0), weapon 
 	return create(LOOKS.get(gender, LOOKS.male).path, glow, weapon, look)
 
 
-## Shows the chosen hair and beard (hides the others), shapes the chosen face (on the body
-## and every part fitted to it) and colours hair, brows, skin and eyes.
+## Shows the chosen hair and beard and the class's outfit (look.outfit; hides the others),
+## shapes the chosen face (on the body and every part fitted to it) and colours hair, brows,
+## skin and eyes.
 func apply_look(look: Dictionary) -> void:
 	var spec: Dictionary = LOOKS.get(look.get("gender", "male"), LOOKS.male)
 	var hair: Array = spec.hair[clampi(int(look.get("hair", 0)), 0, spec.hair.size() - 1)][1]
@@ -210,9 +216,13 @@ func apply_look(look: Dictionary) -> void:
 	var hair_tint: Color = HAIR_COLORS[clampi(int(look.get("hair_color", 1)), 0, HAIR_COLORS.size() - 1)][1]
 	var skin_tint: Color = SKIN_TONES[clampi(int(look.get("skin", 0)), 0, SKIN_TONES.size() - 1)][1]
 	var eyes := load(EYES % EYE_COLORS[clampi(int(look.get("eyes", 1)), 0, EYE_COLORS.size() - 1)][1]) as Texture2D
-	var variants := []
+	var outfit: Array = spec.outfits.get(look.get("outfit", "runeknight"), [])
+	var strands := []
 	for option: Array in spec.hair + spec.beard:
-		variants.append_array(option[1])
+		strands.append_array(option[1])
+	var variants := strands.duplicate()
+	for parts: Array in spec.outfits.values():
+		variants.append_array(parts)
 	for mesh: MeshInstance3D in find_children("*", "MeshInstance3D", true, false):
 		if mesh.mesh == null:
 			continue  # the weapon's trail, before its first swing
@@ -221,7 +231,7 @@ func apply_look(look: Dictionary) -> void:
 			if String(mesh.name).ends_with("_" + each):
 				part = each
 		if part != "":
-			mesh.visible = part in hair or part in beard
+			mesh.visible = part in hair or part in beard or part in outfit
 		for option: Array in spec.face:
 			var shape := mesh.find_blend_shape_by_name(option[1]) if option[1] != "" else -1
 			if shape >= 0:
@@ -231,7 +241,7 @@ func apply_look(look: Dictionary) -> void:
 			if material == null:
 				continue
 			var name := material.resource_name.to_lower()
-			if part != "" or "eyebrow" in name:
+			if part in strands or "eyebrow" in name:
 				material.albedo_color = hair_tint
 			elif name.begins_with("body"):
 				material.albedo_color = skin_tint
@@ -349,6 +359,25 @@ func _build_tree(scene: Node3D, skeleton: Skeleton3D) -> void:
 		blend.connect_node("fist", 0, last)
 		blend.connect_node("fist", 1, "hold")
 		last = "fist"
+		var carry_clip: String = WEAPONS[weapon_key].get("channel", "")
+		if carry_clip != "":
+			# a staff is held upright while channelling a spell: the weapon arm takes the
+			# channel clip's pose (the release, which comes after, still takes it over)
+			var carry := AnimationNodeBlend2.new()
+			carry.filter_enabled = true
+			var anim := player.get_animation(carry_clip)
+			anim.loop_mode = Animation.LOOP_LINEAR
+			for track in anim.get_track_count():
+				var bone := String(anim.track_get_path(track).get_concatenated_subnames())
+				if bone.begins_with("Right") and not ["Leg", "Foot", "Toes"].any(func(w: String) -> bool: return w in bone):
+					carry.set_filter_path(anim.track_get_path(track), true)
+			var carried := AnimationNodeAnimation.new()
+			carried.animation = carry_clip
+			blend.add_node("carry", carry)
+			blend.add_node("carried", carried)
+			blend.connect_node("carry", 0, last)
+			blend.connect_node("carry", 1, "carried")
+			last = "carry"
 	for shot_name: String in ["hit", "spell", "attack"]:
 		var shot := AnimationNodeOneShot.new()
 		shot.fadein_time = 0.08
@@ -468,6 +497,8 @@ func _go(state: String) -> void:
 	if state != _state:
 		_state = state
 		_states().travel(state)
+		if (_tree.tree_root as AnimationNodeBlendTree).has_node("carry"):
+			create_tween().tween_property(_tree, "parameters/carry/blend_amount", 1.0 if state == "cast_loop" else 0.0, 0.25)
 
 
 func _states() -> AnimationNodeStateMachinePlayback:

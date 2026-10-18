@@ -82,6 +82,11 @@ func _class_checks(player: Player) -> void:
 	screen.look = {"gender": "female", "face": 1, "hair": 1, "hair_color": 0, "skin": 0, "eyes": 0, "beard": 0}
 	_check(screen.create("Ilsa") == "" and player.hero_class == mage, "Create makes an Aethermancer")
 	screen.queue_free()
+	var wears := func(part: String) -> bool:
+		return player.model.find_children("*", "MeshInstance3D", true, false).any(
+				func(m: MeshInstance3D) -> bool: return m.visible and String(m.name).ends_with("_" + part))
+	_check(wears.call("donitz_monk_robe") and wears.call("toigo_ankle_boots_female")
+			and not wears.call("culturalibre_heroine_boots_1"), "she wears the Concord's robe and ankle boots")
 	var weapon: Node = player.model.find_child("Weapon", true, false)
 	_check(player.equipment.get(ItemData.Slot.WEAPON).id == &"stormcaller_axe" and weapon != null
 			and weapon.scene_file_path.ends_with("rune_axe.glb"), "she keeps the better axe she wore (not the staff)")
@@ -122,6 +127,8 @@ func _class_checks(player: Player) -> void:
 	player.set_class(Database.hero_class(&"runeknight"))
 	_check(player.hero_class.id == &"runeknight" and player.abilities.size() == 4 and player.talent_trees[1] == "Storm",
 			"(a Runeknight again for the moment)")
+	_check(not wears.call("donitz_monk_robe") and wears.call("culturalibre_heroine_boots_1"),
+			"a Runeknight wears no robe")
 	player.load_save_data(saved)
 	_check(saved["class"] == "aethermancer" and player.hero_class == mage
 			and player.abilities.any(func(a: AbilityData) -> bool: return a.id == &"starshard")
