@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TalentData" format=3]
+
+[ext_resource type="Script" path="res://data/talent_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/abilities/starshard.tres" id="2_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"starshard_talent"
+display_name = "Starshard"
+description = "Teaches Starshard: a great shard of crystal-light hurled at the enemy (3 sec cast)."
+icon_color = Color(0.75, 0.7, 1, 1)
+icon_glyph = "St"
+tree = 1
+tier = 3
+column = 0
+max_rank = 1
+effect = 9
+ability = ExtResource("2_ability")
+value_per_rank = 0.0

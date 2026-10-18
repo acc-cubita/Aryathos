@@ -14,6 +14,18 @@ static func ability(id: StringName) -> AbilityData:
 	return _find("res://data/abilities", id) as AbilityData
 
 
+static func hero_class(id: StringName) -> ClassData:
+	return _find("res://data/classes", id) as ClassData
+
+
+## Every playable class, in the order character creation shows them.
+static func hero_classes() -> Array[ClassData]:
+	var result: Array[ClassData] = []
+	result.assign(_all("res://data/classes"))
+	result.sort_custom(func(a: ClassData, b: ClassData) -> bool: return a.sort_order < b.sort_order)
+	return result
+
+
 static func quest(id: StringName) -> QuestData:
 	return _find("res://data/quests", id) as QuestData
 

@@ -54,7 +54,7 @@ func _process(_delta: float) -> void:
 	if not visible:
 		return
 	var p := _player
-	set_title("%s  -  Level %d %s Runeknight" % [p.unit_name, p.level, p.race])
+	set_title("%s  -  Level %d %s %s" % [p.unit_name, p.level, p.race, p.hero_class.display_name])
 	var dps := (p.weapon_min + p.weapon_max) * 0.5 / p.attack_interval
 	_stats.text = "Health  %d / %d          Mana  %d / %d\nDamage  %d - %d          Speed  %.2f          DPS  %.1f\nSpell Power  %d          Critical Strike  %d%%" % [
 		p.health, p.max_health, p.mana, p.max_mana, p.weapon_min, p.weapon_max,
@@ -96,11 +96,11 @@ func _build_preview() -> Control:
 	light.rotation_degrees = Vector3(-35, 25, 0)
 	viewport.add_child(light)
 	_model_pivot.rotation.y = PI
-	_model_pivot.add_child(CharacterModel.create_hero(_player.look, _player.glow_color))
+	_model_pivot.add_child(_player.make_model())
 	_player.look_changed.connect(func() -> void:
 		for old in _model_pivot.get_children():
 			old.queue_free()
-		_model_pivot.add_child(CharacterModel.create_hero(_player.look, _player.glow_color)))
+		_model_pivot.add_child(_player.make_model()))
 	viewport.add_child(_model_pivot)
 	var camera := Camera3D.new()
 	camera.position = Vector3(0, 1.05, 3.4)

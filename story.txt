@@ -119,6 +119,7 @@ Facing total annihilation, players from both factions must navigate a tense, uns
 ## 6. CLASSES
 
 * **Runeknight** (Arkanor): A rune-axe warrior who binds Aether into runes. *Rune Strike* for melee; *Aether Shard* and *Storm Surge* (storm-light) from range; *Crystal Mending* to heal; *Storm Nova* to blast everything around. Three talent paths: **Aether** (raw power and crits), **Storm** (storm-light), **Warding** (crystal skin and mending).
+* **Aethermancer** (Arkanor): A mage of the **Azure Concord**, Magister Ivren's order, who shapes raw Aether and crystal from afar with a crystal staff. *Aether Bolt* (a slow, heavy bolt), *Crystal Lance* (instant), *Shardburst* (shards bursting around the mage) and *Crystal Mending*; frail up close but with deep reserves of mana. Three talent paths: **Aether** (the bolt, crits and mana), **Crystal** (lance and shards, ending in *Starshard*, a great shard of crystal-light called down the sky), **Warding** (shared with the Runeknights).
 
 ---
 

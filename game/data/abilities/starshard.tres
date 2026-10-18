@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://data/ability_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"starshard"
+display_name = "Starshard"
+description = "Call a great shard of crystal-light down the sky and hurl it at the enemy."
+icon_color = Color(0.75, 0.7, 1, 1)
+icon_glyph = "St"
+effect = 0
+targeting = 0
+cast_time = 3.0
+cooldown = 15.0
+mana_cost = 45
+max_range = 35.0
+min_amount = 58
+max_amount = 72
+color = Color(0.8, 0.8, 1, 1)
+projectile_speed = 18.0
+projectile_style = 1

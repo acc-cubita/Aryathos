@@ -27,7 +27,8 @@ const VOICES := {
 }
 ## The sound a finished cast lets go with, by ability id (others: spell_cast).
 const RELEASES := {"aether_shard": "spell_shard", "storm_surge": "spell_storm", "storm_nova": "spell_storm",
-		"crystal_mending": "spell_heal", "crystal_roar": "bear_roar"}
+		"crystal_mending": "spell_heal", "crystal_roar": "bear_roar", "aether_bolt": "spell_cast",
+		"crystal_lance": "spell_shard", "shardburst": "spell_shard", "starshard": "spell_shard"}
 ## Seconds a unit stays quiet after crying out in pain, and after its aggro call.
 const HURT_PAUSE := 2.5
 const AGGRO_PAUSE := 10.0

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"apprentice_crystal_staff"
+display_name = "Apprentice's Crystal Staff"
+flavor_text = "Every Concord apprentice carves one. Whether the crystal answers is another matter."
+quality = 1
+slot = 1
+weapon_model = "crystal_staff"
+icon_glyph = "St"
+icon_color = Color(0.45, 0.6, 0.85, 1)
+spell_power = 3
+min_damage = 4
+max_damage = 8
+sell_price = 10

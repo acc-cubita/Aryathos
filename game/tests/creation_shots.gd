@@ -50,4 +50,14 @@ func _run() -> void:
 		await get_tree().create_timer(1.0, true).timeout
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png(folder.path_join("face_%d.png" % i))
+	screen.hero_class = Database.hero_class(&"aethermancer")  # the second class, whole and half
+	for i in 4:
+		screen.look = CharacterModel.DEFAULT_LOOK.duplicate()
+		screen.look.merge({"gender": "male" if i < 2 else "female", "hair": 2}, true)
+		screen._refresh()
+		screen._zoom = 0.0 if i % 2 == 0 else 0.55
+		screen._zoom_to = screen._zoom
+		await get_tree().create_timer(1.0, true).timeout
+		await RenderingServer.frame_post_draw
+		get_viewport().get_texture().get_image().save_png(folder.path_join("mage_%d.png" % i))
 	get_tree().quit()

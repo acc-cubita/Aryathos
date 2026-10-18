@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://data/ability_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"aether_bolt"
+display_name = "Aether Bolt"
+description = "Gather raw Aether into a bolt and loose it at the enemy."
+icon_color = Color(0.45, 0.4, 0.95, 1)
+icon_glyph = "AB"
+effect = 0
+targeting = 0
+cast_time = 2.2
+cooldown = 0.0
+mana_cost = 22
+max_range = 35.0
+min_amount = 28
+max_amount = 36
+color = Color(0.6, 0.62, 1, 1)
+projectile_speed = 20.0
+projectile_style = 0

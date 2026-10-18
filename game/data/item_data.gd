@@ -21,6 +21,8 @@ const SLOT_NAMES: Array[String] = [
 @export_multiline var flavor_text := ""
 @export var quality := Quality.COMMON
 @export var slot := Slot.NONE
+## Weapons: what the hero holds while it is equipped (a CharacterModel.WEAPONS key).
+@export var weapon_model := ""
 @export var icon: Texture2D
 ## Shown in item slots while there is no icon texture.
 @export var icon_color := Color(0.5, 0.5, 0.5)

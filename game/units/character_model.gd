@@ -71,6 +71,8 @@ const WEAPONS := {
 			"root": Vector3(0, 0.82, -0.06), "edge": Vector3(0, 0.82, -0.44)},
 	"pick": {"path": "res://art/weapons/pick.glb", "painted": false,  # tools/art/blender/scavenger.py
 			"root": Vector3(0, 0.77, 0), "edge": Vector3(0, 0.78, -0.24)},
+	"crystal_staff": {"path": "res://art/weapons/crystal_staff.glb", "painted": false,  # tools/art/blender/staff.py
+			"root": Vector3(0, 0.6, 0), "edge": Vector3(0, 1.12, 0)},
 }
 const UPPER_BODY := ["Spine", "Chest", "UpperChest", "Neck", "Head", "LeftShoulder", "LeftUpperArm",
 		"LeftLowerArm", "LeftHand", "RightShoulder", "RightUpperArm", "RightLowerArm", "RightHand"]
@@ -90,6 +92,9 @@ const DOUBLE_SIDED := ["hood", "robe", "cloak", "cape"]
 ## While a swing may leave a glow arc (seconds after it starts, how long); the arc itself
 ## appears where the weapon's head moves fast (WeaponTrail.speed_range).
 const SWING_ARC := Vector2(0.1, 0.75)
+
+## The WEAPONS key held ("" empty hands).
+var weapon_key := ""
 
 var _unit: Unit
 var _tree: AnimationTree
@@ -118,6 +123,7 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_
 	var model := CharacterModel.new()
 	model.name = "Model"
 	model._armed = weapon != ""
+	model.weapon_key = weapon
 	var scene := (load(path) as PackedScene).instantiate() as Node3D
 	scene.rotation.y = PI  # glTF faces +Z, units face -Z
 	model.add_child(scene)

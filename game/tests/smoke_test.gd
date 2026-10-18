@@ -63,9 +63,69 @@ func _run() -> void:
 	await _achievement_checks(player)
 	await _profession_checks(player)
 	await _save_checks(player)
+	await _class_checks(player)
 
 	print("SMOKE TEST %s" % ("PASSED" if _failures == 0 else "FAILED (%d)" % _failures))
 	get_tree().quit(0 if _failures == 0 else 1)
+
+
+## The second class (last: it remakes the hero): an Aethermancer made at character creation
+## holds the crystal staff, has her class's abilities on the bar and her own talent trees,
+## hits with Crystal Lance, learns Starshard from a talent and stays one through a save.
+func _class_checks(player: Player) -> void:
+	var mage := Database.hero_class(&"aethermancer")
+	_check(Database.hero_classes().map(func(c: ClassData) -> StringName: return c.id) == [&"runeknight", &"aethermancer"],
+			"two classes to choose, Runeknight first")
+	var screen := CharacterCreation.new(player)
+	add_child(screen)
+	screen.hero_class = mage
+	screen.look = {"gender": "female", "face": 1, "hair": 1, "hair_color": 0, "skin": 0, "eyes": 0, "beard": 0}
+	_check(screen.create("Ilsa") == "" and player.hero_class == mage, "Create makes an Aethermancer")
+	screen.queue_free()
+	var weapon: Node = player.model.find_child("Weapon", true, false)
+	_check(player.equipment.get(ItemData.Slot.WEAPON).id == &"stormcaller_axe" and weapon != null
+			and weapon.scene_file_path.ends_with("rune_axe.glb"), "she keeps the better axe she wore (not the staff)")
+	var axe_slot := player.bags.find(null)
+	player.unequip(ItemData.Slot.WEAPON)
+	_check(player.model.find_child("Weapon", true, false) == null, "with no weapon she has empty hands")
+	player.equip_from_bag(axe_slot)
+	player.bags[axe_slot] = Database.item(&"apprentice_crystal_staff")
+	player.bag_counts[axe_slot] = 1
+	player.equip_from_bag(axe_slot)
+	weapon = player.model.find_child("Weapon", true, false)
+	_check(weapon != null and weapon.scene_file_path.ends_with("crystal_staff.glb"), "equipping the crystal staff puts it in her hand")
+	var bar := player.action_bar.slice(0, 4).map(func(entry: Resource) -> StringName: return entry.id if entry else &"")
+	_check(bar == [&"aether_bolt", &"crystal_lance", &"shardburst", &"crystal_mending"]
+			and not player.abilities.any(func(a: AbilityData) -> bool: return a.id == &"rune_strike"),
+			"her bar holds Aether Bolt, Crystal Lance, Shardburst and Crystal Mending (no Rune Strike)")
+	_check(player.talent_trees == ["Aether", "Crystal", "Warding"] and player.talent_points_free() == player.level - 1
+			and player.max_mana > player.max_health, "Aether, Crystal and Warding trees, no talents yet, more mana than health")
+	var talent_window: TalentWindow = Game.zone.hud._talents
+	_check(talent_window._buttons.keys().any(func(t: TalentData) -> bool: return t.id == &"honed_lance")
+			and not talent_window._buttons.keys().any(func(t: TalentData) -> bool: return t.id == &"rune_discipline"),
+			"the talent window shows her trees, not the Runeknight's")
+	var wolf := _nearest_enemy(player, &"shardfang_wolf")
+	_place_facing(player, wolf, 14.0)
+	await _wait(0.5)
+	player.set_target(wolf)
+	var before := wolf.health
+	_check(player.use_action_slot(1), "Crystal Lance flies at once")
+	await _wait_until(func() -> bool: return wolf.health < before, 4.0)
+	_check(wolf.health < before, "the lance hits the wolf")
+	player.level = maxi(player.level, 8)
+	for id: StringName in [&"honed_lance", &"honed_lance", &"honed_lance", &"crystal_flow", &"crystal_flow", &"shatterpoint"]:
+		player.learn_talent(player.talents.filter(func(t: TalentData) -> bool: return t.id == id)[0])
+	var starshard: TalentData = player.talents.filter(func(t: TalentData) -> bool: return t.id == &"starshard_talent")[0]
+	_check(player.learn_talent(starshard) and player.action_bar.any(func(entry: Resource) -> bool:
+			return entry != null and entry.id == &"starshard"), "6 points in Crystal open Starshard, which goes on the bar")
+	var saved := player.to_save_data()
+	player.set_class(Database.hero_class(&"runeknight"))
+	_check(player.hero_class.id == &"runeknight" and player.abilities.size() == 4 and player.talent_trees[1] == "Storm",
+			"(a Runeknight again for the moment)")
+	player.load_save_data(saved)
+	_check(saved["class"] == "aethermancer" and player.hero_class == mage
+			and player.abilities.any(func(a: AbilityData) -> bool: return a.id == &"starshard")
+			and player.talent_rank(starshard) == 1, "the save brings back the Aethermancer, her talents and Starshard")
 
 
 func _check(ok: bool, what: String) -> void:
@@ -548,7 +608,7 @@ func _achievement_checks(player: Player) -> void:
 	for place: Node3D in Game.zone.get_node("PointsOfInterest").get_children():
 		if not player.discovered.has(String(place.name)):
 			player.teleport(place.global_position + Vector3.UP * 30.0, 0.0)
-			await _wait(0.8)
+			await _wait_until(func() -> bool: return player.discovered.has(String(place.name)), 4.0)
 	_check(player.discovered.size() == 6, "all 6 places discovered (%d)" % player.discovered.size())
 	_check(player.xp != xp_before or player.level > level_before, "discovering places gives experience")
 	_check(tracker.is_earned(by_id[&"explore_silverrun_vale"]) and toasts[0] >= 1, "Explore Silverrun Vale is earned with a toast")
@@ -604,7 +664,7 @@ func _profession_checks(player: Player) -> void:
 	await _wait_until(func() -> bool: return player.is_on_floor() and not player.is_moving, 3.0)
 	var potions_before := player.count_item(potion)
 	_check(player.craft(recipe), "crafting starts a cast bar")
-	await _wait(2.4)
+	await _wait_until(func() -> bool: return player.count_item(potion) > potions_before, 5.0)
 	_check(player.count_item(potion) == potions_before + 1 and player.profession_skill(alchemy) == 2, "Alchemy turns Silverleaf + Empty Vial into a potion and raises the skill")
 	_check(player.craft_block_reason(Database.recipe(&"lesser_healing_potion")) != "", "Lesser Healing Potion needs Alchemy 40")
 	for node in [silverleaf, stormbloom, second]:

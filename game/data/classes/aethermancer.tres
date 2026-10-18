@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="ClassData" format=3]
+
+[ext_resource type="Script" path="res://data/class_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/ability_data.gd" id="1_ability"]
+[ext_resource type="Script" path="res://data/talent_data.gd" id="1_talent"]
+[ext_resource type="Resource" path="res://data/abilities/aether_bolt.tres" id="2"]
+[ext_resource type="Resource" path="res://data/abilities/crystal_lance.tres" id="3"]
+[ext_resource type="Resource" path="res://data/abilities/shardburst.tres" id="4"]
+[ext_resource type="Resource" path="res://data/abilities/crystal_mending.tres" id="5"]
+[ext_resource type="Resource" path="res://data/talents/focused_bolt.tres" id="6"]
+[ext_resource type="Resource" path="res://data/talents/arcane_focus.tres" id="7"]
+[ext_resource type="Resource" path="res://data/talents/quickened_bolt.tres" id="8"]
+[ext_resource type="Resource" path="res://data/talents/mana_attunement.tres" id="9"]
+[ext_resource type="Resource" path="res://data/talents/aetherial_mastery.tres" id="10"]
+[ext_resource type="Resource" path="res://data/talents/honed_lance.tres" id="11"]
+[ext_resource type="Resource" path="res://data/talents/crystal_flow.tres" id="12"]
+[ext_resource type="Resource" path="res://data/talents/shatterpoint.tres" id="13"]
+[ext_resource type="Resource" path="res://data/talents/starshard_talent.tres" id="14"]
+[ext_resource type="Resource" path="res://data/talents/crystal_skin.tres" id="15"]
+[ext_resource type="Resource" path="res://data/talents/mending_light.tres" id="16"]
+[ext_resource type="Resource" path="res://data/talents/quick_mending.tres" id="17"]
+[ext_resource type="Resource" path="res://data/talents/unbreakable.tres" id="18"]
+[ext_resource type="Resource" path="res://data/items/apprentice_crystal_staff.tres" id="19"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"aethermancer"
+display_name = "Aethermancer"
+description = "A mage of the Azure Concord who shapes raw Aether and crystal from afar: bolts and lances of light, shards that burst around them, crystal to mend. Frail up close."
+sort_order = 1
+abilities = Array[ExtResource("1_ability")]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5")])
+talent_trees = Array[String](["Aether", "Crystal", "Warding"])
+talents = Array[ExtResource("1_talent")]([ExtResource("6"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("10"), ExtResource("11"), ExtResource("12"), ExtResource("13"), ExtResource("14"), ExtResource("15"), ExtResource("16"), ExtResource("17"), ExtResource("18")])
+starting_weapon = ExtResource("19")
+glow_color = Color(0.55, 0.62, 1, 1)
+base_health = 110
+health_per_level = 18
+base_mana = 160
+mana_per_level = 30

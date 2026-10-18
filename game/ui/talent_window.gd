@@ -9,6 +9,9 @@ var _player: Player
 var _points := Hud.make_label("", 15, Hud.GOLD)
 var _tree_labels: Array[Label] = []
 var _buttons := {}
+var _trees := HBoxContainer.new()
+## The class the trees were built for (character creation can change it).
+var _built_for: ClassData
 
 
 func _init() -> void:
@@ -17,11 +20,8 @@ func _init() -> void:
 
 func setup(player: Player) -> void:
 	_player = player
-	var trees := HBoxContainer.new()
-	trees.add_theme_constant_override("separation", 12)
-	for tree in player.talent_trees.size():
-		trees.add_child(_build_tree(tree))
-	content.add_child(trees)
+	_trees.add_theme_constant_override("separation", 12)
+	content.add_child(_trees)
 	var footer := HBoxContainer.new()
 	_points.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	footer.add_child(_points)
@@ -37,11 +37,24 @@ func setup(player: Player) -> void:
 
 
 func refresh() -> void:
+	if _built_for != _player.hero_class:
+		_build_trees()
 	_points.text = "Talent points available: %d" % _player.talent_points_free()
 	for tree in _tree_labels.size():
 		_tree_labels[tree].text = "%s  (%d)" % [_player.talent_trees[tree], _player.points_in_tree(tree)]
 	for talent: TalentData in _buttons:
 		(_buttons[talent] as Control).queue_redraw()
+
+
+func _build_trees() -> void:
+	_built_for = _player.hero_class
+	for old in _trees.get_children():
+		_trees.remove_child(old)
+		old.queue_free()
+	_tree_labels.clear()
+	_buttons.clear()
+	for tree in _player.talent_trees.size():
+		_trees.add_child(_build_tree(tree))
 
 
 func _build_tree(tree: int) -> Control:

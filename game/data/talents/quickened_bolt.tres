@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TalentData" format=3]
+
+[ext_resource type="Script" path="res://data/talent_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/abilities/aether_bolt.tres" id="2_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"quickened_bolt"
+display_name = "Quickened Bolt"
+description = "Reduces the cast time of Aether Bolt by {value} sec."
+icon_color = Color(0.5, 0.45, 1, 1)
+icon_glyph = "QB"
+tree = 0
+tier = 2
+column = 0
+max_rank = 2
+effect = 1
+ability = ExtResource("2_ability")
+value_per_rank = 0.25

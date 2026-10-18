@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TalentData" format=3]
+
+[ext_resource type="Script" path="res://data/talent_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/abilities/crystal_lance.tres" id="2_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"crystal_flow"
+display_name = "Crystal Flow"
+description = "Reduces the cooldown of Crystal Lance by {value} sec."
+icon_color = Color(0.35, 0.8, 0.95, 1)
+icon_glyph = "CF"
+tree = 1
+tier = 1
+column = 1
+max_rank = 2
+effect = 2
+ability = ExtResource("2_ability")
+value_per_rank = 1.0

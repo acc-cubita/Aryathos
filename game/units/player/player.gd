@@ -34,16 +34,19 @@ const BAG_SIZE := 16
 const GATHER_RANGE := 4.0
 
 @export var race := "Arkanor"
+## The hero's class (data/classes): abilities, talent trees, starting weapon, glow, and
+## how health and mana grow.
+@export var hero_class: ClassData
 ## How the hero looks (gender, hair, beard, colours): see CharacterModel.LOOKS.
 var look := CharacterModel.DEFAULT_LOOK.duplicate()
 @export var armor_color := Color(0.55, 0.6, 0.7)
-@export var glow_color := Color(0.3, 0.7, 1.0)
-## Every ability the character knows (the spellbook).
-@export var abilities: Array[AbilityData] = []
-@export var starting_weapon: ItemData
+## The class's glow (swing arcs, casting hands).
+var glow_color := Color(0.3, 0.7, 1.0)
+## Every ability the character knows (the spellbook): the class's, and any a talent taught.
+var abilities: Array[AbilityData] = []
 ## Names of the class's talent trees (TalentData.tree indexes into this).
-@export var talent_trees: Array[String] = []
-@export var talents: Array[TalentData] = []
+var talent_trees: Array[String] = []
+var talents: Array[TalentData] = []
 ## Points needed in a tree before each next row opens.
 const POINTS_PER_TIER := 3
 
@@ -93,17 +96,18 @@ func _ready() -> void:
 	bags.resize(BAG_SIZE)
 	bag_counts.resize(BAG_SIZE)
 	action_bar.resize(ACTION_SLOTS)
+	_take_class(hero_class)
 	for i in mini(abilities.size(), ACTION_SLOTS):
 		action_bar[i] = abilities[i]
-	if starting_weapon:
-		equipment[ItemData.Slot.WEAPON] = starting_weapon
+	if hero_class.starting_weapon:
+		equipment[ItemData.Slot.WEAPON] = hero_class.starting_weapon
 	_apply_level_stats()
 	health = max_health
 	mana = max_mana
 	quest_log = QuestLog.new(self)
 	achievements = AchievementLog.new(self)
 	super()
-	model = CharacterModel.create_hero(look, glow_color)
+	model = make_model()
 	add_child(model)
 	_ring = _make_target_ring()
 	add_child(_ring)
@@ -460,6 +464,7 @@ func equip_from_bag(index: int) -> void:
 	bag_counts[index] = 1 if bags[index] else 0
 	equipment[item.slot] = item
 	_apply_level_stats()
+	_show_weapon()
 	inventory_changed.emit()
 
 
@@ -474,6 +479,7 @@ func unequip(slot: ItemData.Slot) -> void:
 	bag_counts[free] = 1
 	equipment.erase(slot)
 	_apply_level_stats()
+	_show_weapon()
 	inventory_changed.emit()
 
 
@@ -518,8 +524,10 @@ func _apply_level_stats() -> void:
 	var health_bonus := 1.0 + talent_value(TalentData.Effect.MAX_HEALTH) / 100.0
 	var mana_bonus := 1.0 + talent_value(TalentData.Effect.MAX_MANA) / 100.0
 	var weapon_bonus := 1.0 + talent_value(TalentData.Effect.WEAPON_DAMAGE) / 100.0
-	max_health = roundi((140 + 25 * (level - 1) + _gear_total(&"health_bonus")) * health_bonus)
-	max_mana = roundi((120 + 20 * (level - 1) + _gear_total(&"mana_bonus")) * mana_bonus)
+	max_health = roundi((hero_class.base_health + hero_class.health_per_level * (level - 1)
+			+ _gear_total(&"health_bonus")) * health_bonus)
+	max_mana = roundi((hero_class.base_mana + hero_class.mana_per_level * (level - 1)
+			+ _gear_total(&"mana_bonus")) * mana_bonus)
 	spell_power = _gear_total(&"spell_power")
 	var weapon: ItemData = equipment.get(ItemData.Slot.WEAPON)
 	weapon_min = roundi(((weapon.min_damage if weapon else 2) + (level - 1)) * weapon_bonus)
@@ -710,22 +718,73 @@ func gain_reputation(faction: FactionData, amount: int) -> void:
 
 # --- Saving ---------------------------------------------------------------------
 
-## Everything about the character that should survive closing the game.
-## Items, abilities and quests are stored by id (see Database).
 ## A new look (character creation, a loaded save): the model is made again.
 func set_look(new_look: Dictionary) -> void:
 	look = CharacterModel.DEFAULT_LOOK.duplicate()
 	for key: String in look:  # (a save brings numbers back as floats)
 		if new_look.has(key):
 			look[key] = String(new_look[key]) if key == "gender" else int(new_look[key])
-	if model != null:
-		model.queue_free()
-		remove_child(model)
-	model = CharacterModel.create_hero(look, glow_color)
-	add_child(model)
+	_remake_model()
 	look_changed.emit()
 
 
+## A new hero's class (character creation): its abilities on the action bar, its weapon
+## in hand (instead of the old class's), no talents; the model is made again.
+func set_class(data: ClassData) -> void:
+	reset_talents()
+	var old_weapon: ItemData = hero_class.starting_weapon if hero_class else null
+	_take_class(data)
+	action_bar.fill(null)
+	for i in mini(abilities.size(), ACTION_SLOTS):
+		action_bar[i] = abilities[i]
+	if not equipment.has(ItemData.Slot.WEAPON) or equipment[ItemData.Slot.WEAPON] == old_weapon:
+		equipment[ItemData.Slot.WEAPON] = data.starting_weapon
+	_apply_level_stats()
+	health = max_health
+	mana = max_mana
+	_remake_model()
+	inventory_changed.emit()
+	talents_changed.emit()
+	look_changed.emit()
+
+
+## The hero's model as they look now, holding the weapon they wear (previews make one too).
+func make_model() -> CharacterModel:
+	return CharacterModel.create_hero(look, glow_color, _weapon_model())
+
+
+## What the hero holds: the worn weapon's model, or nothing (fists).
+func _weapon_model() -> String:
+	var weapon: ItemData = equipment.get(ItemData.Slot.WEAPON)
+	return weapon.weapon_model if weapon else ""
+
+
+## After the weapon changed (equipping, loading): the model is made again if it looks different.
+func _show_weapon() -> void:
+	if model != null and model.weapon_key != _weapon_model():
+		_remake_model()
+		look_changed.emit()
+
+
+## Takes on a class's abilities, talent trees and glow; talents, gear and the bar stay.
+func _take_class(data: ClassData) -> void:
+	hero_class = data
+	abilities = data.abilities.duplicate()
+	talent_trees = data.talent_trees.duplicate()
+	talents = data.talents.duplicate()
+	glow_color = data.glow_color
+
+
+func _remake_model() -> void:
+	if model != null:
+		model.queue_free()
+		remove_child(model)
+	model = make_model()
+	add_child(model)
+
+
+## Everything about the character that should survive closing the game.
+## Items, abilities and quests are stored by id (see Database).
 func to_save_data() -> Dictionary:
 	var bag_data := []
 	for i in BAG_SIZE:
@@ -753,7 +812,7 @@ func to_save_data() -> Dictionary:
 	# A dead character comes back at the camp, half healed.
 	var where := spawn_point if is_dead else global_position
 	return {
-		"version": 1, "name": unit_name, "look": look.duplicate(), "level": level, "xp": xp, "money": money,
+		"version": 1, "name": unit_name, "class": String(hero_class.id), "look": look.duplicate(), "level": level, "xp": xp, "money": money,
 		"health": maxi(health, max_health / 2) if is_dead else health, "mana": mana,
 		"position": [where.x, where.y, where.z], "yaw": rotation.y,
 		"bags": bag_data, "equipment": gear, "action_bar": bar, "talents": ranks, "reputation": standing,
@@ -766,8 +825,10 @@ func to_save_data() -> Dictionary:
 
 func load_save_data(data: Dictionary) -> void:
 	unit_name = String(data.get("name", unit_name))
-	if data.get("look") is Dictionary:
-		set_look(data["look"])
+	reset_talents()  # the old class's taught abilities go before its talent list does
+	var saved_class := Database.hero_class(StringName(data.get("class", "runeknight")))
+	_take_class(saved_class if saved_class else hero_class)
+	set_look(data["look"] if data.get("look") is Dictionary else look)
 	level = clampi(int(data.get("level", 1)), 1, Game.MAX_LEVEL)
 	xp = int(data.get("xp", 0))
 	money = int(data.get("money", 0))
@@ -783,6 +844,7 @@ func load_save_data(data: Dictionary) -> void:
 		var item := Database.item(StringName(gear[key]))
 		if item:
 			equipment[int(key)] = item
+	_show_weapon()
 	reset_talents()
 	var ranks: Dictionary = data.get("talents", {})
 	for talent in talents:

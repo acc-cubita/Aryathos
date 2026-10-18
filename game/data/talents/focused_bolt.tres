@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TalentData" format=3]
+
+[ext_resource type="Script" path="res://data/talent_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/abilities/aether_bolt.tres" id="2_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"focused_bolt"
+display_name = "Focused Bolt"
+description = "Increases the damage of Aether Bolt by {value}%."
+icon_color = Color(0.45, 0.4, 0.95, 1)
+icon_glyph = "FB"
+tree = 0
+tier = 1
+column = 0
+max_rank = 3
+effect = 0
+ability = ExtResource("2_ability")
+value_per_rank = 6.0

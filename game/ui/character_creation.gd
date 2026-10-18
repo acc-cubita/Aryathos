@@ -1,10 +1,10 @@
 class_name CharacterCreation
 extends Control
-## The character creation screen of a new game: race and class (an Arkanor Runeknight for
-## now; the Covenant's other races are shown as still to come), gender, hair, hair colour,
+## The character creation screen of a new game: race (Arkanor for now; the Covenant's other
+## races are shown as still to come), class (every ClassData), gender, hair, hair colour,
 ## face, eyes, skin, beard and a name, with the hero turning in a preview (drag to turn it,
 ## scroll to zoom; choosing a face or eyes moves in on the face). The game waits (paused)
-## until Create; then the hero takes the name and the look and is saved.
+## until Create; then the hero takes the class, the name and the look and is saved.
 
 signal created
 
@@ -15,7 +15,6 @@ const RACES := [
 	["Arkanite Mechanists", false, "Engineers who fuse their own bodies with crystal-powered machines."],
 	["Valenar", false, "Resilient humans: the political and martial backbone of the Covenant."],
 ]
-const CLASS_TEXT := "A rune-axe warrior who binds Aether into runes: the axe up close, shards and storm-light from afar, crystal to mend wounds."
 const NAMES := {
 	"male": ["Aldren", "Thaeron", "Vorian", "Eldric", "Haldor", "Corvan", "Ithran", "Maelor", "Torvald",
 			"Brannoc", "Kaelen", "Aric", "Soren", "Varek", "Orrin", "Hadrik"],
@@ -31,7 +30,11 @@ const FACE_DISTANCE := 1.0
 
 var look := CharacterModel.DEFAULT_LOOK.duplicate()
 
+var hero_class: ClassData
+
 var _player: Player
+var _class_buttons := {}
+var _class_text: Label
 var _pivot := Node3D.new()
 var _name := LineEdit.new()
 var _error := Hud.make_label("", 14, Color(1, 0.4, 0.35))
@@ -47,6 +50,7 @@ var _zoom_to := 0.0
 
 func _init(player: Player) -> void:
 	_player = player
+	hero_class = player.hero_class
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS  # it runs while the game waits
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -71,6 +75,8 @@ func create(hero_name: String) -> String:
 	if not RegEx.create_from_string("^[A-Za-z][A-Za-z']*$").search(clean):
 		return "Only letters (and ') in a name."
 	_player.unit_name = clean.substr(0, 1).to_upper() + clean.substr(1).to_lower()
+	if _player.hero_class != hero_class:
+		_player.set_class(hero_class)
 	_player.set_look(look)
 	Game.save_game()
 	visible = false
@@ -148,13 +154,19 @@ func _race_panel() -> Control:
 		box.add_child(button)
 	box.add_child(description)
 	box.add_child(Hud.make_label("Class", 16, Color.WHITE))
-	var runeknight := Button.new()
-	runeknight.text = "Runeknight"
-	runeknight.toggle_mode = true
-	runeknight.button_pressed = true
-	runeknight.focus_mode = Control.FOCUS_NONE
-	box.add_child(runeknight)
-	box.add_child(_wrapped(CLASS_TEXT))
+	for each in Database.hero_classes():
+		var button := Button.new()
+		button.text = each.display_name
+		button.toggle_mode = true
+		button.focus_mode = Control.FOCUS_NONE
+		button.pressed.connect(func() -> void:
+			hero_class = each
+			_zoom_to = 0.0
+			_refresh())
+		_class_buttons[each] = button
+		box.add_child(button)
+	_class_text = _wrapped("")
+	box.add_child(_class_text)
 	return frame
 
 
@@ -304,7 +316,10 @@ func _refresh() -> void:
 		(entry[0] as Label).text = options[look[key]][0]
 	for old in _pivot.get_children():
 		old.queue_free()
-	var hero := CharacterModel.create_hero(look, _player.glow_color)
+	for each: ClassData in _class_buttons:
+		(_class_buttons[each] as Button).set_pressed_no_signal(each == hero_class)
+	_class_text.text = hero_class.description
+	var hero := CharacterModel.create_hero(look, hero_class.glow_color, hero_class.starting_weapon.weapon_model)
 	_pivot.add_child(hero)
 	_skeleton = hero.find_children("*", "Skeleton3D", true, false)[0]
 
