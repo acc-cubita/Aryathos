@@ -73,6 +73,8 @@ func _run() -> void:
 			leap.pressed = true
 			Input.parse_input_event(leap)
 		var sways := Vector2(INF, -INF)
+		var bends := Vector2(INF, -INF)
+		var drops := Vector2(INF, -INF)
 		var slides := PackedFloat32Array()
 		for frame in FRAMES:
 			await _follow(player, 1.0 / 12.0, slides)
@@ -80,6 +82,14 @@ func _run() -> void:
 			get_viewport().get_texture().get_image().save_png(folder.path_join("%s_%d.png" % [gait, frame]))
 			var tilt := rad_to_deg(player.model._upright.swaying)
 			sways = Vector2(minf(sways.x, tilt), maxf(sways.y, tilt))
+			var skeleton: Skeleton3D = player.model._skeleton
+			for side: String in ["Left", "Right"]:
+				var upper := skeleton.get_bone_global_pose(skeleton.find_bone(side + "UpperArm")).origin
+				var elbow := skeleton.get_bone_global_pose(skeleton.find_bone(side + "LowerArm")).origin
+				var wrist := skeleton.get_bone_global_pose(skeleton.find_bone(side + "Hand")).origin
+				var angle := rad_to_deg((elbow - upper).angle_to(wrist - elbow))
+				bends = Vector2(minf(bends.x, angle), maxf(bends.y, angle))
+				drops = Vector2(minf(drops.x, upper.y - wrist.y), maxf(drops.y, upper.y - wrist.y))
 		for action: String in GAITS[gait]:
 			Input.action_release(action)
 		if player.has_method("set_walking"):
@@ -87,8 +97,8 @@ func _run() -> void:
 		var slide := 0.0
 		for s in slides:
 			slide += s
-		print("gait %s: speed %.1f m/s, torso sway %.1f..%.1f deg, state %s" % [gait,
-				Vector2(player.velocity.x, player.velocity.z).length(), sways.x, sways.y, player.model._state])
+		print("gait %s: speed %.1f m/s, torso sway %.1f..%.1f deg, elbows %.0f..%.0f deg, hands %.2f..%.2f m below shoulders, state %s" % [gait,
+				Vector2(player.velocity.x, player.velocity.z).length(), sways.x, sways.y, bends.x, bends.y, drops.x, drops.y, player.model._state])
 	get_tree().quit()
 
 
@@ -133,7 +143,7 @@ func _clip_phases() -> void:
 	var player: AnimationPlayer = hero.find_children("*", "AnimationPlayer", true, false)[0]
 	var skeleton: Skeleton3D = hero._skeleton
 	var feet := [skeleton.find_bone("LeftFoot"), skeleton.find_bone("RightFoot")]
-	for clip: String in ["ual1/Walk", "ual1/Walk_Formal", "ual1/Jog_Fwd", "ual1/Sprint"]:
+	for clip: String in ["ual1/Idle", "ual1/Walk", "ual1/Walk_Formal", "ual1/Jog_Fwd", "ual1/Sprint", "ual1/Punch_Jab", "ual1/Sword_Idle"]:
 		var length := player.get_animation(clip).length
 		player.play(clip)
 		var samples := 60
@@ -173,6 +183,31 @@ func _clip_phases() -> void:
 			torso_roll = Vector2(minf(torso_roll.x, t), maxf(torso_roll.y, t))
 			head_roll = Vector2(minf(head_roll.x, h), maxf(head_roll.y, h))
 		print("    sway: torso %.1f..%.1f deg, head %.1f..%.1f deg" % [torso_roll.x, torso_roll.y, head_roll.x, head_roll.y])
+		# the arms: how bent the elbows get, and how high the hands come (m below the shoulder)
+		var bend := Vector2(INF, -INF)
+		var hand_drop := Vector2(INF, -INF)
+		for i in samples:
+			player.seek(length * i / samples, true)
+			for side: String in ["Left", "Right"]:
+				var upper := skeleton.get_bone_global_pose(skeleton.find_bone(side + "UpperArm")).origin
+				var elbow := skeleton.get_bone_global_pose(skeleton.find_bone(side + "LowerArm")).origin
+				var wrist := skeleton.get_bone_global_pose(skeleton.find_bone(side + "Hand")).origin
+				var angle := rad_to_deg((elbow - upper).angle_to(wrist - elbow))
+				bend = Vector2(minf(bend.x, angle), maxf(bend.y, angle))
+				var drop := upper.y - wrist.y
+				hand_drop = Vector2(minf(hand_drop.x, drop), maxf(hand_drop.y, drop))
+		print("    arms: elbows bent %.0f..%.0f deg, hands %.2f..%.2f m below the shoulders" % [bend.x, bend.y, hand_drop.x, hand_drop.y])
+		# the pelvis: side to side tilt (roll) and twist (yaw) (deg)
+		var roll := Vector2(INF, -INF)
+		var twist := Vector2(INF, -INF)
+		for i in samples:
+			player.seek(length * i / samples, true)
+			var side_axis := skeleton.get_bone_global_pose(hips).basis * Vector3.RIGHT
+			var r := rad_to_deg(atan2(side_axis.y, Vector2(side_axis.x, side_axis.z).length()))
+			var t := rad_to_deg(atan2(side_axis.z, side_axis.x))
+			roll = Vector2(minf(roll.x, r), maxf(roll.y, r))
+			twist = Vector2(minf(twist.x, t), maxf(twist.y, t))
+		print("    pelvis: tilt %.1f..%.1f deg, twist %.1f..%.1f deg" % [roll.x, roll.y, twist.x, twist.y])
 
 
 func _wait(seconds: float) -> void:

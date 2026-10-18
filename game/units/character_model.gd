@@ -81,6 +81,15 @@ const LANDING := 0.45
 ## BACK_CYCLE-second step cycle (both start with the left foot ahead).
 const BACK_JOG := 0.3
 const BACK_CYCLE := 1.15
+## A warrior runs with strong, low arms: the library's jog holds the elbows at 90 degrees
+## with the hands up at the chest. ARM_CALM of the walk's arms (stretched onto the jog's
+## step cycle, so they swing with the same feet) is mixed into the jog's.
+const ARM_CALM := 0.55
+const ARM_BONES := ["Shoulder", "UpperArm", "LowerArm", "Hand"]
+## Hands closed into loose fists (FIST of the boxing clip's fingers), not hanging open;
+## they open to cast.
+const FIST_CLIP := "ual1/Punch_Jab"
+const FIST := 0.75
 ## A hero puts the weapon away on the back this long (s) after the fight, like WoW.
 const SHEATHE_AFTER := 4.0
 const PAINTED := preload("res://units/shaders/character.gdshader")
@@ -372,6 +381,9 @@ func _build_tree(scene: Node3D, skeleton: Skeleton3D) -> void:
 		if anim_name == "back_loop":
 			states.add_node(anim_name, _back_gait())
 			continue
+		if anim_name == "jog_loop":
+			states.add_node(anim_name, _jog_gait(player))
+			continue
 		var clip := AnimationNodeAnimation.new()
 		clip.animation = clips[anim_name]
 		states.add_node(anim_name, clip)
@@ -395,6 +407,13 @@ func _build_tree(scene: Node3D, skeleton: Skeleton3D) -> void:
 	blend.add_node("pace", pace)
 	blend.connect_node("pace", 0, "states")
 	var last := "pace"
+	var fists := _overlay(player, FIST_CLIP, func(bone: String) -> bool:
+		return (bone.begins_with("Left") or bone.begins_with("Right")) and FINGERS.any(func(f: String) -> bool: return f in bone))
+	blend.add_node("fists", fists[0])
+	blend.add_node("fists_clip", fists[1])
+	blend.connect_node("fists", 0, last)
+	blend.connect_node("fists", 1, "fists_clip")
+	last = "fists"
 	if _armed:
 		# the weapon hand stays closed round the haft whatever the body does
 		var fist := AnimationNodeBlend2.new()
@@ -462,22 +481,59 @@ func _build_tree(scene: Node3D, skeleton: Skeleton3D) -> void:
 		_tree.set("parameters/fist/blend_amount", 1.0)
 		_tree.set("parameters/ready/blend_amount", 1.0)
 	_tree.set("parameters/states/back_loop/mix/blend_amount", BACK_JOG)
+	_tree.set("parameters/states/jog_loop/arms/blend_amount", ARM_CALM)
+	_tree.set("parameters/fists/blend_amount", FIST)
 
 
 ## The weapon arm (right shoulder to fingers) in `clip`'s pose over whatever else plays:
 ## [the Blend2 that lays it on, the clip's node].
 func _arm_overlay(player: AnimationPlayer, clip: String) -> Array:
+	return _overlay(player, clip, func(bone: String) -> bool:
+		return bone.begins_with("Right") and not ["Leg", "Foot", "Toes"].any(func(w: String) -> bool: return w in bone))
+
+
+## The bones `wanted` picks in `clip`'s pose over whatever else plays: [the Blend2 that
+## lays them on (input 1), the clip's node].
+func _overlay(player: AnimationPlayer, clip: String, wanted: Callable) -> Array:
 	var overlay := AnimationNodeBlend2.new()
 	overlay.filter_enabled = true
 	var anim := player.get_animation(clip)
 	anim.loop_mode = Animation.LOOP_LINEAR
 	for track in anim.get_track_count():
-		var bone := String(anim.track_get_path(track).get_concatenated_subnames())
-		if bone.begins_with("Right") and not ["Leg", "Foot", "Toes"].any(func(w: String) -> bool: return w in bone):
+		if wanted.call(String(anim.track_get_path(track).get_concatenated_subnames())):
 			overlay.set_filter_path(anim.track_get_path(track), true)
 	var node := AnimationNodeAnimation.new()
 	node.animation = clip
 	return [overlay, node]
+
+
+## The run: the jog's legs and body, its arms calmed by the walk's (ARM_CALM, set once
+## the tree runs), the walk stretched onto the jog's step cycle (both start with the left
+## foot ahead) so the arms swing with the same feet.
+func _jog_gait(player: AnimationPlayer) -> AnimationNodeBlendTree:
+	var gait := AnimationNodeBlendTree.new()
+	var jog := AnimationNodeAnimation.new()
+	jog.animation = CLIPS.jog_loop
+	gait.add_node("jog", jog)
+	var walk := AnimationNodeAnimation.new()
+	walk.animation = CLIPS.walk_loop
+	walk.use_custom_timeline = true
+	walk.timeline_length = player.get_animation(CLIPS.jog_loop).length
+	walk.stretch_time_scale = true
+	walk.loop_mode = Animation.LOOP_LINEAR
+	gait.add_node("walk", walk)
+	var arms := AnimationNodeBlend2.new()
+	arms.filter_enabled = true
+	var anim := player.get_animation(CLIPS.walk_loop)
+	for track in anim.get_track_count():
+		var bone := String(anim.track_get_path(track).get_concatenated_subnames())
+		if (bone.begins_with("Left") or bone.begins_with("Right")) and ARM_BONES.any(func(b: String) -> bool: return bone.ends_with(b)):
+			arms.set_filter_path(anim.track_get_path(track), true)
+	gait.add_node("arms", arms)
+	gait.connect_node("arms", 0, "jog")
+	gait.connect_node("arms", 1, "walk")
+	gait.connect_node("output", 0, "arms")
+	return gait
 
 
 ## Backing off: the walk and the jog, both backwards and stretched onto one step cycle so
@@ -641,6 +697,8 @@ func _go(state: String) -> void:
 		_states().travel(state)
 		if (_tree.tree_root as AnimationNodeBlendTree).has_node("carry"):
 			create_tween().tween_property(_tree, "parameters/carry/blend_amount", 1.0 if state == "cast_loop" else 0.0, 0.25)
+		# the hands open to channel a spell
+		create_tween().tween_property(_tree, "parameters/fists/blend_amount", 0.0 if state == "cast_loop" else FIST, 0.25)
 
 
 func _states() -> AnimationNodeStateMachinePlayback:
