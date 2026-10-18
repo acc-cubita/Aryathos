@@ -16,6 +16,12 @@ const MAX_SWAY := deg_to_rad(4.0)
 ## How far the shoulders may turn back and forth (radians): the jog swings them 40
 ## degrees each way, the two halves of the body see-sawing.
 const MAX_TWIST := deg_to_rad(12.0)
+## On the move the torso holds this forward lean (radians, hips to neck; standing it is
+## 15-20): the jog rocks it 17-27 degrees at every step.
+const LEAN_BAND := Vector2(deg_to_rad(16.0), deg_to_rad(21.0))
+## And the pelvis stays level and square (radians): no rolling of the hips.
+const PELVIS_TILT := deg_to_rad(1.0)
+const PELVIS_TURN := deg_to_rad(3.0)
 ## Share of the straightening done by each bone, from the waist up.
 const BONES := {"Spine": 0.5, "Chest": 0.5}
 
@@ -31,6 +37,7 @@ var _hips := -1
 var _neck := -1
 var _head := -1
 var _shoulders := [-1, -1]  # left, right upper arms
+var _hips_side := Vector3.RIGHT  # the rig's side axis in the hips bone's frame
 var _shares := {}  # bone index -> share
 
 
@@ -42,6 +49,7 @@ func _ready() -> void:
 	_neck = skeleton.find_bone("Neck")
 	_head = skeleton.find_bone("Head")
 	_shoulders = [skeleton.find_bone("LeftUpperArm"), skeleton.find_bone("RightUpperArm")]
+	_hips_side = (skeleton.get_bone_global_rest(_hips).basis.inverse() * Vector3.RIGHT).normalized()
 	for bone_name: String in BONES:
 		_shares[skeleton.find_bone(bone_name)] = BONES[bone_name]
 
@@ -81,9 +89,13 @@ func _process_modification() -> void:
 		var now := lean()
 		_straighten(skeleton, lean, lerpf(now, minf(now, MAX_LEAN), weight), Vector3.RIGHT, -1.0)
 	if sway_weight > 0.0:
-		# the twist first: turning a tilted torso about the vertical changes its tilt
+		# pelvis, then the twist (turning about the vertical swings a leaning torso's lean),
+		# then the lean, then the sway
+		_steady_pelvis(skeleton)
 		var turned := twist()
 		_straighten(skeleton, twist, lerpf(turned, clampf(turned, -MAX_TWIST, MAX_TWIST), sway_weight), Vector3.UP, 1.0)
+		var leaning_now := lean()
+		_straighten(skeleton, lean, lerpf(leaning_now, clampf(leaning_now, LEAN_BAND.x, LEAN_BAND.y), sway_weight), Vector3.RIGHT, -1.0)
 		var now := sway()
 		_straighten(skeleton, sway, lerpf(now, clampf(now, -MAX_SWAY, MAX_SWAY), sway_weight), Vector3.BACK, 1.0)
 		# and the head level, whatever the shoulders do
@@ -96,17 +108,31 @@ func _process_modification() -> void:
 	twisting = twist()
 
 
+## The hips level and square: their tilt and turn (of the rig's side axis) held within
+## PELVIS_TILT and PELVIS_TURN, turning about the hips' own joint.
+func _steady_pelvis(skeleton: Skeleton3D) -> void:
+	var hips := skeleton.get_bone_global_pose(_hips)
+	var side := hips.basis * _hips_side
+	var tilt := atan2(side.y, Vector2(side.x, side.z).length())
+	var turn := atan2(side.z, side.x)
+	# the side axis tips up toward +Y by a turn about +Z (the rig's ahead); swings toward
+	# +Z by a turn about -Y
+	var fix := Basis(Vector3.BACK, -(tilt - clampf(tilt, -PELVIS_TILT, PELVIS_TILT)) * sway_weight) 			* Basis(Vector3.UP, (turn - clampf(turn, -PELVIS_TURN, PELVIS_TURN)) * sway_weight)
+	hips.basis = fix * hips.basis
+	skeleton.set_bone_global_pose(_hips, hips)
+
+
 ## Turns the spine and chest about `axis` (through their own joints) until measure()
 ## comes to `target`; `sense` says which way round undoes a positive measure. The bones
 ## turn above the hips, so the hips-to-neck line straightens less than they turn: a few
-## passes close the gap.
+## passes (each turning a third more than the gap) close it.
 func _straighten(skeleton: Skeleton3D, measure: Callable, target: float, axis: Vector3, sense: float) -> void:
-	for attempt in 3:
+	for attempt in 6:
 		var excess: float = measure.call() - target
 		if absf(excess) < deg_to_rad(0.5):
 			break
 		for bone: int in _shares:
 			var pose := skeleton.get_bone_global_pose(bone)
-			var straightened := Basis(axis, sense * excess * _shares[bone]) * pose.basis
+			var straightened := Basis(axis, sense * excess * 1.3 * _shares[bone]) * pose.basis
 			var parent := skeleton.get_bone_global_pose(skeleton.get_bone_parent(bone))
 			skeleton.set_bone_pose_rotation(bone, (parent.basis.inverse() * straightened).get_rotation_quaternion())

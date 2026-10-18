@@ -15,7 +15,10 @@ const FOLLOW := 12.0
 ## Share of the hips' rise and fall the run keeps (settle_weight fades this in while the
 ## character moves): the jog bounces them 26 cm, a leap at every step. The feet keep their
 ## heights, the legs folding or reaching to the calmer hips.
-const BOB_KEEP := 0.4
+const BOB_KEEP := 0.15
+## While moving, the hips follow the ground under the lower foot this slowly (1/s): on a
+## slope the lower foot changes at every step, and each foot is set on the ground anyway.
+const MOVING_DROP_FOLLOW := 4.0
 
 ## The unit standing on the ground (its origin is at its feet); null turns planting off.
 var unit: Unit
@@ -29,6 +32,7 @@ var _drop := 0.0
 var _hips_mean := NAN  # the hips' height, averaged over the steps
 ## The hips' height as last posed (skeleton space, after settling).
 var settled_height := 0.0
+var raw_height := 0.0  # (as the clip had it)
 
 
 func _ready() -> void:
@@ -65,13 +69,16 @@ func _process_modification_with_delta(delta: float) -> void:
 		_offsets[side] = lerpf(_offsets[side], want, follow)
 		_normals[side] = (_normals[side] as Vector3).lerp(normal, follow).normalized()
 	# the hips come down as far as the lower foot needs; the higher leg folds
-	_drop = lerpf(_drop, minf(minf(_offsets[0], _offsets[1]), 0.0), follow)
+	var drop_follow := 1.0 - exp(-lerpf(FOLLOW, MOVING_DROP_FOLLOW, settle_weight) * delta)
+	_drop = lerpf(_drop, minf(minf(_offsets[0], _offsets[1]), 0.0), drop_follow)
 	var hips := skeleton.get_bone_global_pose(_hips)
 	var height := hips.origin.dot(up)
-	_hips_mean = height if is_nan(_hips_mean) else lerpf(_hips_mean, height, 1.0 - exp(-2.0 * delta))
+	# slow enough not to ripple with the steps (about three a second)
+	_hips_mean = height if is_nan(_hips_mean) else lerpf(_hips_mean, height, 1.0 - exp(-0.7 * delta))
 	var settle := (_hips_mean - height) * (1.0 - BOB_KEEP) * settle_weight
 	var lift := _drop + settle
 	settled_height = height + lift
+	raw_height = height
 	if absf(lift) + absf(_offsets[0]) + absf(_offsets[1]) < 0.002 and _normals[0].y > 0.999 and _normals[1].y > 0.999:
 		return
 	hips.origin += up * lift

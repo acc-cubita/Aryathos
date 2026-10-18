@@ -24,6 +24,30 @@ var _camera := Camera3D.new()
 var _gait := ""
 
 
+## Reads the head as finally posed (last of the skeleton's modifiers): its nod (pitch),
+## turn (yaw), tilt (roll) in the rig's frame (deg) and its height, every frame.
+class HeadProbe extends SkeletonModifier3D:
+	var samples: Array[Vector4] = []
+	## and the body: torso lean (deg), pelvis tilt and turn (deg)
+	var body: Array[Vector3] = []
+
+	func _process_modification() -> void:
+		var skeleton := get_skeleton()
+		var bone := skeleton.find_bone("Head")
+		var head := skeleton.get_bone_global_pose(bone)
+		var rest := skeleton.get_bone_global_rest(bone).basis.inverse()
+		var ahead := head.basis * (rest * Vector3.BACK)  # the face (the rig faces +Z)
+		var up := head.basis * (rest * Vector3.UP)
+		samples.append(Vector4(rad_to_deg(atan2(up.z, up.y)), rad_to_deg(atan2(ahead.x, ahead.z)),
+				rad_to_deg(atan2(up.x, up.y)), head.origin.y))
+		var hips_bone := skeleton.find_bone("Hips")
+		var hips := skeleton.get_bone_global_pose(hips_bone)
+		var torso := skeleton.get_bone_global_pose(skeleton.find_bone("Neck")).origin - hips.origin
+		var side := hips.basis * (skeleton.get_bone_global_rest(hips_bone).basis.inverse() * Vector3.RIGHT)
+		body.append(Vector3(rad_to_deg(atan2(torso.z, torso.y)), rad_to_deg(atan2(side.y, Vector2(side.x, side.z).length())),
+				rad_to_deg(atan2(side.z, side.x))))
+
+
 func _ready() -> void:
 	_run.call_deferred()
 
@@ -72,6 +96,8 @@ func _run() -> void:
 			leap.action = "jump"
 			leap.pressed = true
 			Input.parse_input_event(leap)
+		var probe := HeadProbe.new()
+		player.model._skeleton.add_child(probe)
 		var sways := Vector2(INF, -INF)
 		var bends := Vector2(INF, -INF)
 		var drops := Vector2(INF, -INF)
@@ -79,6 +105,9 @@ func _run() -> void:
 		var pelvis := Vector2(INF, -INF)
 		var spread := 0.0
 		var bob := Vector2(INF, -INF)
+		var raw_bob := Vector2(INF, -INF)
+		var inner_lean := Vector2(INF, -INF)
+		var drops_range := Vector2(INF, -INF)
 		var slides := PackedFloat32Array()
 		for frame in FRAMES:
 			await _follow(player, 1.0 / 12.0, slides)
@@ -107,6 +136,12 @@ func _run() -> void:
 			spread = maxf(spread, absf(feet.z))
 			var hip_y: float = player.model._planter.settled_height
 			bob = Vector2(minf(bob.x, hip_y), maxf(bob.y, hip_y))
+			var raw_y: float = player.model._planter.raw_height
+			var ground_drop: float = player.model._planter._drop
+			drops_range = Vector2(minf(drops_range.x, ground_drop), maxf(drops_range.y, ground_drop))
+			var inner := rad_to_deg(player.model._upright.leaning)
+			inner_lean = Vector2(minf(inner_lean.x, inner), maxf(inner_lean.y, inner))
+			raw_bob = Vector2(minf(raw_bob.x, raw_y), maxf(raw_bob.y, raw_y))
 		for action: String in GAITS[gait]:
 			Input.action_release(action)
 		if player.has_method("set_walking"):
@@ -116,8 +151,31 @@ func _run() -> void:
 			slide += s
 		print("gait %s: speed %.1f m/s, torso sway %.1f..%.1f deg, elbows %.0f..%.0f deg, hands %.2f..%.2f m below shoulders, state %s" % [gait,
 				Vector2(player.velocity.x, player.velocity.z).length(), sways.x, sways.y, bends.x, bends.y, drops.x, drops.y, player.model._state])
-		print("    body: shoulders turn %.0f..%.0f deg, hips %.0f..%.0f deg, feet up to %.2f m apart, hips bob %.2f m" % [
-				shoulders.x, shoulders.y, pelvis.x, pelvis.y, spread, bob.y - bob.x])
+		print("    body: shoulders turn %.0f..%.0f deg, hips %.0f..%.0f deg, feet up to %.2f m apart, hips bob %.2f m (clip %.2f, %.2f..%.2f)" % [
+				shoulders.x, shoulders.y, pelvis.x, pelvis.y, spread, bob.y - bob.x, raw_bob.y - raw_bob.x, raw_bob.x, raw_bob.y])
+		# the head: how far each angle ranges, and how jerky it is (mean change per frame)
+		var lo := Vector4(INF, INF, INF, INF)
+		var hi := Vector4(-INF, -INF, -INF, -INF)
+		var jerk := Vector4.ZERO
+		for i in probe.samples.size():
+			lo = lo.min(probe.samples[i])
+			hi = hi.max(probe.samples[i])
+			if i > 0:
+				jerk += (probe.samples[i] - probe.samples[i - 1]).abs()
+		jerk /= maxf(probe.samples.size() - 1, 1)
+		print("    head: nod %.1f..%.1f, turn %.1f..%.1f, tilt %.1f..%.1f deg, height %.3f m; per frame %.2f / %.2f / %.2f deg, %.4f m" % [
+				lo.x, hi.x, lo.y, hi.y, lo.z, hi.z, hi.w - lo.w, jerk.x, jerk.y, jerk.z, jerk.w])
+		var b_lo := Vector3(INF, INF, INF)
+		var b_hi := Vector3(-INF, -INF, -INF)
+		for v: Vector3 in probe.body:
+			b_lo = b_lo.min(v)
+			b_hi = b_hi.max(v)
+		print("    posed body: torso lean %.1f..%.1f, pelvis tilt %.1f..%.1f, pelvis turn %.1f..%.1f deg" % [
+				b_lo.x, b_hi.x, b_lo.y, b_hi.y, b_lo.z, b_hi.z])
+		var sk: Skeleton3D = player.model._skeleton
+		var rest_torso := sk.get_bone_global_rest(sk.find_bone("Neck")).origin - sk.get_bone_global_rest(sk.find_bone("Hips")).origin
+		print("    (rest lean %.1f deg; lean as SpineUpright left it %.1f..%.1f; ground drop %.3f..%.3f m)" % [rad_to_deg(atan2(rest_torso.z, rest_torso.y)), inner_lean.x, inner_lean.y, drops_range.x, drops_range.y])
+		probe.queue_free()
 	get_tree().quit()
 
 

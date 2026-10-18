@@ -120,7 +120,7 @@ const LOOPS := ["idle_loop", "walk_loop", "jog_loop", "run_loop", "back_loop", "
 const ONCE := ["jump_start", "land"]
 ## Neck and head turn toward what the character fights (share of the turn each takes);
 ## past these angles (deg: sideways, up/down) they stop turning.
-const LOOK := {"Neck": 0.4, "Head": 0.65}
+const LOOK := {"Neck": 0.5, "Head": 0.9}
 const LOOK_LIMITS := Vector2(70.0, 30.0)
 ## Most a runner leans into a turn (rad), and how much per (rad/s of turn x m/s of speed):
 ## a touch only (WoW's runners hardly lean).
@@ -153,6 +153,7 @@ var _stride := 1.0
 var _look_target := Marker3D.new()
 var _planter: FootPlanter
 var _upright: SpineUpright
+var _steady: HeadSteady
 var _weapon: Node3D
 var _in_hand: Transform3D  # the weapon's place in the fist
 var _on_back: Transform3D  # and across the back
@@ -244,6 +245,9 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_
 		aim.influence = LOOK[bone_name]
 		skeleton.add_child(aim)
 		aim.target_node = aim.get_path_to(model._look_target)
+	model._steady = HeadSteady.new()  # after the look-at: the head calm and level
+	model._steady.name = "HeadSteady"
+	skeleton.add_child(model._steady)
 	model._skeleton = skeleton
 	model._steps = Footsteps.new(skeleton, ["LeftFoot", "RightFoot"])
 	model._planter = FootPlanter.new()
@@ -606,7 +610,9 @@ func _process(delta: float) -> void:
 	if _unit == null or _unit.is_dead:
 		_upright.weight = 0.0
 		_upright.sway_weight = 0.0
+		_steady.weight = 0.0 if _unit else 1.0
 		return
+	_steady.weight = 1.0
 	_steps.update(_skeleton, _unit, delta)
 	var ground := Vector2(_unit.velocity.x, _unit.velocity.z)
 	var speed := ground.length()
@@ -616,7 +622,8 @@ func _process(delta: float) -> void:
 	_upright.weight = move_toward(_upright.weight, clampf((speed - RUN_FROM) / (SPRINT_FROM - RUN_FROM), 0.0, 1.0), delta * 4.0)
 	_turn_to_motion(delta, speed)
 	# a warrior's bearing on the move: no rocking from side to side
-	_upright.sway_weight = move_toward(_upright.sway_weight, 1.0 if speed > 0.3 and _unit.is_on_floor() else 0.0, delta * 4.0)
+	# (not lost to a bump in the road: the body leaves the floor for a frame now and then)
+	_upright.sway_weight = move_toward(_upright.sway_weight, 1.0 if speed > 0.3 and _air_time < 0.2 else 0.0, delta * 4.0)
 	_planter.settle_weight = _upright.sway_weight
 	if _sheathes:
 		# out while auto-attacking and as long as the fight goes on; away a while after
