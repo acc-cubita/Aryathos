@@ -2,14 +2,14 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://gw7m4i01riry"
+uid="uid://dopvmcr7kgvjs"
 path.bptc="res://.godot/imported/arkanor_male_mh_male_elvs_scruffy_beard1.png-676f8b1d45efe9857352f208ad1176cb.bptc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "bb970cd56f2628ab456f5de21b62d86e"
+"md5": "bf5b209bc7b48a11973227be7c7301d2"
 }
 
 [deps]

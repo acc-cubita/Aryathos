@@ -2,14 +2,14 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://s45g6fvg2k8n"
+uid="uid://cv5o4a7k7dgjk"
 path.bptc="res://.godot/imported/arkanor_male_mh_male_eyebrow010.png-614684afe49709467c5b71fd2b705ddb.bptc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "d3f3456726ebe8839b0f8cb2ec7c034c"
+"md5": "f0208f74e9bca9b5173e2b99f06d526c"
 }
 
 [deps]

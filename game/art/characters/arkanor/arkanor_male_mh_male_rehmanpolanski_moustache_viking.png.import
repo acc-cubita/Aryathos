@@ -2,14 +2,14 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://qjaf2p7buy2v"
+uid="uid://1rwr5txbpor0"
 path.bptc="res://.godot/imported/arkanor_male_mh_male_rehmanpolanski_moustache_viking.png-bbb95de789283fc828ff5fd2c739c266.bptc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "5382ca36fc5a02a63e6bbcf5b487c0ea"
+"md5": "6cd6394644f3ee714f5b5f2ebdf87096"
 }
 
 [deps]

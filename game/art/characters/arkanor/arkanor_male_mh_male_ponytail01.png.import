@@ -2,14 +2,14 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dayjhj7xm6cxv"
+uid="uid://bv2qse6ha1xcr"
 path.bptc="res://.godot/imported/arkanor_male_mh_male_ponytail01.png-c38a5fe517e914418984d8e836d3bd6b.bptc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "afbd58a91f7c928eb6c6ddb26d9aa5de"
+"md5": "276d22acb803e9e2417292191f26b9a7"
 }
 
 [deps]

@@ -2,14 +2,14 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ckcr0m5kkw6rx"
+uid="uid://b1axo5rxhvgib"
 path.bptc="res://.godot/imported/arkanor_female_mh_female_elvs_braid_bun.png-810ffb4fa9f9bc016d7025e74ea0d989.bptc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "3f38f978da617c6e559b8f060e964d36"
+"md5": "886a0ea4402c065cf864fb4a4c1499e6"
 }
 
 [deps]

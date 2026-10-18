@@ -2,14 +2,14 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dtxjxfoh457uf"
+uid="uid://dlgmi2tugy5fa"
 path.bptc="res://.godot/imported/arkanor_female_normalsbuns.png-73859c98cb8a3f5b8c8e51b0b0f2cf74.bptc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "a503d0fb33f23b28886470d9df171080"
+"md5": "f93c8bd9fb3743f643395cd487a831a6"
 }
 
 [deps]

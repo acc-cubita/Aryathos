@@ -2,14 +2,14 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dq63g00hk0t8y"
+uid="uid://6fevmgdqk0tl"
 path.bptc="res://.godot/imported/arkanor_female_mh_female_eyebrow001.png-556958373392396863d60aa5a90f5060.bptc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "bc15a06226e994b8d738354c0d4acd35"
+"md5": "062a282180878e833321bf8d8172e6b4"
 }
 
 [deps]
