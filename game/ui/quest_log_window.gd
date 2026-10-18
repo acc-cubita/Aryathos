@@ -73,11 +73,11 @@ func _show_selected() -> void:
 	var quest := _selected
 	_quest_title.text = quest.title
 	_body.text = quest.offer_text.replace("{name}", _player.unit_name)
-	_objective.text = "- %s: %d/%d" % [quest.objective, _player.quest_log.progress(quest), quest.required]
+	_objective.text = "- " + quest.objective_line(_player.quest_log.progress(quest))
 	_reward.text = "Reward: %d experience%s" % [quest.xp_reward, "  +  [%s]" % quest.reward_item.display_name if quest.reward_item else ""]
 
 
 func _process(_delta: float) -> void:
 	# Progress changes while the log is open (kills), so keep the counter fresh.
 	if visible and _selected:
-		_objective.text = "- %s: %d/%d" % [_selected.objective, _player.quest_log.progress(_selected), _selected.required]
+		_objective.text = "- " + _selected.objective_line(_player.quest_log.progress(_selected))

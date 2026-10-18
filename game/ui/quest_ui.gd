@@ -54,13 +54,16 @@ func open(npc: Npc) -> void:
 			return
 	for quest in npc.quests:
 		if quest_log.state(quest) == QuestLog.State.AVAILABLE:
-			_show(quest.title, quest.offer_text, "Objective: %s  x%d\n%s" % [quest.objective, quest.required, _reward_text(quest)], [
+			_show(quest.title, quest.offer_text, "Objective: %s\n%s" % [quest.objective if quest.required <= 0 else "%s  x%d" % [quest.objective, quest.required], _reward_text(quest)], [
 				["Accept", func() -> void: quest_log.accept(quest, npc.npc_id); close()],
 				["Decline", close],
 			])
 			return
 	for quest in turn_ins:
-		_show(quest.title, quest.progress_text, "%s: %d/%d" % [quest.objective, quest_log.progress(quest), quest.required], [["Goodbye", close]])
+		var buttons := [["Goodbye", close]]
+		if not npc.teaches.is_empty():
+			buttons.push_front(["Train", func() -> void: _show_trainer(npc)])
+		_show(quest.title, quest.progress_text, quest.objective_line(quest_log.progress(quest)), buttons)
 		return
 	if not npc.teaches.is_empty():
 		_show_trainer(npc)
@@ -126,5 +129,5 @@ func _refresh_tracker() -> void:
 		var count: int = entry["count"]
 		var done := count >= quest.required
 		_tracker.add_child(Hud.make_label(quest.title, 15, Hud.GOLD))
-		var line := "  - %s: %d/%d%s" % [quest.objective, count, quest.required, "  (Complete)" if done else ""]
+		var line := "  - %s%s" % [quest.objective_line(count), "  (Complete)" if done and quest.required > 0 else ""]
 		_tracker.add_child(Hud.make_label(line, 13, Color(0.4, 1.0, 0.45) if done else Color(0.92, 0.92, 0.92)))

@@ -1,7 +1,8 @@
 class_name QuestLog
 extends RefCounted
 ## The player's quests: which are active, their progress, and which are done.
-## Listens for kills to advance objectives (quest items drop straight into the bags).
+## Listens for kills, discoveries, gathering and crafting to advance objectives (quest
+## items drop straight into the bags); quest objects report their use (use_object).
 
 signal changed
 signal quest_completed(quest: QuestData)
@@ -20,6 +21,9 @@ var _player: Player
 func _init(player: Player) -> void:
 	_player = player
 	Game.unit_killed.connect(_on_unit_killed)
+	player.place_discovered.connect(_on_place_discovered)
+	player.gathered.connect(func(item: ItemData, count: int) -> void: _on_item(QuestData.Kind.GATHER, item, count))
+	player.crafted.connect(func(item: ItemData, count: int) -> void: _on_item(QuestData.Kind.CRAFT, item, count))
 
 
 func state(quest: QuestData) -> State:
@@ -52,7 +56,11 @@ func turn_ins_for(npc_id: StringName) -> Array[QuestData]:
 func accept(quest: QuestData, giver: StringName) -> void:
 	if state(quest) != State.AVAILABLE:
 		return
-	active.append({"quest": quest, "giver": giver, "count": 0})
+	var count := 0
+	if quest.kind == QuestData.Kind.EXPLORE:
+		# places found before the quest count too
+		count = quest.places.size() - Array(quest.places).filter(func(p: String) -> bool: return not _player.discovered.has(p)).size()
+	active.append({"quest": quest, "giver": giver, "count": mini(count, quest.required)})
 	Game.chat("Quest accepted: %s" % quest.title, Game.CHAT_QUEST)
 	changed.emit()
 
@@ -104,6 +112,47 @@ func load_save_data(data: Dictionary) -> void:
 	changed.emit()
 
 
+## True while an active quest still needs this kind of quest object used.
+func wants_object(object_id: StringName) -> bool:
+	for entry in active:
+		var quest: QuestData = entry["quest"]
+		if quest.kind == QuestData.Kind.INTERACT and quest.object_id == object_id and int(entry["count"]) < quest.required:
+			return true
+	return false
+
+
+## The player used a quest object: the first quest that wanted it moves on.
+func use_object(object_id: StringName) -> bool:
+	for entry in active:
+		var quest: QuestData = entry["quest"]
+		if quest.kind == QuestData.Kind.INTERACT and quest.object_id == object_id and int(entry["count"]) < quest.required:
+			_advance(entry, 1)
+			return true
+	return false
+
+
+func _advance(entry: Dictionary, amount: int) -> void:
+	var quest: QuestData = entry["quest"]
+	var count := mini(int(entry["count"]) + amount, quest.required)
+	entry["count"] = count
+	Game.system_message.emit(quest.objective_line(count), PROGRESS_COLOR)
+	changed.emit()
+
+
+func _on_place_discovered(place: String) -> void:
+	for entry in active:
+		var quest: QuestData = entry["quest"]
+		if quest.kind == QuestData.Kind.EXPLORE and quest.places.has(place) and int(entry["count"]) < quest.required:
+			_advance(entry, 1)
+
+
+func _on_item(kind: QuestData.Kind, item: ItemData, amount: int) -> void:
+	for entry in active:
+		var quest: QuestData = entry["quest"]
+		if quest.kind == kind and quest.item == item and int(entry["count"]) < quest.required:
+			_advance(entry, amount)
+
+
 func _entry(quest: QuestData) -> Dictionary:
 	for entry in active:
 		if entry["quest"] == quest:
@@ -118,13 +167,10 @@ func _on_unit_killed(unit: Unit, _killer: Unit) -> void:
 	for entry in active:
 		var quest: QuestData = entry["quest"]
 		var count: int = entry["count"]
-		if quest.enemy_id != enemy.data.id or count >= quest.required:
+		if quest.kind not in [QuestData.Kind.KILL, QuestData.Kind.COLLECT] or quest.enemy_id != enemy.data.id or count >= quest.required:
 			continue
 		if quest.kind == QuestData.Kind.COLLECT:
 			if randf() >= quest.drop_chance:
 				continue
 			Game.chat("You receive loot: %s." % quest.objective, Game.CHAT_LOOT)
-		count += 1
-		entry["count"] = count
-		Game.system_message.emit("%s: %d/%d" % [quest.objective, count, quest.required], PROGRESS_COLOR)
-		changed.emit()
+		_advance(entry, 1)

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://data/quest_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/faction_data.gd" id="2_faction"]
+[ext_resource type="Resource" path="res://data/factions/azure_concord.tres" id="10_concord"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"concord_supplies"
+title = "Concord Supplies"
+offer_text = "You'll want more than that axe out there, {name}. The Azure Concord keeps this post supplied: potions, leather, shields, and a quartermaster who never forgets a debt.
+
+Go and speak with Quartermaster Bren by the supply tents. Tell him the Watch sent you."
+progress_text = "Thalos sent you? Then you're Watch business."
+complete_text = "Thalos sent you? Good. The Watch pays its debts, and so does the Concord.
+
+Coin first, {name}. But for you, the first look at my stock is free."
+kind = 6
+objective = "Speak with Quartermaster Bren"
+required = 0
+xp_reward = 60
+reputation_factions = Array[ExtResource("2_faction")]([ExtResource("10_concord")])
+reputation_amounts = PackedInt32Array(50)
+min_level = 1
+turn_in_npc = &"quartermaster_bren"

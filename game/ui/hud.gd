@@ -481,16 +481,24 @@ func _build_unit_tooltip() -> void:
 func _update_unit_tooltip() -> void:
 	var unit: Unit = null
 	var herb: GatherNode = null
+	var thing: QuestObject = null
 	if Input.mouse_mode == Input.MOUSE_MODE_VISIBLE and _root.visible:
 		var mouse := _root.get_global_mouse_position()
 		unit = _player.pick_unit(mouse)
 		if unit == null:
 			herb = _player.pick_gather_node(mouse)
-	_tooltip.visible = unit != null or herb != null
+		if unit == null and herb == null:
+			thing = _player.pick_quest_object(mouse)
+	_tooltip.visible = unit != null or herb != null or thing != null
 	if not _tooltip.visible:
 		return
 	for child in _tooltip_lines.get_children():
 		child.queue_free()
+	if thing:
+		_tooltip_lines.add_child(make_label(thing.display_name, 16, Color.WHITE))
+		_tooltip_lines.add_child(make_label("Quest object (right-click)", 13, GOLD))
+		_place_tooltip()
+		return
 	if herb:
 		var data := herb.data
 		var skill := _player.profession_skill(data.profession)

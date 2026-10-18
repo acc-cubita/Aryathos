@@ -24,7 +24,7 @@ func _run() -> void:
 	Game.player.interact_with(thalos)
 	await get_tree().create_timer(0.3).timeout
 	await _shot(folder.path_join("quest.png"))
-	Game.player.quest_log.accept(thalos.quests[0], thalos.npc_id)
+	Game.player.quest_log.accept(Database.quest(&"wolves_at_the_wardstone"), thalos.npc_id)
 	# Combat view: target the nearest wolf from 16 m and start casting.
 	var player := Game.player
 	var wolf: Enemy = null

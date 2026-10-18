@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://data/quest_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/faction_data.gd" id="2_faction"]
+[ext_resource type="Resource" path="res://data/factions/wardstone_watch.tres" id="10_watch"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"eyes_on_the_vale"
+title = "Eyes on the Vale"
+offer_text = "Before you hunt, learn the ground. The storms have changed the Vale more than any map shows.
+
+Scout the Shardfang Hills to the north, Silverrun Lake to the west and the Gloomshard Camp in the east. Do not linger at the camp. Look, count, and come back to me."
+progress_text = "Seen enough of the Vale yet?"
+complete_text = "Hills, lake and camp. Now you know what you fight for, and what you fight against.
+
+Every one of those places was quiet a season ago."
+kind = 2
+places = PackedStringArray("Shardfang Hills", "Silverrun Lake", "Gloomshard Camp")
+objective = "Places scouted"
+required = 3
+xp_reward = 250
+reputation_factions = Array[ExtResource("2_faction")]([ExtResource("10_watch")])
+reputation_amounts = PackedInt32Array(150)
+min_level = 1

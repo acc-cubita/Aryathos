@@ -247,6 +247,12 @@ func pick_gather_node(screen_position: Vector2) -> GatherNode:
 	return area.get_parent() as GatherNode if area else null
 
 
+## The quest object under the mouse (only ones a quest wants can be clicked), or null.
+func pick_quest_object(screen_position: Vector2) -> QuestObject:
+	var area := _pick_area(screen_position)
+	return area.get_parent() as QuestObject if area else null
+
+
 func _pick_area(screen_position: Vector2) -> Area3D:
 	var camera := camera_rig.camera
 	var from := camera.project_ray_origin(screen_position)
@@ -270,6 +276,10 @@ func _on_world_clicked(button: int, at: Vector2) -> void:
 		var node := pick_gather_node(at)
 		if node:
 			gather(node)
+		else:
+			var thing := pick_quest_object(at)
+			if thing:
+				use_quest_object(thing)
 
 
 ## Talk to an NPC or loot a corpse.
@@ -596,6 +606,18 @@ func _finish_gather(node: GatherNode) -> void:
 		Game.chat("You receive loot: [%s] x%d." % [data.item.display_name, amount], Game.CHAT_LOOT)
 		gathered.emit(data.item, amount)
 		_raise_skill(data.profession, data.required_skill)
+
+
+## Uses a quest object (a short cast bar); the quest moves on when it finishes.
+func use_quest_object(thing: QuestObject) -> bool:
+	if not thing.available or is_dead or not quest_log.wants_object(thing.object_id):
+		return false
+	if flat_distance(thing.global_position) > GATHER_RANGE:
+		_on_ability_error("You are too far away.")
+		return false
+	return start_activity(thing.action, thing.use_time, func() -> void:
+		if thing.available and quest_log.use_object(thing.object_id):
+			thing.use())
 
 
 ## "" when the recipe can be made right now, otherwise why not.

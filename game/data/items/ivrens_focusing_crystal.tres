@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ivrens_focusing_crystal"
+display_name = "Ivren's Focusing Crystal"
+flavor_text = "A sliver of tamed Aether on a silver chain. It hums when storms are near."
+quality = 2
+slot = 7
+icon_glyph = "Ne"
+icon_color = Color(0.55, 0.4, 0.95, 1)
+mana_bonus = 30
+spell_power = 4
+sell_price = 60

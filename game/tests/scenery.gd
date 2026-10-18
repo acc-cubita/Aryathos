@@ -12,6 +12,7 @@ const VIEWS := {
 	"close": [Vector3(4, 0, 12), 2.6, -0.15, 5.0],
 	"gloomshard": [Vector3(78, 0, 21), 0.0, -0.28, 12.0],
 	"digsite": [Vector3(50, 0, -86), 0.0, -0.3, 12.0],
+	"caches": [Vector3(50, 0, -112), 0.3, -0.35, 9.0],
 	"forest": [Vector3(30, 0, -40), 0.6, -0.1, 7.0],
 	# from the open camp toward the border mountains
 	"north": [Vector3(0, 0, -12), 0.0, 0.08, 8.0],

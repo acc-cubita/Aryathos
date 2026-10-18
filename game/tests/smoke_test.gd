@@ -165,8 +165,8 @@ func _combat_checks(player: Player) -> void:
 func _quest_checks(player: Player) -> void:
 	_check(player.xp > 0, "killing a wolf gives XP")
 	var thalos: Npc = Game.zone.get_node("NPCs/WardenThalos")
-	var wolves: QuestData = thalos.quests[0]
-	var light: QuestData = thalos.quests[1]
+	var wolves := Database.quest(&"wolves_at_the_wardstone")
+	var light := Database.quest(&"stolen_light")
 	var quests := player.quest_log
 	_check(quests.state(wolves) == QuestLog.State.AVAILABLE and quests.state(light) == QuestLog.State.UNAVAILABLE, "first quest offered, follow-up locked")
 	var talked := [false]
@@ -191,6 +191,54 @@ func _quest_checks(player: Player) -> void:
 	for enemy in _alive(&"gloomshard_scavenger"):
 		enemy.take_damage(9999, player)
 	_check(quests.progress(light) > 0, "scavengers drop Stolen Aether Shards (%d)" % quests.progress(light))
+	await _new_quest_checks(player)
+
+
+## The other kinds of objectives: talk, explore, gather, craft and quest objects.
+func _new_quest_checks(player: Player) -> void:
+	var quests := player.quest_log
+	var supplies := Database.quest(&"concord_supplies")
+	quests.accept(supplies, &"thalos")
+	_check(quests.state(supplies) == QuestLog.State.READY and quests.turn_ins_for(&"quartermaster_bren").has(supplies),
+			"Concord Supplies is ready at once and handed in to Quartermaster Bren")
+	quests.turn_in(supplies)
+
+	var eyes := Database.quest(&"eyes_on_the_vale")
+	quests.accept(eyes, &"thalos")
+	var before := quests.progress(eyes)
+	for place: String in eyes.places:
+		player.place_discovered.emit(place)  # (discovering for real would spoil the exploration checks)
+	_check(quests.state(eyes) == QuestLog.State.READY, "Eyes on the Vale: finding the places completes it (%d found before)" % before)
+
+	var silverleaf := Database.quest(&"silverleaf_for_the_wounded")
+	quests.accept(silverleaf, &"herbalist_mira")
+	player.gathered.emit(silverleaf.item, 3)
+	_check(quests.progress(silverleaf) == 3, "gathering Silverleaf counts for Silverleaf for the Wounded")
+	player.gathered.emit(silverleaf.item, 4)
+	_check(quests.state(silverleaf) == QuestLog.State.READY, "... and completes it")
+	quests.turn_in(silverleaf)
+	var brew := Database.quest(&"a_healers_brew")
+	quests.accept(brew, &"herbalist_mira")
+	player.crafted.emit(brew.item, 3)
+	_check(quests.state(brew) == QuestLog.State.READY and quests.turn_ins_for(&"thalos").has(brew), "brewing potions completes A Healer's Brew, handed in to Thalos")
+
+	_check(quests.state(Database.quest(&"cut_to_feed")) == QuestLog.State.UNAVAILABLE, "Cut to Feed waits for Stolen Light")
+
+
+## Cut to Feed (after Stolen Light is handed in): smashing Gloomshard Caches.
+func _cache_checks(player: Player) -> void:
+	var quests := player.quest_log
+	var caches := get_tree().get_nodes_in_group("quest_objects").filter(func(o: QuestObject) -> bool: return o.object_id == &"gloomshard_cache")
+	_check(caches.size() >= 4, "Gloomshard Caches stand at the dig site (%d)" % caches.size())
+	var cut := Database.quest(&"cut_to_feed")
+	quests.accept(cut, &"magister_ivren")
+	_check(quests.wants_object(&"gloomshard_cache"), "with Cut to Feed taken the caches can be smashed")
+	var cache: QuestObject = caches[0]
+	player.teleport(cache.global_position + Vector3(1.2, 0.5, 0), 0.0)
+	await _wait(0.4)
+	_check(player.use_quest_object(cache), "right-clicking a cache starts smashing it")
+	await _wait(cache.use_time + 0.3)
+	_check(quests.progress(cut) == 1 and not cache.available, "a smashed cache counts and is gone")
 
 
 func _loot_checks(player: Player) -> void:
@@ -243,12 +291,13 @@ func _boss_checks(player: Player) -> void:
 
 	var quests := player.quest_log
 	var ivren: Npc = Game.zone.get_node("NPCs/MagisterIvren")
-	var light: QuestData = (Game.zone.get_node("NPCs/WardenThalos") as Npc).quests[1]
-	var shardmaw: QuestData = ivren.quests[0]
+	var light := Database.quest(&"stolen_light")
+	var shardmaw := Database.quest(&"the_shardmaw")
 	quests.active.filter(func(e: Dictionary) -> bool: return e["quest"] == light)[0]["count"] = light.required
 	_check(ivren.quest_marker_text() == "?", "Magister Ivren shows a yellow ? for Stolen Light")
 	quests.turn_in(light)
 	_check(quests.state(shardmaw) == QuestLog.State.AVAILABLE and ivren.quest_marker_text() == "!", "The Shardmaw unlocks at Magister Ivren")
+	await _cache_checks(player)
 	quests.accept(shardmaw, ivren.npc_id)
 	boss.take_damage(99999, player)
 	_check(quests.state(shardmaw) == QuestLog.State.READY, "killing Grimjaw completes The Shardmaw")
@@ -284,7 +333,7 @@ func _interface_checks(player: Player) -> void:
 	player.place_on_action_bar(player.abilities[0], 9, 0)
 	_check(player.action_bar[0] == surge and player.action_bar[9] == player.abilities[0], "dragging between buttons swaps them")
 
-	var shardmaw: QuestData = (Game.zone.get_node("NPCs/MagisterIvren") as Npc).quests[0]
+	var shardmaw := Database.quest(&"the_shardmaw")
 	player.quest_log.abandon(shardmaw)
 	_check(player.quest_log.state(shardmaw) == QuestLog.State.AVAILABLE, "an abandoned quest can be picked up again")
 	_check(Keybinds.describe("toggle_ui") == "Alt+Z" and Keybinds.label_for("action_11") == "-", "Alt+Z and - / = keys are bound")

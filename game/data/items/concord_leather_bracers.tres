@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"concord_leather_bracers"
+display_name = "Concord Leather Bracers"
+flavor_text = "Concord leather, crystal-stitched. Fair trade."
+quality = 2
+slot = 10
+icon_glyph = "Br"
+icon_color = Color(0.3, 0.45, 0.75, 1)
+health_bonus = 14
+sell_price = 45

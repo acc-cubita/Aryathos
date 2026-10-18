@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://data/quest_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/faction_data.gd" id="2_faction"]
+[ext_resource type="Resource" path="res://data/factions/wardstone_watch.tres" id="10_watch"]
+[ext_resource type="Resource" path="res://data/items/minor_healing_potion.tres" id="3_item"]
+[ext_resource type="Resource" path="res://data/items/herbalists_sash.tres" id="4_reward"]
+[ext_resource type="Resource" path="res://data/quests/silverleaf_for_the_wounded.tres" id="5_requires"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"a_healers_brew"
+title = "A Healer's Brew"
+offer_text = "Leaves heal slowly. A potion heals now.
+
+Learn Alchemy from me, buy Empty Vials from Quartermaster Bren, and brew three Minor Healing Potions. Then take them to Warden Thalos. His wardens hold the line, and they hold it bleeding."
+progress_text = "Mira said you'd bring potions."
+complete_text = "Three potions. That's three wardens who walk home tonight.
+
+Mira chose her apprentice well. She asked me to give you this."
+kind = 4
+item = ExtResource("3_item")
+objective = "Minor Healing Potion brewed"
+required = 3
+xp_reward = 300
+reward_item = ExtResource("4_reward")
+reputation_factions = Array[ExtResource("2_faction")]([ExtResource("10_watch")])
+reputation_amounts = PackedInt32Array(150)
+min_level = 2
+requires = ExtResource("5_requires")
+turn_in_npc = &"thalos"

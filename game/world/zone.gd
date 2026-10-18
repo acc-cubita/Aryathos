@@ -30,6 +30,9 @@ func _ready() -> void:
 		spawner.spawn(terrain, $Units)
 	for spawner: GatherSpawner in $GatherSpawners.get_children():
 		spawner.spawn(terrain, $Units)
+	if has_node("QuestObjectSpawners"):
+		for spawner: QuestObjectSpawner in $QuestObjectSpawners.get_children():
+			spawner.spawn(terrain, $Units)
 	for npc: Npc in $NPCs.get_children():
 		var spot := npc.global_position
 		npc.global_position = Vector3(spot.x, terrain.get_height(spot.x, spot.z) + 0.1, spot.z)

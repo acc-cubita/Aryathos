@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"herbalists_sash"
+display_name = "Herbalist's Sash"
+flavor_text = "Stitched with dried silverleaf. It still smells of the meadow."
+quality = 2
+slot = 11
+icon_glyph = "Be"
+icon_color = Color(0.35, 0.55, 0.3, 1)
+health_bonus = 10
+mana_bonus = 20
+spell_power = 2
+sell_price = 40

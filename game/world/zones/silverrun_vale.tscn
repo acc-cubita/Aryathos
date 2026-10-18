@@ -40,6 +40,13 @@
 [ext_resource type="Material" path="res://world/materials/bark_pine.tres" id="77_pine_bark"]
 [ext_resource type="Script" path="res://world/prop_group.gd" id="73_props"]
 [ext_resource type="Texture2D" path="res://art/sky/kloofendal_partly_cloudy_4k_clamped.exr" id="74_skyhdr"]
+[ext_resource type="Resource" path="res://data/quests/concord_supplies.tres" id="q_concord_supplies"]
+[ext_resource type="Resource" path="res://data/quests/eyes_on_the_vale.tres" id="q_eyes_on_the_vale"]
+[ext_resource type="Resource" path="res://data/quests/silverleaf_for_the_wounded.tres" id="q_silverleaf_for_the_wounded"]
+[ext_resource type="Resource" path="res://data/quests/a_healers_brew.tres" id="q_a_healers_brew"]
+[ext_resource type="Resource" path="res://data/quests/pelts_for_the_concord.tres" id="q_pelts_for_the_concord"]
+[ext_resource type="Resource" path="res://data/quests/cut_to_feed.tres" id="q_cut_to_feed"]
+[ext_resource type="Script" path="res://world/quest_object_spawner.gd" id="q_spawner"]
 
 [sub_resource type="PanoramaSkyMaterial" id="sky_material"]
 panorama = ExtResource("74_skyhdr")
@@ -345,7 +352,7 @@ npc_id = &"thalos"
 reputation_faction = ExtResource("22_watch")
 title = "Keeper of the Wardstone"
 greeting = "Stay close to the Wardstone's light, {name}."
-quests = Array[ExtResource("10_quest")]([ExtResource("11_wolves"), ExtResource("12_light")])
+quests = Array[ExtResource("10_quest")]([ExtResource("q_concord_supplies"), ExtResource("11_wolves"), ExtResource("q_eyes_on_the_vale"), ExtResource("12_light")])
 unit_name = "Warden Thalos"
 armor_color = Color(0.5, 0.55, 0.65, 1)
 
@@ -356,7 +363,7 @@ npc_id = &"magister_ivren"
 reputation_faction = ExtResource("22_watch")
 title = "Arcanist of the Spire"
 greeting = "The Wardstone hums tonight. Something stirs in the crystals."
-quests = Array[ExtResource("10_quest")]([ExtResource("14_shardmaw")])
+quests = Array[ExtResource("10_quest")]([ExtResource("14_shardmaw"), ExtResource("q_cut_to_feed")])
 unit_name = "Magister Ivren"
 armor_color = Color(0.42, 0.33, 0.58, 1)
 glow_color = Color(0.65, 0.5, 1, 1)
@@ -368,6 +375,7 @@ npc_id = &"quartermaster_bren"
 reputation_faction = ExtResource("22_watch")
 title = "General Goods"
 greeting = "Potions, belts, shields. Coin first, {name}."
+quests = Array[ExtResource("10_quest")]([ExtResource("q_pelts_for_the_concord")])
 vendor_items = Array[ExtResource("15_item")]([ExtResource("16_heal"), ExtResource("17_mana"), ExtResource("18_buckler"), ExtResource("19_belt"), ExtResource("20_mantle"), ExtResource("21_signet"), ExtResource("56_vial")])
 unit_name = "Quartermaster Bren"
 armor_color = Color(0.5, 0.4, 0.3, 1)
@@ -381,6 +389,7 @@ title = "Herbalism & Alchemy Trainer"
 reputation_faction = ExtResource("22_watch")
 greeting = "Silverleaf for wounds, Stormbloom for the mind. Want to learn the old ways, {name}?"
 teaches = Array[ExtResource("53_profession")]([ExtResource("54_herbalism"), ExtResource("55_alchemy")])
+quests = Array[ExtResource("10_quest")]([ExtResource("q_silverleaf_for_the_wounded"), ExtResource("q_a_healers_brew")])
 unit_name = "Herbalist Mira"
 armor_color = Color(0.35, 0.5, 0.3, 1)
 glow_color = Color(0.5, 1, 0.45, 1)
@@ -429,6 +438,17 @@ script = ExtResource("52_gather")
 node_data = ExtResource("51_stormbloom")
 count = 4
 radius = 10.0
+
+[node name="QuestObjectSpawners" type="Node3D" parent="."]
+
+[node name="GloomshardCaches" type="Marker3D" parent="QuestObjectSpawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, -115)
+script = ExtResource("q_spawner")
+object_id = &"gloomshard_cache"
+display_name = "Gloomshard Cache"
+action = "Smashing"
+count = 6
+radius = 14.0
 
 [node name="PointsOfInterest" type="Node3D" parent="."]
 

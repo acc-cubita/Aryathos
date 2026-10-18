@@ -52,16 +52,21 @@ When an Aether crystal turns **volatile**, it darkens from within and its light 
 New Arkanor champions begin in **Silverrun Vale**, a pine valley on the Covenant frontier ringed by snow-capped mountains. In its heart stands **Wardstone Post**, a small camp of the Wardstone Watch around the valley's Wardstone.
 
 Crystal storms have begun to rise over the Vale, and the Wardstone hums uneasily:
+* **Concord Supplies / Eyes on the Vale:** Warden Thalos sends the newcomer to Quartermaster Bren, then out to scout the hills, the lake and the scavengers' camp. *(Warden Thalos)*
+* **Silverleaf for the Wounded / A Healer's Brew:** Mira teaches Herbalism and Alchemy; the champion gathers Silverleaf and brews healing potions for the wardens. *(Herbalist Mira, then Warden Thalos)*
+* **Pelts for the Concord:** Shardfang pelts keep the cold out and sell well in Aetheria. *(Quartermaster Bren)*
 * **Wolves at the Wardstone:** The storms have twisted the wolves of the **Shardfang Hills**. Shards grow from their backs and they prowl ever closer to the Wardstone. *(Warden Thalos)*
 * **Stolen Light:** Hooded **Gloomshard Scavengers** dig crystal at the **Gloomshard Dig Site** and their camp in the east. They cut the shards raw and sell them to anyone, and their digging calls the storms. The champion recovers the stolen shards. *(Magister Ivren)*
 * **The Shardmaw:** The shards were not cut at random: every one was cut to feed something. The scavengers carry them to the **Shardmaw Den** in the northwest, home of **Grimjaw the Shardmaw**. He was a great cave bear whose hide the crystals have overgrown, until his roar shatters stone. Killing him quiets the storms over the Vale. *(Magister Ivren, then Warden Thalos)*
+
+* **Cut to Feed:** Most of the cut shards never reach a buyer. They are packed into caches at the dig site, stockpiles big enough to call a storm on their own. The champion smashes them. *(Magister Ivren)*
 
 What the champion finds in the den leads straight into Act I: someone has been paying the scavengers, and the shards were feeding a hidden sigil of **The Eclipse Hand**.
 
 **People of Wardstone Post:**
 * **Warden Thalos**, Keeper of the Wardstone (Wardstone Watch): stern, tired, devoted to the light he guards.
 * **Magister Ivren**, Arcanist of the Spire, sent from Aetheria to study the storms. She is the first to suspect the shards are being gathered on purpose.
-* **Quartermaster Bren** (Azure Concord): blunt and practical. Coin first.
+* **Quartermaster Bren**, the Azure Concord's factor at the post, who keeps the Watch supplied: blunt and practical. Coin first.
 * **Herbalist Mira**: teaches the old ways of **Silverleaf** (for wounds) and **Stormbloom** (for the mind), Herbalism and Alchemy.
 
 ### Act I: The Awakening of the Veiled Core

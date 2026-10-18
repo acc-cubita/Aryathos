@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://data/quest_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/faction_data.gd" id="2_faction"]
+[ext_resource type="Resource" path="res://data/factions/wardstone_watch.tres" id="10_watch"]
+[ext_resource type="Resource" path="res://data/items/silverleaf.tres" id="3_item"]
+[ext_resource type="Resource" path="res://data/items/minor_healing_potion.tres" id="4_reward"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"silverleaf_for_the_wounded"
+title = "Silverleaf for the Wounded"
+offer_text = "Wolves bite, storms burn, and the wardens come back to me bleeding. Silverleaf closes wounds, if it's fresh.
+
+If you haven't learned the old ways yet, I'll teach you Herbalism. Then bring me five Silverleaf from the meadows around the post. You'll know it by its pale, silver-edged leaves."
+progress_text = "Silverleaf, {name}. Pale leaves, silver edges."
+complete_text = "Fresh and whole. You have gentle hands for a Runeknight.
+
+Here, keep one of my draughts. You'll need it before the wardens do."
+kind = 3
+item = ExtResource("3_item")
+objective = "Silverleaf gathered"
+required = 5
+xp_reward = 200
+reward_item = ExtResource("4_reward")
+reputation_factions = Array[ExtResource("2_faction")]([ExtResource("10_watch")])
+reputation_amounts = PackedInt32Array(100)
+min_level = 1

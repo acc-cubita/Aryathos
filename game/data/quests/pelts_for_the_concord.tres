@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://data/quest_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/faction_data.gd" id="2_faction"]
+[ext_resource type="Resource" path="res://data/factions/azure_concord.tres" id="10_concord"]
+[ext_resource type="Resource" path="res://data/items/concord_leather_bracers.tres" id="4_reward"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"pelts_for_the_concord"
+title = "Pelts for the Concord"
+offer_text = "Business, {name}. Shardfang pelts fetch good coin in Aetheria: the crystal in them keeps the cold out, and the Concord buys all I can send.
+
+Bring me six whole pelts from the Shardfang wolves. Whole ones. Not the matted rags the wardens drag in."
+progress_text = "Pelts first, coin after."
+complete_text = "Six, and whole! The Concord will hear your name, {name}.
+
+Take these. Concord leather, crystal-stitched. Fair trade."
+kind = 1
+enemy_id = &"shardfang_wolf"
+objective = "Whole Shardfang Pelt"
+required = 6
+drop_chance = 0.6
+xp_reward = 300
+reward_item = ExtResource("4_reward")
+reputation_factions = Array[ExtResource("2_faction")]([ExtResource("10_concord")])
+reputation_amounts = PackedInt32Array(250)
+min_level = 2
