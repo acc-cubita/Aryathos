@@ -23,7 +23,8 @@ signal look_changed
 signal activity_started(text: String)
 signal activity_ended(success: bool)
 
-const RUN_SPEED := 7.0
+## WoW's run: 7 yards a second.
+const RUN_SPEED := 6.4
 ## Backing off is a measured walk backwards (CharacterModel.BACK_*).
 const BACKPEDAL_SPEED := 2.8
 ## With walking on (/ like WoW): a brisk walk, forward or back.

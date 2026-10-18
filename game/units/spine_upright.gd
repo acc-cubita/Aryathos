@@ -4,7 +4,8 @@ extends SkeletonModifier3D
 ## sprint leans it far forward, and the jog rocks it 38 degrees from side to side (a
 ## child's run, not a warrior's). After the animation this measures the torso (hips to
 ## neck) and turns the spine and chest back until it leans forward no more than MAX_LEAN
-## and sways no more than MAX_SWAY, then levels the head. `weight` (0..1) fades the lean
+## and sways no more than MAX_SWAY, its shoulders turn no more than MAX_TWIST, then levels
+## the head. `weight` (0..1) fades the lean
 ## in with running speed; `sway_weight` the sway and the head while the character moves
 ## on the ground, so standing, swings and death keep the clip's own posture.
 
@@ -12,6 +13,9 @@ extends SkeletonModifier3D
 const MAX_LEAN := deg_to_rad(15.0)
 ## Side to side sway (radians) left to anyone moving.
 const MAX_SWAY := deg_to_rad(4.0)
+## How far the shoulders may turn back and forth (radians): the jog swings them 40
+## degrees each way, the two halves of the body see-sawing.
+const MAX_TWIST := deg_to_rad(12.0)
 ## Share of the straightening done by each bone, from the waist up.
 const BONES := {"Spine": 0.5, "Chest": 0.5}
 
@@ -19,12 +23,14 @@ var weight := 0.0
 var sway_weight := 0.0
 ## The torso's forward lean (radians) as last posed, after straightening.
 var leaning := 0.0
-## And its sideways tilt (radians, + toward the rig's left).
+## And its sideways tilt (radians, + toward the rig's left), and the shoulders' turn.
 var swaying := 0.0
+var twisting := 0.0
 
 var _hips := -1
 var _neck := -1
 var _head := -1
+var _shoulders := [-1, -1]  # left, right upper arms
 var _shares := {}  # bone index -> share
 
 
@@ -35,6 +41,7 @@ func _ready() -> void:
 	_hips = skeleton.find_bone("Hips")
 	_neck = skeleton.find_bone("Neck")
 	_head = skeleton.find_bone("Head")
+	_shoulders = [skeleton.find_bone("LeftUpperArm"), skeleton.find_bone("RightUpperArm")]
 	for bone_name: String in BONES:
 		_shares[skeleton.find_bone(bone_name)] = BONES[bone_name]
 
@@ -52,6 +59,13 @@ func lean() -> float:
 	return atan2(torso.z, torso.y)
 
 
+## How far the shoulder line is turned from square (radians; + the left shoulder ahead).
+func twist() -> float:
+	var skeleton := get_skeleton()
+	var line := skeleton.get_bone_global_pose(_shoulders[0]).origin - skeleton.get_bone_global_pose(_shoulders[1]).origin
+	return atan2(line.z, line.x)
+
+
 ## Sideways tilt of the torso in the current pose (radians).
 func sway() -> float:
 	var torso := _torso()
@@ -67,6 +81,9 @@ func _process_modification() -> void:
 		var now := lean()
 		_straighten(skeleton, lean, lerpf(now, minf(now, MAX_LEAN), weight), Vector3.RIGHT, -1.0)
 	if sway_weight > 0.0:
+		# the twist first: turning a tilted torso about the vertical changes its tilt
+		var turned := twist()
+		_straighten(skeleton, twist, lerpf(turned, clampf(turned, -MAX_TWIST, MAX_TWIST), sway_weight), Vector3.UP, 1.0)
 		var now := sway()
 		_straighten(skeleton, sway, lerpf(now, clampf(now, -MAX_SWAY, MAX_SWAY), sway_weight), Vector3.BACK, 1.0)
 		# and the head level, whatever the shoulders do
@@ -76,6 +93,7 @@ func _process_modification() -> void:
 		skeleton.set_bone_pose_rotation(_head, (parent.basis.inverse() * (Basis(Vector3.BACK, tilt) * head.basis)).get_rotation_quaternion())
 	leaning = lean()
 	swaying = sway()
+	twisting = twist()
 
 
 ## Turns the spine and chest about `axis` (through their own joints) until measure()

@@ -12,15 +12,23 @@ const LEGS := [["LeftUpperLeg", "LeftLowerLeg", "LeftFoot"], ["RightUpperLeg", "
 const MAX_STEP := 0.4
 ## How fast (1/s) the hips and feet follow a change of ground.
 const FOLLOW := 12.0
+## Share of the hips' rise and fall the run keeps (settle_weight fades this in while the
+## character moves): the jog bounces them 26 cm, a leap at every step. The feet keep their
+## heights, the legs folding or reaching to the calmer hips.
+const BOB_KEEP := 0.4
 
 ## The unit standing on the ground (its origin is at its feet); null turns planting off.
 var unit: Unit
+var settle_weight := 0.0
 
 var _bones: Array[PackedInt32Array] = []
 var _hips := -1
 var _offsets := [0.0, 0.0]
 var _normals := [Vector3.UP, Vector3.UP]  # ground normal under each foot (world)
 var _drop := 0.0
+var _hips_mean := NAN  # the hips' height, averaged over the steps
+## The hips' height as last posed (skeleton space, after settling).
+var settled_height := 0.0
 
 
 func _ready() -> void:
@@ -58,15 +66,20 @@ func _process_modification_with_delta(delta: float) -> void:
 		_normals[side] = (_normals[side] as Vector3).lerp(normal, follow).normalized()
 	# the hips come down as far as the lower foot needs; the higher leg folds
 	_drop = lerpf(_drop, minf(minf(_offsets[0], _offsets[1]), 0.0), follow)
-	if absf(_drop) + absf(_offsets[0]) + absf(_offsets[1]) < 0.002 and _normals[0].y > 0.999 and _normals[1].y > 0.999:
-		return
 	var hips := skeleton.get_bone_global_pose(_hips)
-	hips.origin += up * _drop
+	var height := hips.origin.dot(up)
+	_hips_mean = height if is_nan(_hips_mean) else lerpf(_hips_mean, height, 1.0 - exp(-2.0 * delta))
+	var settle := (_hips_mean - height) * (1.0 - BOB_KEEP) * settle_weight
+	var lift := _drop + settle
+	settled_height = height + lift
+	if absf(lift) + absf(_offsets[0]) + absf(_offsets[1]) < 0.002 and _normals[0].y > 0.999 and _normals[1].y > 0.999:
+		return
+	hips.origin += up * lift
 	skeleton.set_bone_global_pose(_hips, hips)
 	for side in 2:
-		# the leg already came down with the hips
+		# the leg already moved with the hips
 		var tilt := _turn(up, to_world.basis.inverse() * (_normals[side] as Vector3))
-		_place_foot(skeleton, _bones[side], up * (_offsets[side] - _drop), tilt)
+		_place_foot(skeleton, _bones[side], up * (_offsets[side] - lift), tilt)
 
 
 ## Moves the foot by `shift` (skeleton space) from where the clip put it

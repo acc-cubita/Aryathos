@@ -65,10 +65,11 @@ const RUN_SPEED := 8.25 ## the sprint
 ## the backwards walk/jog mix (BACK_JOG), from the two clips' strides over BACK_CYCLE
 const BACK_SPEED := (0.97 * 1.333 * (1.0 - BACK_JOG) + 5.36 * 0.933 * BACK_JOG) / BACK_CYCLE
 const MANNEQUIN_HIPS := 0.917
-const JOG_SPEED := 5.36
+## the run: the jog with LEG_CALM of the walk's stride, over the jog's 0.933 s cycle
+const JOG_SPEED := (5.36 * 0.933 * (1.0 - LEG_CALM) + 0.97 * 1.333 * LEG_CALM) / 0.933
 const RUN_FROM := 2.8 ## m/s where walking turns into a jog
-## m/s where the jog turns into a sprint. A hero's 7 m/s run is the jog played a third
-## faster: about 170 steps a minute, 2.5 m each, an easy runner's stride (like WoW's run).
+## m/s where the jog turns into a sprint. A hero's run (6.4 m/s, WoW's 7 yards) is the
+## calmed jog (_jog_gait) played about half again as fast: some 195 steps a minute.
 const SPRINT_FROM := 7.6
 ## How fast (1/s) the body turns toward the way it moves (a strafe, a diagonal).
 const STRAFE_TURN := 10.0
@@ -86,6 +87,9 @@ const BACK_CYCLE := 1.15
 ## step cycle, so they swing with the same feet) is mixed into the jog's.
 const ARM_CALM := 0.55
 const ARM_BONES := ["Shoulder", "UpperArm", "LowerArm", "Hand"]
+## And LEG_CALM of the walk's legs and hips in the jog's: shorter, more grounded steps.
+const LEG_CALM := 0.3
+const LEG_BONES := ["Hips", "UpperLeg", "LowerLeg", "Foot", "Toes"]
 ## Hands closed into loose fists (FIST of the boxing clip's fingers), not hanging open;
 ## they open to cast.
 const FIST_CLIP := "ual1/Punch_Jab"
@@ -482,6 +486,7 @@ func _build_tree(scene: Node3D, skeleton: Skeleton3D) -> void:
 		_tree.set("parameters/ready/blend_amount", 1.0)
 	_tree.set("parameters/states/back_loop/mix/blend_amount", BACK_JOG)
 	_tree.set("parameters/states/jog_loop/arms/blend_amount", ARM_CALM)
+	_tree.set("parameters/states/jog_loop/legs/blend_amount", LEG_CALM)
 	_tree.set("parameters/fists/blend_amount", FIST)
 
 
@@ -515,23 +520,32 @@ func _jog_gait(player: AnimationPlayer) -> AnimationNodeBlendTree:
 	var jog := AnimationNodeAnimation.new()
 	jog.animation = CLIPS.jog_loop
 	gait.add_node("jog", jog)
-	var walk := AnimationNodeAnimation.new()
-	walk.animation = CLIPS.walk_loop
-	walk.use_custom_timeline = true
-	walk.timeline_length = player.get_animation(CLIPS.jog_loop).length
-	walk.stretch_time_scale = true
-	walk.loop_mode = Animation.LOOP_LINEAR
-	gait.add_node("walk", walk)
-	var arms := AnimationNodeBlend2.new()
-	arms.filter_enabled = true
+	# (one node's output feeds one input: a walk for the legs, one for the arms, in step)
+	for walk_name: String in ["walk_legs", "walk_arms"]:
+		var walk := AnimationNodeAnimation.new()
+		walk.animation = CLIPS.walk_loop
+		walk.use_custom_timeline = true
+		walk.timeline_length = player.get_animation(CLIPS.jog_loop).length
+		walk.stretch_time_scale = true
+		walk.loop_mode = Animation.LOOP_LINEAR
+		gait.add_node(walk_name, walk)
 	var anim := player.get_animation(CLIPS.walk_loop)
+	var arms := AnimationNodeBlend2.new()
+	var legs := AnimationNodeBlend2.new()
+	arms.filter_enabled = true
+	legs.filter_enabled = true
 	for track in anim.get_track_count():
 		var bone := String(anim.track_get_path(track).get_concatenated_subnames())
 		if (bone.begins_with("Left") or bone.begins_with("Right")) and ARM_BONES.any(func(b: String) -> bool: return bone.ends_with(b)):
 			arms.set_filter_path(anim.track_get_path(track), true)
+		if LEG_BONES.any(func(b: String) -> bool: return bone.ends_with(b)):
+			legs.set_filter_path(anim.track_get_path(track), true)
+	gait.add_node("legs", legs)
+	gait.connect_node("legs", 0, "jog")
+	gait.connect_node("legs", 1, "walk_legs")
 	gait.add_node("arms", arms)
-	gait.connect_node("arms", 0, "jog")
-	gait.connect_node("arms", 1, "walk")
+	gait.connect_node("arms", 0, "legs")
+	gait.connect_node("arms", 1, "walk_arms")
 	gait.connect_node("output", 0, "arms")
 	return gait
 
@@ -603,6 +617,7 @@ func _process(delta: float) -> void:
 	_turn_to_motion(delta, speed)
 	# a warrior's bearing on the move: no rocking from side to side
 	_upright.sway_weight = move_toward(_upright.sway_weight, 1.0 if speed > 0.3 and _unit.is_on_floor() else 0.0, delta * 4.0)
+	_planter.settle_weight = _upright.sway_weight
 	if _sheathes:
 		# out while auto-attacking and as long as the fight goes on; away a while after
 		if _unit.auto_attacking or (_drawn and _unit.in_combat()):
@@ -634,7 +649,7 @@ func _process(delta: float) -> void:
 				pace = clampf(speed / (RUN_SPEED * _stride), 0.55, 1.4)
 			elif speed >= RUN_FROM:
 				_go("jog_loop")
-				pace = clampf(speed / (JOG_SPEED * _stride), 0.5, 1.45)
+				pace = clampf(speed / (JOG_SPEED * _stride), 0.5, 1.8)
 			else:
 				_go("walk_loop")
 				pace = clampf(speed / (WALK_SPEED * _stride), 0.6, 1.8)

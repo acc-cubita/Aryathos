@@ -17,7 +17,7 @@ const GAITS := {
 	"stand": [],  # standing, seen from behind (the sheathed weapon)
 	"run_front": ["move_forward"],  # running, seen from ahead (the sway)
 }
-const FRAMES := 10
+const FRAMES := 16
 const START := Vector3(-4, 0, -24)  # on the road north of the camp, open ground ahead
 
 var _camera := Camera3D.new()
@@ -75,6 +75,10 @@ func _run() -> void:
 		var sways := Vector2(INF, -INF)
 		var bends := Vector2(INF, -INF)
 		var drops := Vector2(INF, -INF)
+		var shoulders := Vector2(INF, -INF)
+		var pelvis := Vector2(INF, -INF)
+		var spread := 0.0
+		var bob := Vector2(INF, -INF)
 		var slides := PackedFloat32Array()
 		for frame in FRAMES:
 			await _follow(player, 1.0 / 12.0, slides)
@@ -90,6 +94,19 @@ func _run() -> void:
 				var angle := rad_to_deg((elbow - upper).angle_to(wrist - elbow))
 				bends = Vector2(minf(bends.x, angle), maxf(bends.y, angle))
 				drops = Vector2(minf(drops.x, upper.y - wrist.y), maxf(drops.y, upper.y - wrist.y))
+			# how far the halves of the body turn back and forth (yaw of the shoulder line and
+			# of the hips' side axis, in the rig, which faces +Z), how far apart the feet get
+			# (along the way), how much the hips rise and fall
+			var line := skeleton.get_bone_global_pose(skeleton.find_bone("LeftUpperArm")).origin 					- skeleton.get_bone_global_pose(skeleton.find_bone("RightUpperArm")).origin
+			var yaw := rad_to_deg(player.model._upright.twisting)  # (as posed: read after the modifiers)
+			shoulders = Vector2(minf(shoulders.x, yaw), maxf(shoulders.y, yaw))
+			var hip_axis := skeleton.get_bone_global_pose(skeleton.find_bone("Hips")).basis * Vector3.RIGHT
+			var hip_yaw := rad_to_deg(atan2(hip_axis.z, hip_axis.x))
+			pelvis = Vector2(minf(pelvis.x, hip_yaw), maxf(pelvis.y, hip_yaw))
+			var feet := skeleton.get_bone_global_pose(skeleton.find_bone("LeftFoot")).origin 					- skeleton.get_bone_global_pose(skeleton.find_bone("RightFoot")).origin
+			spread = maxf(spread, absf(feet.z))
+			var hip_y: float = player.model._planter.settled_height
+			bob = Vector2(minf(bob.x, hip_y), maxf(bob.y, hip_y))
 		for action: String in GAITS[gait]:
 			Input.action_release(action)
 		if player.has_method("set_walking"):
@@ -99,6 +116,8 @@ func _run() -> void:
 			slide += s
 		print("gait %s: speed %.1f m/s, torso sway %.1f..%.1f deg, elbows %.0f..%.0f deg, hands %.2f..%.2f m below shoulders, state %s" % [gait,
 				Vector2(player.velocity.x, player.velocity.z).length(), sways.x, sways.y, bends.x, bends.y, drops.x, drops.y, player.model._state])
+		print("    body: shoulders turn %.0f..%.0f deg, hips %.0f..%.0f deg, feet up to %.2f m apart, hips bob %.2f m" % [
+				shoulders.x, shoulders.y, pelvis.x, pelvis.y, spread, bob.y - bob.x])
 	get_tree().quit()
 
 
