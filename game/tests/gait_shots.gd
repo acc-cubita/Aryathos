@@ -1,7 +1,7 @@
 extends Node
 ## Film strips of the hero's gaits, seen from the side, and how far the planted foot
 ## slides (m/s; 0 when the clip's pace matches the ground speed). Run:
-##   Godot.exe --path game -- --gait-shots=<output folder> [--gaits=run,strafe,...]
+##   Godot.exe --path game -- --gait-shots=<output folder> [--gaits=run,strafe,...] [--hero=<class>[,female]]
 ## Saves <gait>_<frame>.png, frames 1/12 s apart.
 
 ## gait: actions held
@@ -14,11 +14,13 @@ const GAITS := {
 	"walk": ["move_forward"],  # with walking on
 	"turn": ["turn_left"],     # turning on the spot
 	"jump": ["move_forward"],  # a running jump
+	"stand": [],  # standing, seen from behind (the sheathed weapon)
 }
 const FRAMES := 10
 const START := Vector3(-4, 0, -24)  # on the road north of the camp, open ground ahead
 
 var _camera := Camera3D.new()
+var _gait := ""
 
 
 func _ready() -> void:
@@ -42,12 +44,19 @@ func _run() -> void:
 		get_tree().quit()
 		return
 	var player := Game.player
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--hero="):  # <class>[,female]
+			var parts := arg.get_slice("=", 1).split(",")
+			player.set_class(Database.hero_class(StringName(parts[0])))
+			if parts.has("female"):
+				player.set_look({"gender": "female"})
 	get_tree().root.add_child(_camera)
 	_camera.fov = 40.0
 	_camera.make_current()
 	for gait: String in GAITS:
 		if not only.is_empty() and not only.has(gait):
 			continue
+		_gait = gait
 		var spot := START
 		spot.y = Game.zone.terrain.get_height(spot.x, spot.z) + 0.1
 		player.teleport(spot, 0.0)
@@ -90,6 +99,8 @@ func _follow(player: Player, seconds: float, slides: PackedFloat32Array) -> void
 		var motion := Vector3(player.velocity.x, 0.0, player.velocity.z)
 		var side := motion.normalized().cross(Vector3.UP) if motion.length() > 0.5 else player.global_transform.basis.x
 		_camera.global_position = player.global_position + side * 5.5 + Vector3.UP * 1.3
+		if motion.length() < 0.5 and _gait == "stand":  # from straight behind
+			_camera.global_position = player.global_position + player.global_transform.basis.z * 3.4 + Vector3.UP * 1.4
 		_camera.look_at(player.global_position + Vector3.UP * 0.95)
 		await get_tree().process_frame
 		# each foot as the clip moves it about the body (turned to the world), so the body's

@@ -232,6 +232,8 @@ func _combat_checks(player: Player) -> void:
 			player.use_action_slot(1)
 		return wolf.health < wolf.max_health, 8.0)
 	_check(wolf.health < wolf.max_health, "missile hits the wolf")
+	var weapon: Node = player.model.find_child("Weapon", true, false)
+	_check(weapon.get_parent() == player.model._back_mount, "a spell leaves the axe on the back (WoW: weapons out to fight hand to hand)")
 	_check(wolf.state == Enemy.State.CHASE, "wolf fights back")
 	var t := 0.0
 	while t < 40.0 and not wolf.is_dead and not player.is_dead:
@@ -243,6 +245,7 @@ func _combat_checks(player: Player) -> void:
 		await get_tree().physics_frame
 		t += get_physics_process_delta_time() * Engine.time_scale
 	_check(wolf.is_dead, "wolf killed (%.0f s)" % t)
+	_check(weapon.get_parent() == player.model._hand_mount, "fighting hand to hand brought the axe out into the hand")
 	_check(wolf.tapped_by == player, "kill credit goes to the player")
 	var heard: Dictionary = Audio.played
 	var hits := ["hit", "hit_crit", "hit_crystal"].filter(func(k: String) -> bool: return heard.has(k))

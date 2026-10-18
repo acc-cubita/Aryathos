@@ -62,7 +62,8 @@ const SWINGS := ["ual2/Sword_Regular_A", "ual2/Sword_Regular_B", "ual2/Sword_Reg
 ## root-motion versions; strides scale with the character's leg length (MANNEQUIN_HIPS).
 const WALK_SPEED := 0.97
 const RUN_SPEED := 8.25 ## the sprint
-const BACK_SPEED := 5.36 ## the jog, played backwards
+## the backwards walk/jog mix (BACK_JOG), from the two clips' strides over BACK_CYCLE
+const BACK_SPEED := (0.97 * 1.333 * (1.0 - BACK_JOG) + 5.36 * 0.933 * BACK_JOG) / BACK_CYCLE
 const MANNEQUIN_HIPS := 0.917
 const JOG_SPEED := 5.36
 const RUN_FROM := 2.8 ## m/s where walking turns into a jog
@@ -75,18 +76,28 @@ const STRAFE_TURN := 10.0
 const SHUFFLE_TURN := 1.0
 ## How long (s) a standing landing plays before the character stands again.
 const LANDING := 0.45
+## Backing off (WoW's backpedal): a slow, measured walk backwards with long steps, made of
+## the walk with BACK_JOG of the jog mixed in, both played backwards on a common
+## BACK_CYCLE-second step cycle (both start with the left foot ahead).
+const BACK_JOG := 0.3
+const BACK_CYCLE := 1.15
+## A hero puts the weapon away on the back this long (s) after the fight, like WoW.
+const SHEATHE_AFTER := 4.0
 const PAINTED := preload("res://units/shaders/character.gdshader")
 ## What a character can hold in its right fist. In weapon space +Y runs along the haft from
 ## the fist and -Z points the way the edge faces; root -> edge is where the swing's glow arc
 ## runs. "painted" weapons use the hand-painted character shader, the others their own
-## scanned materials.
+## scanned materials. "hold": the weapon arm keeps that clip's pose while the weapon is out
+## (held ready, not swung about by the run); "channel": its pose while channelling a spell;
+## "middle": how far up the haft from the grip the weapon's middle is (it sits mid-back
+## when sheathed).
 const WEAPONS := {
 	"rune_axe": {"path": "res://art/weapons/rune_axe.glb", "painted": true,
-			"root": Vector3(0, 0.82, -0.06), "edge": Vector3(0, 0.82, -0.44)},
+			"root": Vector3(0, 0.82, -0.06), "edge": Vector3(0, 0.82, -0.44), "hold": ARMED_IDLE, "middle": 0.28},
 	"pick": {"path": "res://art/weapons/pick.glb", "painted": false,  # tools/art/blender/scavenger.py
-			"root": Vector3(0, 0.77, 0), "edge": Vector3(0, 0.78, -0.24)},
+			"root": Vector3(0, 0.77, 0), "edge": Vector3(0, 0.78, -0.24), "hold": ARMED_IDLE, "middle": 0.28},
 	"crystal_staff": {"path": "res://art/weapons/crystal_staff.glb", "painted": false,  # tools/art/blender/staff.py
-			"root": Vector3(0, 0.6, 0), "edge": Vector3(0, 1.12, 0), "channel": "ual1/Idle_Torch"},
+			"root": Vector3(0, 0.6, 0), "edge": Vector3(0, 1.12, 0), "channel": "ual1/Idle_Torch", "middle": 0.22},
 }
 const UPPER_BODY := ["Spine", "Chest", "UpperChest", "Neck", "Head", "LeftShoulder", "LeftUpperArm",
 		"LeftLowerArm", "LeftHand", "RightShoulder", "RightUpperArm", "RightLowerArm", "RightHand"]
@@ -128,6 +139,14 @@ var _stride := 1.0
 var _look_target := Marker3D.new()
 var _planter: FootPlanter
 var _upright: SpineUpright
+var _weapon: Node3D
+var _in_hand: Transform3D  # the weapon's place in the fist
+var _on_back: Transform3D  # and across the back
+var _hand_mount: BoneAttachment3D
+var _back_mount: BoneAttachment3D
+var _sheathes := false  # a hero's weapon goes on the back out of a fight
+var _drawn := true
+var _drawn_until := -1.0
 var _heading := 0.0  # radians the body is turned from the unit's facing (_turn_to_motion)
 var _backwards := false
 var _turn_rate := 0.0
@@ -171,6 +190,13 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_
 			if LOOKS[gender].path == path:
 				axe.transform = axe.transform.rotated_local(Vector3.FORWARD, deg_to_rad(LOOKS[gender].get("grip_roll", 0.0)))
 		hand.add_child(axe)
+		model._weapon = axe
+		model._in_hand = axe.transform
+		model._on_back = _sheath(skeleton, spec.get("middle", 0.4))
+		model._hand_mount = hand
+		model._back_mount = BoneAttachment3D.new()
+		model._back_mount.bone_name = "UpperChest"
+		skeleton.add_child(model._back_mount)
 		model._trail = WeaponTrail.new()
 		model._trail.base = spec.root
 		model._trail.tip = spec.edge
@@ -342,10 +368,11 @@ func _build_tree(scene: Node3D, skeleton: Skeleton3D) -> void:
 		player.get_animation(clips[anim_name]).loop_mode = Animation.LOOP_LINEAR
 	var states := AnimationNodeStateMachine.new()
 	for anim_name: String in LOOPS + ONCE + ["death"]:
+		if anim_name == "back_loop":
+			states.add_node(anim_name, _back_gait())
+			continue
 		var clip := AnimationNodeAnimation.new()
 		clip.animation = clips[anim_name]
-		if anim_name == "back_loop":
-			clip.play_mode = AnimationNodeAnimation.PLAY_MODE_BACKWARD
 		states.add_node(anim_name, clip)
 	for a: String in LOOPS + ONCE + ["death"]:
 		for b: String in LOOPS + ONCE + ["death"]:
@@ -383,22 +410,22 @@ func _build_tree(scene: Node3D, skeleton: Skeleton3D) -> void:
 		blend.connect_node("fist", 0, last)
 		blend.connect_node("fist", 1, "hold")
 		last = "fist"
+		var ready_clip: String = WEAPONS[weapon_key].get("hold", "")
+		if ready_clip != "":
+			# the weapon held ready at the side while it is out
+			var ready := _arm_overlay(player, ready_clip)
+			blend.add_node("ready", ready[0])
+			blend.add_node("ready_clip", ready[1])
+			blend.connect_node("ready", 0, last)
+			blend.connect_node("ready", 1, "ready_clip")
+			last = "ready"
 		var carry_clip: String = WEAPONS[weapon_key].get("channel", "")
 		if carry_clip != "":
 			# a staff is held upright while channelling a spell: the weapon arm takes the
 			# channel clip's pose (the release, which comes after, still takes it over)
-			var carry := AnimationNodeBlend2.new()
-			carry.filter_enabled = true
-			var anim := player.get_animation(carry_clip)
-			anim.loop_mode = Animation.LOOP_LINEAR
-			for track in anim.get_track_count():
-				var bone := String(anim.track_get_path(track).get_concatenated_subnames())
-				if bone.begins_with("Right") and not ["Leg", "Foot", "Toes"].any(func(w: String) -> bool: return w in bone):
-					carry.set_filter_path(anim.track_get_path(track), true)
-			var carried := AnimationNodeAnimation.new()
-			carried.animation = carry_clip
-			blend.add_node("carry", carry)
-			blend.add_node("carried", carried)
+			var carry := _arm_overlay(player, carry_clip)
+			blend.add_node("carry", carry[0])
+			blend.add_node("carried", carry[1])
 			blend.connect_node("carry", 0, last)
 			blend.connect_node("carry", 1, "carried")
 			last = "carry"
@@ -432,7 +459,47 @@ func _build_tree(scene: Node3D, skeleton: Skeleton3D) -> void:
 	_tree.active = true
 	if _armed:
 		_tree.set("parameters/fist/blend_amount", 1.0)
+		_tree.set("parameters/ready/blend_amount", 1.0)
+	_tree.set("parameters/states/back_loop/mix/blend_amount", BACK_JOG)
 
+
+## The weapon arm (right shoulder to fingers) in `clip`'s pose over whatever else plays:
+## [the Blend2 that lays it on, the clip's node].
+func _arm_overlay(player: AnimationPlayer, clip: String) -> Array:
+	var overlay := AnimationNodeBlend2.new()
+	overlay.filter_enabled = true
+	var anim := player.get_animation(clip)
+	anim.loop_mode = Animation.LOOP_LINEAR
+	for track in anim.get_track_count():
+		var bone := String(anim.track_get_path(track).get_concatenated_subnames())
+		if bone.begins_with("Right") and not ["Leg", "Foot", "Toes"].any(func(w: String) -> bool: return w in bone):
+			overlay.set_filter_path(anim.track_get_path(track), true)
+	var node := AnimationNodeAnimation.new()
+	node.animation = clip
+	return [overlay, node]
+
+
+## Backing off: the walk and the jog, both backwards and stretched onto one step cycle so
+## their feet go together, mixed by BACK_JOG (set once the tree runs).
+func _back_gait() -> AnimationNodeBlendTree:
+	var gait := AnimationNodeBlendTree.new()
+	# [clip, where in its cycle the left foot is furthest ahead]
+	for part: Array in [["walk", "ual1/Walk", 0.0], ["jog", "ual1/Jog_Fwd", 0.97 * 0.933]]:
+		var clip := AnimationNodeAnimation.new()
+		clip.animation = part[1]
+		clip.play_mode = AnimationNodeAnimation.PLAY_MODE_BACKWARD
+		clip.use_custom_timeline = true
+		clip.timeline_length = BACK_CYCLE
+		clip.stretch_time_scale = true
+		clip.start_offset = part[2]
+		clip.loop_mode = Animation.LOOP_LINEAR
+		gait.add_node(part[0], clip)
+	var mix := AnimationNodeBlend2.new()
+	gait.add_node("mix", mix)
+	gait.connect_node("mix", 0, "walk")
+	gait.connect_node("mix", 1, "jog")
+	gait.connect_node("output", 0, "mix")
+	return gait
 
 func _ready() -> void:
 	_unit = get_parent() as Unit
@@ -441,6 +508,9 @@ func _ready() -> void:
 		return  # a preview (character window): just breathe
 	_planter.unit = _unit
 	_last_yaw = _unit.global_rotation.y
+	if _weapon and _unit is Player:
+		_sheathes = true
+		_set_drawn(false)
 	_unit.attacked.connect(_on_attacked)
 	_unit.cast_started.connect(func(ability: AbilityData) -> void:
 		for particles in _hand_glows:
@@ -473,6 +543,12 @@ func _process(delta: float) -> void:
 	# a runner stands taller than the sprint clip (fades in from a jog to a run)
 	_upright.weight = move_toward(_upright.weight, clampf((speed - RUN_FROM) / (SPRINT_FROM - RUN_FROM), 0.0, 1.0), delta * 4.0)
 	_turn_to_motion(delta, speed)
+	if _sheathes:
+		# out while auto-attacking and as long as the fight goes on; away a while after
+		if _unit.auto_attacking or (_drawn and _unit.in_combat()):
+			_drawn_until = Game.time + SHEATHE_AFTER
+		if _drawn != (Game.time < _drawn_until):
+			_set_drawn(not _drawn)
 	var pace := 1.0
 	if not _unit.is_on_floor():
 		# a leap, then the fall (also off a ledge, once clearly in the air)
@@ -575,9 +651,41 @@ func _fire(shot: String) -> void:
 	_tree.set("parameters/%s_shot/request" % shot, AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE)
 
 
+## The weapon in the hand (held ready) or across the back (hands free to swing as the
+## character runs), like WoW's drawn and sheathed weapons.
+func _set_drawn(drawn: bool) -> void:
+	_drawn = drawn
+	if drawn:
+		_weapon.reparent(_hand_mount, false)
+		_weapon.transform = _in_hand
+	else:
+		_weapon.reparent(_back_mount, false)
+		_weapon.transform = _on_back
+	var tree_root := _tree.tree_root as AnimationNodeBlendTree
+	for overlay: String in ["fist", "ready"]:
+		if tree_root.has_node(overlay):
+			_tree.set("parameters/%s/blend_amount" % overlay, 1.0 if drawn else 0.0)
+
+
+## Where a sheathed weapon rides, in the UpperChest bone's frame: its middle (`middle` m up
+## the haft from the grip) at the middle of the back, the haft slanting up toward the left
+## shoulder, the head above it, the edge looking out to the left, flat to the back. (The
+## rig faces +Z; its right is -X.)
+static func _sheath(skeleton: Skeleton3D, middle: float) -> Transform3D:
+	var chest := skeleton.get_bone_global_rest(skeleton.find_bone("UpperChest"))
+	var haft := Vector3(0.6, 1.0, 0.0).normalized()
+	var grip := Vector3(0.0, chest.origin.y - 0.08, chest.origin.z - 0.21) - haft * middle
+	var edge := Vector3.RIGHT - haft * haft.x
+	edge = edge.normalized()
+	return chest.affine_inverse() * Transform3D(Basis(haft.cross(-edge), haft, -edge), grip)
+
+
 func _on_attacked() -> void:
 	# a spell that just finished its cast is released by the spell clip, not an axe swing
 	if absf(Game.time - _cast_finished_at) > 0.05:
+		if _sheathes and not _drawn:  # a swing brings the weapon out
+			_drawn_until = Game.time + SHEATHE_AFTER
+			_set_drawn(true)
 		_swing = (_swing + 1) % SWINGS.size()
 		_attack_clip.animation = SWINGS[_swing]
 		_fire("attack")
