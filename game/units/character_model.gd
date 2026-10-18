@@ -116,6 +116,7 @@ var _stride := 1.0
 ## where the neck and head look (world space, moved every frame)
 var _look_target := Marker3D.new()
 var _planter: FootPlanter
+var _upright: SpineUpright
 var _skeleton: Skeleton3D
 var _steps: Footsteps
 var _last_yaw := 0.0
@@ -167,6 +168,9 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_
 		glow_particles.position = Vector3(0, 0.09, 0)  # toward the fingers
 		palm.add_child(glow_particles)
 		model._hand_glows.append(glow_particles)
+	model._upright = SpineUpright.new()  # first: the head turns from the straightened torso
+	model._upright.name = "SpineUpright"
+	skeleton.add_child(model._upright)
 	model._look_target.top_level = true
 	model.add_child(model._look_target)
 	for bone_name: String in LOOK:
@@ -439,6 +443,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if _unit == null or _unit.is_dead:
+		_upright.weight = 0.0
 		return
 	_steps.update(_skeleton, _unit, delta)
 	var ground := Vector2(_unit.velocity.x, _unit.velocity.z)
@@ -446,6 +451,8 @@ func _process(delta: float) -> void:
 	var facing := -_unit.global_transform.basis.z
 	_aim_look()
 	_lean_into_turns(delta, speed)
+	# a runner stands taller than the sprint clip (fades in from a jog to a run)
+	_upright.weight = move_toward(_upright.weight, clampf((speed - RUN_FROM) / (SPRINT_FROM - RUN_FROM), 0.0, 1.0), delta * 4.0)
 	var pace := 1.0
 	if speed > 0.3:
 		# each gait plays as fast as the feet travel, for this character's leg length

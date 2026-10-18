@@ -38,6 +38,7 @@ func _run() -> void:
 	player.autorun = true
 	await _wait(0.9)
 	await _shot(player, folder, "run", 3.6)
+	print("torso lean running: %.0f degrees" % rad_to_deg(player.model._upright.leaning))
 	player.autorun = false
 	await _wait(0.8)
 	player.attacked.emit()
