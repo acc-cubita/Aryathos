@@ -17,7 +17,22 @@ func plant(terrain: Terrain) -> void:
 	shader.set_shader_parameter("grass_map", terrain.make_grass_texture())
 	shader.set_shader_parameter("map_size", float(terrain.map_resolution()))
 	shader.set_shader_parameter("spacing", spacing)
-	shader.set_shader_parameter("fade_start", radius - 8.0)
+	_build_grid()
+	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+
+
+## Grass out to `distance` from the camera (0: none); the graphics settings' grass distance.
+func set_radius(distance: float) -> void:
+	radius = distance
+	visible = distance > 0.0
+	if visible and material_override:
+		_build_grid()
+
+
+func _build_grid() -> void:
+	var shader := material_override as ShaderMaterial
+	shader.set_shader_parameter("fade_start", radius * 0.73)
 	shader.set_shader_parameter("fade_end", radius)
 	var cells := ceili(radius / spacing)
 	var grid := MultiMesh.new()
@@ -32,8 +47,6 @@ func plant(terrain: Terrain) -> void:
 	multimesh = grid
 	# The shader moves the clumps up to the ground, so cull with a box that covers any height.
 	custom_aabb = AABB(Vector3(-radius - 2.0, -20.0, -radius - 2.0), Vector3(radius * 2.0 + 4.0, 120.0, radius * 2.0 + 4.0))
-	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 
 
 func _process(_delta: float) -> void:

@@ -56,6 +56,7 @@ func _run() -> void:
 	await _boss_checks(player)
 	await _interface_checks(player)
 	await _creation_checks(player)
+	_graphics_checks()
 	await _merchant_checks(player)
 	await _talent_checks(player)
 	await _reputation_checks(player)
@@ -325,6 +326,30 @@ func _boss_checks(player: Player) -> void:
 	_check(quests.state(shardmaw) == QuestLog.State.READY, "killing Grimjaw completes The Shardmaw")
 	_check(boss.loot_items.has(load("res://data/items/shardmaw_hide.tres")), "Grimjaw always drops Shardmaw Hide Armor")
 	_check(quests.turn_ins_for(&"thalos").has(shardmaw), "The Shardmaw is handed in to Warden Thalos")
+
+
+## Graphics settings: a preset sets the zone's sun, sky light and grass; one change by hand
+## makes it Custom; they are kept.
+func _graphics_checks() -> void:
+	var environment: Environment = Game.zone.get_node("WorldEnvironment").environment
+	var sun: DirectionalLight3D = Game.zone.get_node("Sun")
+	var grass: GrassField = Game.zone.get_node("Grass")
+	_check(Graphics.preset_name() == "High" and environment.ssil_enabled and sun.directional_shadow_max_distance == 140.0
+			and grass.radius == 30.0, "the game starts on High graphics (bounce light, 140 m shadows, 30 m grass)")
+	Graphics.use_preset("Low")
+	_check(not environment.ssao_enabled and sun.directional_shadow_max_distance == 60.0 and grass.radius == 18.0
+			and get_viewport().screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA
+			and is_equal_approx(get_viewport().scaling_3d_scale, 0.8),
+			"Low: no ambient occlusion, 60 m shadows, 18 m grass, FXAA, 80% render scale")
+	Graphics.set_setting("grass", 0)
+	_check(not grass.visible and Graphics.preset_name() == "Custom", "grass can be turned off (the preset is then Custom)")
+	Graphics.use_preset("High")
+	_check(grass.visible and grass.radius == 30.0 and environment.ssil_enabled and get_viewport().msaa_3d == Viewport.MSAA_4X
+			and is_equal_approx(get_viewport().scaling_3d_scale, 1.0), "High brings it all back")
+	var saved := ConfigFile.new()
+	saved.load("user://settings_test.cfg")
+	_check(saved.get_value("graphics", "grass", -1) == 2 and saved.get_value("graphics", "shadows", -1) == 3,
+			"graphics settings are kept")
 
 
 ## Character creation: the look and name a new hero is given, and heroes show one hair style.

@@ -21,6 +21,7 @@ config/icon="res://icon.svg"
 Keybinds="*res://autoload/keybinds.gd"
 Game="*res://autoload/game.gd"
 Audio="*res://autoload/audio.gd"
+Graphics="*res://autoload/graphics.gd"
 
 [display]
 

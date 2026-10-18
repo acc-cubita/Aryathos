@@ -53,6 +53,7 @@ var _quest_log := QuestLogWindow.new()
 var _world_map := WorldMapWindow.new()
 var _keybindings := KeybindingsWindow.new()
 var _sound := SoundWindow.new()
+var _graphics := GraphicsWindow.new()
 var _merchant := MerchantWindow.new()
 var _talents := TalentWindow.new()
 var _reputation := ReputationWindow.new()
@@ -143,6 +144,9 @@ func setup(player: Player, zone_name: String, map_texture: Texture2D) -> void:
 		["Key Bindings", func() -> void:
 			_menu_panel.visible = false
 			_keybindings.toggle()],
+		["Graphics", func() -> void:
+			_menu_panel.visible = false
+			_graphics.toggle()],
 		["Sound", func() -> void:
 			_menu_panel.visible = false
 			_sound.toggle()],
@@ -367,13 +371,14 @@ func _build_windows(map_texture: Texture2D) -> void:
 	_world_map.setup(_player, map_texture, Game.zone)
 	_keybindings.setup()
 	_sound.setup()
+	_graphics.setup()
 	_merchant.setup(_player, _bags)
 	_talents.setup(_player)
 	_reputation.setup(_player)
 	_achievements.setup(_player)
 	_professions.setup(_player)
 	_bags.merchant = _merchant
-	for window: GameWindow in [_character, _spellbook, _talents, _reputation, _professions, _quest_log, _merchant, _world_map, _achievements, _keybindings, _sound, _bags]:
+	for window: GameWindow in [_character, _spellbook, _talents, _reputation, _professions, _quest_log, _merchant, _world_map, _achievements, _keybindings, _sound, _graphics, _bags]:
 		_root.add_child(window)
 		match window.side:
 			GameWindow.Side.CENTER:

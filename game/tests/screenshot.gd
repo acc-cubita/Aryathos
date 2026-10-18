@@ -17,6 +17,9 @@ func _run() -> void:
 		await Game.zone_ready
 	await get_tree().create_timer(2.0).timeout
 	await _shot(folder.path_join("camp.png"))
+	Game.zone.hud._graphics.toggle()  # the graphics settings over the camp
+	await _shot(folder.path_join("graphics.png"))
+	Game.zone.hud._graphics.toggle()
 	# Quest view: stand in front of Warden Thalos and talk to him.
 	var thalos: Npc = Game.zone.get_node("NPCs/WardenThalos")
 	Game.player.teleport(thalos.global_position + Vector3(0, 0.3, 4), 0.0)

@@ -1,6 +1,7 @@
 extends Node
 ## Saves UI-free views of the zone for art work. Run from the project folder:
 ##   Godot.exe --path game -- --scenery=<output folder>
+## (--graphics=Low|Medium|High|Ultra picks the graphics preset, e.g. with --scenery-fps.)
 
 ## name: [player position, camera yaw, pitch, distance]
 const VIEWS := {
@@ -38,10 +39,7 @@ func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(folder)
 	if Game.zone == null:
 		await Game.zone_ready
-	var hide_ui := InputEventAction.new()
-	hide_ui.action = "toggle_ui"
-	hide_ui.pressed = true
-	Input.parse_input_event(hide_ui)
+	Game.zone.hud.visible = false
 	# --scenery-off=grass,ssao,msaa,fog,glow,shadows turns features off to measure their cost.
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--scenery-off="):
@@ -53,6 +51,7 @@ func _run() -> void:
 		if arg.begins_with("--scenery-fps"):
 			fps_view = arg.get_slice("=", 1) if "=" in arg else "lake"
 	if fps_view != "":
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)  # not held to the screen's rate
 		var view: Array = VIEWS[fps_view]
 		var spot: Vector3 = view[0]
 		spot.y = Game.zone.terrain.get_height(spot.x, spot.z) + 0.2
