@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="GatherNodeData" format=3]
+
+[ext_resource type="Script" path="res://data/gather_node_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/professions/herbalism.tres" id="2_herbalism"]
+[ext_resource type="Resource" path="res://data/items/stormbloom.tres" id="3_item"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"stormbloom"
+display_name = "Stormbloom"
+profession = ExtResource("2_herbalism")
+required_skill = 30
+item = ExtResource("3_item")
+leaf_color = Color(0.25, 0.45, 0.4, 1)
+bloom_color = Color(0.35, 0.6, 1, 1)

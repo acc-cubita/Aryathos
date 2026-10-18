@@ -1,0 +1,545 @@
+extends Node
+## Automated gameplay check. Run from the project folder:
+##   Godot_console.exe --headless --path game -- --smoke-test
+## Prints PASS/FAIL per check and exits with code 0 only if all pass.
+
+var _failures := 0
+
+
+func _ready() -> void:
+	_run.call_deferred()
+
+
+func _run() -> void:
+	Engine.time_scale = 2.0
+	if Game.zone == null:
+		await Game.zone_ready
+	var player := Game.player
+	await _wait(1.0)
+	_check(player.is_on_floor(), "player stands on the terrain")
+
+	var start := player.global_position
+	Input.action_press("move_forward")
+	await _wait(1.0)
+	Input.action_release("move_forward")
+	var moved := Vector2(player.global_position.x - start.x, player.global_position.z - start.z).length()
+	_check(moved > 4.0, "W runs forward (%.1f m in 1 s)" % moved)
+
+	var yaw := player.rotation.y
+	Input.action_press("turn_left")
+	await _wait(0.5)
+	Input.action_release("turn_left")
+	_check(player.rotation.y > yaw + 0.5, "A turns left")
+
+	var ground_y := player.global_position.y
+	_send_action("jump")
+	await _wait(0.25)
+	_check(player.global_position.y > ground_y + 0.8, "Space jumps")
+	await _wait(1.5)
+	_check(player.is_on_floor(), "player lands again")
+
+	_send_action("autorun")
+	start = player.global_position
+	await _wait(1.0)
+	_check(player.global_position.distance_to(start) > 4.0, "autorun moves without holding W")
+	_send_action("autorun")
+
+	var spot := player.global_position
+	player.teleport(spot - Vector3.UP * 20.0, player.rotation.y)
+	await _wait(0.2)
+	_check(player.global_position.y > Game.zone.terrain.get_height(spot.x, spot.z) - 1.0, "a character stuck under the ground is put back on top")
+
+	await _navigation_checks()
+	await _combat_checks(player)
+	await _quest_checks(player)
+	await _loot_checks(player)
+	await _boss_checks(player)
+	await _interface_checks(player)
+	await _merchant_checks(player)
+	await _talent_checks(player)
+	await _reputation_checks(player)
+	await _achievement_checks(player)
+	await _profession_checks(player)
+	await _save_checks(player)
+
+	print("SMOKE TEST %s" % ("PASSED" if _failures == 0 else "FAILED (%d)" % _failures))
+	get_tree().quit(0 if _failures == 0 else 1)
+
+
+func _check(ok: bool, what: String) -> void:
+	print(("PASS  " if ok else "FAIL  ") + what)
+	if not ok:
+		_failures += 1
+
+
+func _send_action(action: String) -> void:
+	var event := InputEventAction.new()
+	event.action = action
+	event.pressed = true
+	Input.parse_input_event(event)
+
+
+func _wait(seconds: float) -> void:
+	await get_tree().create_timer(seconds, true, true).timeout
+
+
+func _navigation_checks() -> void:
+	var map := Game.player.get_world_3d().navigation_map
+	_check(NavigationServer3D.map_get_regions(map).size() > 0, "navigation mesh baked")
+	# Find a tree trunk out in the open and ask for a path straight through it.
+	var terrain: Terrain = Game.zone.terrain
+	var trunk: Vector3 = Vector3.INF
+	for shape: CollisionShape3D in Game.zone.get_node("Decorator/PropColliders").get_children():
+		var p := shape.global_position
+		if shape.shape is CylinderShape3D and absf(p.x) < 100 and absf(p.z) < 100 and terrain.get_slope(p.x, p.z) < 0.1:
+			trunk = p
+			break
+	var a := Vector3(trunk.x - 3.0, terrain.get_height(trunk.x - 3.0, trunk.z), trunk.z)
+	var b := Vector3(trunk.x + 3.0, terrain.get_height(trunk.x + 3.0, trunk.z), trunk.z)
+	var path := NavigationServer3D.map_get_path(map, a, b, true)
+	var length := 0.0
+	for i in range(1, path.size()):
+		length += path[i - 1].distance_to(path[i])
+	_check(path.size() > 2 and length > 6.05 and path[-1].distance_to(b) < 1.0, "paths walk around a tree (%d points, %.1f m)" % [path.size(), length])
+
+
+func _combat_checks(player: Player) -> void:
+	_check(player.abilities.size() == 4, "4 abilities loaded from data files")
+	var wolf := _nearest_enemy(player, &"shardfang_wolf")
+	_check(wolf != null, "wolves spawned")
+	_place_facing(player, wolf, 14.0)
+	await _wait(0.5)
+	player.set_target(wolf)
+	_check(player.use_action_slot(1), "cast Aether Shard")
+	# Re-cast if a slope or another wolf interrupted the first attempt.
+	await _wait_until(func() -> bool:
+		if player.casting == null and wolf.health == wolf.max_health:
+			player.use_action_slot(1)
+		return wolf.health < wolf.max_health, 8.0)
+	_check(wolf.health < wolf.max_health, "missile hits the wolf")
+	_check(wolf.state == Enemy.State.CHASE, "wolf fights back")
+	var t := 0.0
+	while t < 40.0 and not wolf.is_dead and not player.is_dead:
+		_face(player, wolf)
+		if player.distance_to_unit(wolf) <= Unit.MELEE_RANGE:
+			player.use_action_slot(0)
+		elif player.casting == null:
+			player.use_action_slot(1)
+		await get_tree().physics_frame
+		t += get_physics_process_delta_time() * Engine.time_scale
+	_check(wolf.is_dead, "wolf killed (%.0f s)" % t)
+	_check(wolf.tapped_by == player, "kill credit goes to the player")
+	var heard: Dictionary = Audio.played
+	var hits := ["hit", "hit_crit", "hit_crystal"].filter(func(k: String) -> bool: return heard.has(k))
+	_check((heard.has("swing") or heard.has("spell_cast")) and not hits.is_empty() and heard.has("wolf_death")
+			and heard.keys().any(func(k: String) -> bool: return k.begins_with("step_")),
+			"the fight is heard: attacks, hits, footsteps, the wolf's death (%s)" % ", ".join(heard.keys()))
+
+	var healed := [false]
+	Game.unit_healed.connect(func(unit: Unit, _s: Unit, _a: int, _c: bool) -> void: healed[0] = healed[0] or unit == player)
+	player.set_target(null)
+	await _wait(1.6)
+	player.use_action_slot(3)
+	await _wait(2.5)
+	_check(healed[0], "Crystal Mending heals the player")
+
+	var other := _nearest_enemy(player, &"gloomshard_scavenger")
+	_place_facing(player, other, 25.0)
+	await _wait(0.2)
+	player.target_nearest_enemy()
+	_check(player.target != null, "Tab selects an enemy in front")
+
+	other.engage(player)
+	var home := other.spawn_position
+	player.teleport(Vector3(home.x - 90.0, Game.zone.terrain.get_height(home.x - 90.0, home.z) + 0.5, home.z), 0.0)
+	await _wait_until(func() -> bool: return other.state == Enemy.State.IDLE, 30.0)
+	_check(other.state == Enemy.State.IDLE and other.health == other.max_health, "enemy leashes home and resets (state %d, %.1f m from home, health %d/%d)" % [
+			other.state, other.flat_distance(home), other.health, other.max_health])
+
+	player.take_damage(99999, null)
+	_check(player.is_dead, "player can die")
+	player.release_spirit()
+	_check(not player.is_dead and player.global_position.distance_to(player.spawn_point) < 1.0, "Release Spirit revives at the camp")
+
+
+func _quest_checks(player: Player) -> void:
+	_check(player.xp > 0, "killing a wolf gives XP")
+	var thalos: Npc = Game.zone.get_node("NPCs/WardenThalos")
+	var wolves: QuestData = thalos.quests[0]
+	var light: QuestData = thalos.quests[1]
+	var quests := player.quest_log
+	_check(quests.state(wolves) == QuestLog.State.AVAILABLE and quests.state(light) == QuestLog.State.UNAVAILABLE, "first quest offered, follow-up locked")
+	var talked := [false]
+	Game.npc_interacted.connect(func(npc: Npc) -> void: talked[0] = talked[0] or npc == thalos)
+	player.teleport(thalos.global_position + Vector3(0, 0.3, 3), 0.0)
+	await _wait(0.3)
+	player.interact_with(thalos)
+	_check(talked[0], "talking to Warden Thalos opens his dialog")
+
+	quests.accept(wolves, thalos.npc_id)
+	var level_before := player.level
+	for enemy in _alive(&"shardfang_wolf"):
+		if quests.state(wolves) == QuestLog.State.ACTIVE:
+			enemy.take_damage(9999, player)
+	_check(quests.state(wolves) == QuestLog.State.READY, "six wolf kills complete the objective")
+	quests.turn_in(wolves)
+	_check(quests.state(wolves) == QuestLog.State.DONE and player.level > level_before, "quest reward levels the player up (now level %d)" % player.level)
+	_check(player.max_health > 140, "leveling raises max health (%d)" % player.max_health)
+
+	quests.accept(light, thalos.npc_id)
+	_check(quests.turn_ins_for(&"magister_ivren").has(light), "Stolen Light is handed in to Magister Ivren")
+	for enemy in _alive(&"gloomshard_scavenger"):
+		enemy.take_damage(9999, player)
+	_check(quests.progress(light) > 0, "scavengers drop Stolen Aether Shards (%d)" % quests.progress(light))
+
+
+func _loot_checks(player: Player) -> void:
+	var boots: ItemData = load("res://data/items/vale_runner_boots.tres")
+	_check(player.equipment.get(ItemData.Slot.WEAPON) != null, "player starts with a weapon equipped")
+	_check(player.bags.has(boots), "quest reward item arrives in the bags")
+	var health_before := player.max_health
+	player.equip_from_bag(player.bags.find(boots))
+	_check(player.max_health == health_before + 10, "equipping boots adds their health (+10)")
+	player.unequip(ItemData.Slot.FEET)
+	_check(player.max_health == health_before, "unequipping removes it again")
+
+	var wolf: Enemy = _alive(&"shardfang_wolf")[0]
+	player.teleport(wolf.global_position + Vector3(2, 0.3, 0), 0.0)
+	await _wait(0.3)
+	wolf.take_damage(9999, player)
+	_check(wolf.loot_money >= wolf.data.money_min and wolf.has_loot(), "corpse holds money (%s)" % Game.format_money(wolf.loot_money))
+	var opened := [false]
+	Game.loot_opened.connect(func(_corpse: Enemy) -> void: opened[0] = true)
+	var money_before := player.money
+	var free_before := player.bags.count(null)
+	var drops := wolf.loot_items.size()
+	player.interact_with(wolf)
+	_check(player.money > money_before, "looting takes the money")
+	_check(opened[0] == (drops > 0), "loot window opens when items dropped (%d items)" % drops)
+	for i in drops:
+		player.take_loot(wolf, 0)
+	_check(player.bags.count(null) == free_before - drops and not wolf.has_loot(), "taking the items empties the corpse")
+
+
+func _boss_checks(player: Player) -> void:
+	var minimap := get_tree().get_first_node_in_group("minimap") as Minimap
+	_check(minimap != null and minimap.is_visible_in_tree(), "minimap is on screen")
+
+	var boss: Enemy = _alive(&"grimjaw")[0] if not _alive(&"grimjaw").is_empty() else null
+	_check(boss != null and boss.is_elite and boss.level == 4, "Grimjaw the Shardmaw spawned as a level 4 elite")
+	_place_facing(player, boss, 6.0)
+	await _wait(0.4)
+	boss.engage(player)
+	await _wait_until(func() -> bool: return boss.casting != null, 20.0)
+	_check(boss.casting != null and boss.casting.id == &"crystal_roar", "boss casts Crystal Roar")
+	_check(Audio.played.has("music"), "zone music is playing")
+	# Step out of range: the roar must fail.
+	var away := (player.global_position - boss.global_position).normalized()
+	player.teleport(player.global_position + Vector3(away.x, 0, away.z) * 15.0 + Vector3.UP * 0.5, player.rotation.y)
+	await _wait_until(func() -> bool: return boss.casting == null, 3.0)
+	_check(boss.cooldown_left(boss.data.abilities[1]) == 0.0, "Crystal Roar fizzles when you step out of range")
+	await _wait_until(func() -> bool: return Audio.played.has("boss_music"), 2.0)
+	_check(Audio.played.has("boss_music"), "Grimjaw's fight brings in his music")
+
+	var quests := player.quest_log
+	var ivren: Npc = Game.zone.get_node("NPCs/MagisterIvren")
+	var light: QuestData = (Game.zone.get_node("NPCs/WardenThalos") as Npc).quests[1]
+	var shardmaw: QuestData = ivren.quests[0]
+	quests.active.filter(func(e: Dictionary) -> bool: return e["quest"] == light)[0]["count"] = light.required
+	_check(ivren.quest_marker_text() == "?", "Magister Ivren shows a yellow ? for Stolen Light")
+	quests.turn_in(light)
+	_check(quests.state(shardmaw) == QuestLog.State.AVAILABLE and ivren.quest_marker_text() == "!", "The Shardmaw unlocks at Magister Ivren")
+	quests.accept(shardmaw, ivren.npc_id)
+	boss.take_damage(99999, player)
+	_check(quests.state(shardmaw) == QuestLog.State.READY, "killing Grimjaw completes The Shardmaw")
+	_check(boss.loot_items.has(load("res://data/items/shardmaw_hide.tres")), "Grimjaw always drops Shardmaw Hide Armor")
+	_check(quests.turn_ins_for(&"thalos").has(shardmaw), "The Shardmaw is handed in to Warden Thalos")
+
+
+func _interface_checks(player: Player) -> void:
+	var windows := {}
+	for node in get_tree().get_nodes_in_group("game_windows"):
+		windows[(node as GameWindow).get_script().get_global_name()] = node
+	var keys := {"toggle_bags": "BagWindow", "toggle_character": "CharacterWindow",
+		"toggle_spellbook": "SpellbookWindow", "toggle_quest_log": "QuestLogWindow", "toggle_map": "WorldMapWindow"}
+	for action: String in keys:
+		_send_action(action)
+		await _wait(0.1)
+		_check(windows[keys[action]].visible, "%s opens the %s" % [Keybinds.label_for(action), keys[action]])
+	var character: GameWindow = windows["CharacterWindow"]
+	var spellbook: GameWindow = windows["SpellbookWindow"]
+	await get_tree().process_frame
+	_check(spellbook.position.x > character.position.x + 100, "left-side windows line up next to each other")
+
+	var target := _alive(&"shardfang_wolf")[0]
+	player.set_target(target)
+	_send_action("clear_target")
+	await _wait(0.1)
+	var any_open := windows.values().any(func(w: GameWindow) -> bool: return w.visible)
+	_check(not any_open and player.target == target, "Esc closes the windows first and keeps the target")
+
+	var surge := player.abilities[2]
+	player.place_on_action_bar(surge, 9)
+	_check(player.action_bar[9] == surge, "a spell can be placed on button 10")
+	player.place_on_action_bar(player.abilities[0], 9, 0)
+	_check(player.action_bar[0] == surge and player.action_bar[9] == player.abilities[0], "dragging between buttons swaps them")
+
+	var shardmaw: QuestData = (Game.zone.get_node("NPCs/MagisterIvren") as Npc).quests[0]
+	player.quest_log.abandon(shardmaw)
+	_check(player.quest_log.state(shardmaw) == QuestLog.State.AVAILABLE, "an abandoned quest can be picked up again")
+	_check(Keybinds.describe("toggle_ui") == "Alt+Z" and Keybinds.label_for("action_11") == "-", "Alt+Z and - / = keys are bound")
+
+
+func _merchant_checks(player: Player) -> void:
+	var heal: ItemData = load("res://data/items/minor_healing_potion.tres")
+	var mana_potion: ItemData = load("res://data/items/minor_mana_potion.tres")
+	var bren: Npc = Game.zone.get_node("NPCs/QuartermasterBren")
+	var merchant: MerchantWindow = get_tree().get_nodes_in_group("game_windows").filter(func(w: Node) -> bool: return w is MerchantWindow)[0]
+	var bags: BagWindow = get_tree().get_nodes_in_group("game_windows").filter(func(w: Node) -> bool: return w is BagWindow)[0]
+	player.teleport(bren.global_position + Vector3(0, 0.3, 3), 0.0)
+	await _wait(0.3)
+	player.interact_with(bren)
+	await _wait(0.1)
+	_check(merchant.is_trading() and bags.visible, "talking to Quartermaster Bren opens his goods and your bags")
+
+	player.money = 100
+	var potions_before := player.count_item(heal)
+	var bought := player.buy(heal) and player.buy(heal)
+	_check(bought and player.money == 50 and player.count_item(heal) == potions_before + 2 and player.bags.count(heal) == 1, "two potions bought for 50c stack in one slot")
+	player.add_item(load("res://data/items/matted_pelt.tres"))
+	var money_before := player.money
+	merchant._sell_junk()
+	var junk_left := player.bags.any(func(item: ItemData) -> bool: return item != null and item.quality == ItemData.Quality.POOR)
+	_check(not junk_left and player.money > money_before, "Sell All Junk sells every gray item (+%s)" % Game.format_money(player.money - money_before))
+
+	player.buy(mana_potion)
+	player.place_on_action_bar(mana_potion, 6)
+	player.mana = 0
+	_check(player.use_action_slot(6) and player.mana == 80, "a mana potion on the action bar restores 80 mana")
+	_check(not player.use_item(heal), "potions share one cooldown")
+	money_before = player.money
+	var stack := player.count_item(heal)
+	player.sell_bag_slot(player.bags.find(heal))
+	_check(player.money == money_before + 6 * stack and player.count_item(heal) == 0, "selling a stack pays for every potion in it (%d)" % stack)
+
+
+func _talent_checks(player: Player) -> void:
+	var by_id := {}
+	for talent in player.talents:
+		by_id[talent.id] = talent
+	_check(player.talents.size() == 13 and player.talent_trees.size() == 3, "13 talents in 3 trees loaded")
+	player.reset_talents()
+	while player.level < 8:
+		player.gain_xp(Game.xp_to_next_level(player.level))
+	_check(player.talent_points_free() == 7, "level 8 gives 7 talent points")
+
+	var health_before := player.max_health
+	player.learn_talent(by_id[&"crystal_skin"])
+	_check(player.max_health == roundi(health_before * 1.04), "Crystal Skin adds 4%% health (%d -> %d)" % [health_before, player.max_health])
+	_check(not player.learn_talent(by_id[&"thunderous_strikes"]), "row 2 stays locked until 3 points are in the tree")
+	player.reset_talents()
+	_check(player.max_health == health_before and player.talent_points_free() == 7, "Reset Talents gives every point back")
+
+	var surge: AbilityData = player.abilities[2]
+	for i in 3:
+		player.learn_talent(by_id[&"gathering_storm"])
+	_check(is_equal_approx(player.ability_cooldown(surge), surge.cooldown - 3.0), "Gathering Storm 3/3 cuts Storm Surge cooldown by 3 sec")
+	for i in 3:
+		player.learn_talent(by_id[&"thunderous_strikes"])
+	var nova_talent: TalentData = by_id[&"storm_nova_talent"]
+	_check(player.learn_talent(nova_talent) and player.abilities.has(nova_talent.ability) and player.action_bar.has(nova_talent.ability), "Storm Nova is learned and placed on the action bar")
+
+	# Two fresh wolves at the camp, one on each side of the player.
+	var spot := player.spawn_point
+	var near: Array[Enemy] = []
+	for offset: Vector3 in [Vector3(2.5, 0, 0), Vector3(-2.5, 0, 0)]:
+		var wolf := Enemy.new()
+		wolf.data = load("res://data/enemies/shardfang_wolf.tres")
+		wolf.spawn_position = spot + offset
+		Game.zone.get_node("Units").add_child(wolf)
+		wolf.global_position = wolf.spawn_position
+		near.append(wolf)
+	player.teleport(spot + Vector3.UP * 0.3, 0.0)
+	await _wait(0.6)
+	player.mana = player.max_mana
+	player.use_ability(nova_talent.ability)
+	_check(near.all(func(w: Enemy) -> bool: return w.health < w.max_health or w.is_dead), "Storm Nova hits every enemy around you")
+	for wolf in near:
+		wolf.queue_free()
+	player.reset_talents()
+	_check(not player.abilities.has(nova_talent.ability) and not player.action_bar.has(nova_talent.ability), "resetting removes Storm Nova again")
+
+
+func _reputation_checks(player: Player) -> void:
+	var watch := Database.faction(&"wardstone_watch")
+	_check(watch != null and Database.factions().size() == 2, "2 factions loaded")
+	_check(player.reputation_with(watch) >= 350, "quests and kills gave Wardstone Watch reputation (%d)" % player.reputation_with(watch))
+	var scavenger: Enemy = get_tree().get_nodes_in_group("enemies").filter(func(e: Enemy) -> bool: return e.data.id == &"gloomshard_scavenger")[0]
+	var before := player.reputation_with(watch)
+	player.on_enemy_killed(scavenger)
+	_check(player.reputation_with(watch) == before + 10, "killing a Gloomshard Scavenger gives +10 reputation")
+
+	var bren: Npc = Game.zone.get_node("NPCs/QuartermasterBren")
+	var mantle: ItemData = Database.item(&"watchkeeper_mantle")
+	var heal: ItemData = Database.item(&"minor_healing_potion")
+	player.reputation[watch.id] = 0
+	player.money = 1000
+	_check(not player.buy(mantle, bren) and player.price_for(heal, bren) == 25, "at Neutral: no mantle and full price")
+	player.gain_reputation(watch, 500)
+	_check(player.standing_with(watch) == FactionData.Standing.FRIENDLY, "500 reputation makes you Friendly")
+	_check(player.price_for(heal, bren) == 24 and player.price_for(mantle, bren) == 190, "Friendly gives 5% off at Bren")
+	_check(player.buy(mantle, bren) and player.money == 810, "Friendly unlocks the Watchkeeper's Mantle")
+	_check(not player.buy(Database.item(&"wardstone_signet"), bren), "the Signet still needs Honored")
+
+
+func _achievement_checks(player: Player) -> void:
+	var tracker := player.achievements
+	var by_id := {}
+	for achievement in tracker.all():
+		by_id[achievement.id] = achievement
+	_check(tracker.all().size() == 18, "18 achievements loaded")
+	_check(player.discovered.has("Wardstone Post"), "the camp is discovered on arrival")
+	for id: StringName in [&"first_steps", &"a_lesson_learned", &"shardmaw_slayer", &"friend_of_the_watch", &"adventurer"]:
+		_check(tracker.is_earned(by_id[id]), "earned during the run: %s" % by_id[id].display_name)
+	_check(tracker.stat("kill:shardfang_wolf") > 0 and tracker.stat("deaths") >= 1, "statistics count kills and deaths")
+
+	var toasts := [0]
+	tracker.earned.connect(func(_a: AchievementData) -> void: toasts[0] += 1)
+	var xp_before := player.xp
+	var level_before := player.level
+	for place: Node3D in Game.zone.get_node("PointsOfInterest").get_children():
+		if not player.discovered.has(String(place.name)):
+			player.teleport(place.global_position + Vector3.UP * 30.0, 0.0)
+			await _wait(0.8)
+	_check(player.discovered.size() == 6, "all 6 places discovered (%d)" % player.discovered.size())
+	_check(player.xp != xp_before or player.level > level_before, "discovering places gives experience")
+	_check(tracker.is_earned(by_id[&"explore_silverrun_vale"]) and toasts[0] >= 1, "Explore Silverrun Vale is earned with a toast")
+	var expected := 0
+	for achievement in tracker.all():
+		if tracker.is_earned(achievement):
+			expected += achievement.points
+	_check(tracker.points() == expected and expected > 0, "achievement points add up (%d)" % expected)
+	player.teleport(player.spawn_point, 0.0)
+
+
+func _profession_checks(player: Player) -> void:
+	var herbalism := Database.profession(&"herbalism")
+	var alchemy := Database.profession(&"alchemy")
+	var mira: Npc = Game.zone.get_node("NPCs/HerbalistMira")
+	_check(not player.knows_profession(herbalism) and not player.knows_profession(alchemy), "no professions at the start")
+	var herbs := get_tree().get_nodes_in_group("gather_nodes")
+	_check(herbs.size() == 27, "27 herbs grow around the vale")
+	player.teleport(mira.global_position + Vector3(0, 0.3, 3), 0.0)
+	await _wait(0.3)
+	var talked := [false]
+	Game.npc_interacted.connect(func(npc: Npc) -> void: talked[0] = talked[0] or npc == mira)
+	player.interact_with(mira)
+	player.learn_profession(herbalism)
+	player.learn_profession(alchemy)
+	_check(talked[0] and player.profession_skill(herbalism) == 1 and player.profession_skill(alchemy) == 1, "Herbalist Mira teaches Herbalism and Alchemy")
+
+	# Fresh herbs at the camp, so no wandering wolf can interrupt the test.
+	var silverleaf := _plant(&"silverleaf", player.spawn_point + Vector3(1.5, 0, 0))
+	var stormbloom := _plant(&"stormbloom", player.spawn_point + Vector3(-1.5, 0, 0))
+	player.teleport(player.spawn_point + Vector3.UP * 0.3, 0.0)
+	await _wait(0.5)
+	var leaf_item: ItemData = silverleaf.data.item
+	var leaves_before := player.count_item(leaf_item)
+	_check(player.gather(silverleaf), "gathering starts a cast bar")
+	await _wait(1.8)
+	_check(player.count_item(leaf_item) > leaves_before and not silverleaf.available, "gathering gives Silverleaf and the plant disappears")
+	_check(player.profession_skill(herbalism) == 2, "an orange herb always raises Herbalism (now 2)")
+	_check(not player.gather(stormbloom), "Stormbloom needs Herbalism 30")
+
+	var second := _plant(&"silverleaf", player.spawn_point + Vector3(0, 0, 1.5))
+	player.gather(second)
+	Input.action_press("move_forward")
+	await _wait(0.3)
+	Input.action_release("move_forward")
+	_check(player.activity == "" and second.available, "moving cancels gathering")
+
+	var recipe := Database.recipe(&"minor_healing_potion")
+	var potion: ItemData = recipe.product
+	player.money = 100
+	player.buy(Database.item(&"empty_vial"))
+	player.teleport(player.spawn_point + Vector3.UP * 0.3, 0.0)
+	await _wait(0.5)
+	var potions_before := player.count_item(potion)
+	_check(player.craft(recipe), "crafting starts a cast bar")
+	await _wait(2.4)
+	_check(player.count_item(potion) == potions_before + 1 and player.profession_skill(alchemy) == 2, "Alchemy turns Silverleaf + Empty Vial into a potion and raises the skill")
+	_check(player.craft_block_reason(Database.recipe(&"lesser_healing_potion")) != "", "Lesser Healing Potion needs Alchemy 40")
+	for node in [silverleaf, stormbloom, second]:
+		node.queue_free()
+
+
+func _plant(id: StringName, at: Vector3) -> GatherNode:
+	var node := GatherNode.new()
+	node.data = Database.gather_nodes().filter(func(d: GatherNodeData) -> bool: return d.id == id)[0]
+	Game.zone.get_node("Units").add_child(node)
+	node.global_position = Vector3(at.x, Game.zone.terrain.get_height(at.x, at.z), at.z)
+	return node
+
+
+func _save_checks(player: Player) -> void:
+	_check(Game.save_path.ends_with("test.json"), "tests use their own save file")
+	var axe: ItemData = load("res://data/items/stormcaller_axe.tres")
+	player.money = 4321
+	player.add_item(axe)
+	player.equip_from_bag(player.bags.find(axe))
+	player.add_item(load("res://data/items/minor_healing_potion.tres"), 7)
+	player.place_on_action_bar(load("res://data/items/minor_healing_potion.tres"), 8)
+	player.learn_talent(player.talents[0])
+	player.learn_talent(player.talents[9])
+	var snapshot := JSON.stringify(player.to_save_data(), "", false, true)
+	_check(Game.save_game() and FileAccess.file_exists(Game.save_path), "the game saves to disk")
+
+	# Scramble the character, then load.
+	player.money = 0
+	player.reset_talents()
+	player.unequip(ItemData.Slot.WEAPON)
+	player.action_bar[8] = null
+	player.quest_log.load_save_data({})
+	player.level = 1
+	player.teleport(player.spawn_point, 0.0)
+	_check(Game.load_game(), "the save loads")
+	var restored := JSON.stringify(player.to_save_data(), "", false, true)
+	_check(restored == snapshot, "level, money, bags, gear, action bar, talents, quests and position all come back")
+	_check(player.equipment.get(ItemData.Slot.WEAPON) == axe and player.talent_rank(player.talents[0]) == 1, "the loaded gear and talents are the real game items")
+
+
+func _alive(id: StringName) -> Array[Enemy]:
+	var result: Array[Enemy] = []
+	for node in get_tree().get_nodes_in_group("enemies"):
+		var enemy := node as Enemy
+		if enemy.data.id == id and not enemy.is_dead:
+			result.append(enemy)
+	return result
+
+
+func _nearest_enemy(player: Player, id: StringName) -> Enemy:
+	var best: Enemy = null
+	for node in get_tree().get_nodes_in_group("enemies"):
+		var enemy := node as Enemy
+		if enemy.data.id == id and not enemy.is_dead and enemy.state == Enemy.State.IDLE 				and (best == null or enemy.global_position.distance_to(player.global_position) < best.global_position.distance_to(player.global_position)):
+			best = enemy
+	return best
+
+
+func _place_facing(player: Player, enemy: Unit, distance: float) -> void:
+	var away := Vector3(player.global_position.x - enemy.global_position.x, 0.0, player.global_position.z - enemy.global_position.z).normalized()
+	var spot := enemy.global_position + away * distance
+	spot.y = Game.zone.terrain.get_height(spot.x, spot.z) + 0.2
+	player.teleport(spot, atan2(away.x, away.z))
+
+
+func _face(player: Player, enemy: Unit) -> void:
+	var to := enemy.global_position - player.global_position
+	player.rotation.y = atan2(-to.x, -to.z)
+
+
+func _wait_until(condition: Callable, timeout: float) -> void:
+	var t := 0.0
+	while t < timeout and not condition.call():
+		await get_tree().physics_frame
+		t += get_physics_process_delta_time() * Engine.time_scale

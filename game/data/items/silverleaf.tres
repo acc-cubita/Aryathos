@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"silverleaf"
+display_name = "Silverleaf"
+flavor_text = "A soft, silvery herb that soothes wounds."
+quality = 1
+icon_glyph = "Sl"
+icon_color = Color(0.75, 0.8, 0.85, 1)
+sell_price = 4
+max_stack = 20

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"travelers_belt"
+display_name = "Traveler's Belt"
+quality = 1
+slot = 11
+icon_glyph = "Be"
+icon_color = Color(0.45, 0.32, 0.2, 1)
+health_bonus = 8
+sell_price = 20
+buy_price = 80

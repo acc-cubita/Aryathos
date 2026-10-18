@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Resource" path="res://data/factions/azure_concord.tres" id="41_concord"]
+[ext_resource type="Resource" path="res://data/factions/wardstone_watch.tres" id="40_watch"]
+[ext_resource type="Script" path="res://data/faction_data.gd" id="42_faction"]
+[ext_resource type="Script" path="res://data/quest_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/items/stormcaller_axe.tres" id="9_reward"]
+[ext_resource type="Resource" path="res://data/quests/wolves_at_the_wardstone.tres" id="2_wolves"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"stolen_light"
+title = "Stolen Light"
+offer_text = "Scavengers of the Gloomshard gangs dig for crystals in the east. They carve the shards raw and sell them to anyone, and raw aether calls the storms.
+
+Recover five Stolen Aether Shards from the Gloomshard Scavengers and bring them to Magister Ivren, here by the Wardstone. She will know what to do with them."
+progress_text = "You have the shards? Careful, {name}. Raw aether bites."
+complete_text = "Five shards, and every one humming with storm-light. Thalos was right to send you.
+
+These were not dug up by chance, {name}. Someone is gathering them."
+kind = 1
+enemy_id = &"gloomshard_scavenger"
+objective = "Stolen Aether Shard"
+required = 5
+drop_chance = 0.6
+xp_reward = 350
+requires = ExtResource("2_wolves")
+turn_in_npc = &"magister_ivren"
+reward_item = ExtResource("9_reward")
+reputation_factions = Array[ExtResource("42_faction")]([ExtResource("40_watch"), ExtResource("41_concord")])
+reputation_amounts = PackedInt32Array(200, 75)

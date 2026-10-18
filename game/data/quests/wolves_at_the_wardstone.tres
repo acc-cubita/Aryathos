@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Resource" path="res://data/factions/wardstone_watch.tres" id="40_watch"]
+[ext_resource type="Script" path="res://data/faction_data.gd" id="42_faction"]
+[ext_resource type="Script" path="res://data/quest_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/items/vale_runner_boots.tres" id="9_reward"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"wolves_at_the_wardstone"
+title = "Wolves at the Wardstone"
+offer_text = "The crystal storms have twisted the wolves of Silverrun Vale. Shards grow from their backs, and the light inside drives them mad. Every night they prowl closer to the Wardstone.
+
+Thin the packs to the north and west, {name}. Slay six Shardfang Wolves and return to me."
+progress_text = "The howling has not stopped. Have you dealt with the wolves?"
+complete_text = "Well done, {name}. The Wardstone already burns brighter.
+
+But the wolves are only a symptom. Something is feeding the storms."
+enemy_id = &"shardfang_wolf"
+objective = "Shardfang Wolf slain"
+required = 6
+xp_reward = 250
+reward_item = ExtResource("9_reward")
+reputation_factions = Array[ExtResource("42_faction")]([ExtResource("40_watch")])
+reputation_amounts = PackedInt32Array(150)

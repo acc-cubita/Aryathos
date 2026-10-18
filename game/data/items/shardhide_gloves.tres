@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"shardhide_gloves"
+display_name = "Shardhide Gloves"
+flavor_text = ""
+quality = 2
+slot = 4
+icon_glyph = "Gl"
+icon_color = Color(0.45, 0.42, 0.5, 1)
+health_bonus = 12
+mana_bonus = 0
+spell_power = 0
+min_damage = 0
+max_damage = 0
+sell_price = 45

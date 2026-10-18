@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TalentData" format=3]
+
+[ext_resource type="Script" path="res://data/talent_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/abilities/storm_surge.tres" id="2_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"gathering_storm"
+display_name = "Gathering Storm"
+description = "Reduces the cooldown of Storm Surge by {value} sec."
+icon_color = Color(0.6, 0.65, 0.95, 1)
+icon_glyph = "GS"
+tree = 1
+tier = 1
+column = 0
+max_rank = 3
+effect = 2
+ability = ExtResource("2_ability")
+value_per_rank = 1.0

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3]
+
+[ext_resource type="Script" path="res://data/achievement_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"honored_by_the_watch"
+display_name = "Honored by the Watch"
+description = "Become Honored with the Wardstone Watch."
+points = 15
+category = 4
+icon_color = Color(0.1, 0.8, 0.45, 1)
+icon_glyph = "Ho"
+criteria = 5
+target = &"wardstone_watch"
+count = 5

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TalentData" format=3]
+
+[ext_resource type="Script" path="res://data/talent_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/abilities/crystal_mending.tres" id="2_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"quick_mending"
+display_name = "Quick Mending"
+description = "Reduces the cast time of Crystal Mending by {value} sec."
+icon_color = Color(0.25, 0.75, 0.55, 1)
+icon_glyph = "QM"
+tree = 2
+tier = 2
+column = 0
+max_rank = 2
+effect = 1
+ability = ExtResource("2_ability")
+value_per_rank = 0.25

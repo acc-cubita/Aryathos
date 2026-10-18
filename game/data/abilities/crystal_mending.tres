@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://data/ability_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"crystal_mending"
+display_name = "Crystal Mending"
+description = "Heal a friendly target, or yourself when no friend is targeted."
+icon_color = Color(0.2, 0.7, 0.45, 1)
+icon_glyph = "CM"
+effect = 1
+targeting = 1
+cast_time = 2.0
+cooldown = 0.0
+mana_cost = 28
+max_range = 30.0
+starts_auto_attack = false
+min_amount = 34
+max_amount = 42
+color = Color(0.35, 1, 0.55, 1)
+projectile_speed = 0.0

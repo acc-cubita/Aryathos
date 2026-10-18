@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"stormbloom"
+display_name = "Stormbloom"
+flavor_text = "It crackles faintly when touched."
+quality = 1
+icon_glyph = "Sb"
+icon_color = Color(0.35, 0.55, 1, 1)
+sell_price = 10
+max_stack = 20

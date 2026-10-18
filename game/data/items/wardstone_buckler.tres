@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"wardstone_buckler"
+display_name = "Wardstone Buckler"
+quality = 1
+slot = 14
+icon_glyph = "Sh"
+icon_color = Color(0.55, 0.5, 0.42, 1)
+health_bonus = 12
+sell_price = 30
+buy_price = 120

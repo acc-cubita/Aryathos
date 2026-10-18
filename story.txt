@@ -1,0 +1,120 @@
+# ARYATHOS - Game Lore & Storyline Documentation
+
+## 1. THE CREATION & THE COSMIC CONFLICT
+
+### The Genesis of Aryathos
+Before time began, the realm of **Aryathos** was a void. Two primordial forces clashed to shape the universe:
+* **The Aether (Order & Light):** A celestial energy stream seeking symmetry, structure, civilization, and arcane perfection. Where it gathers it hardens into blue **Aether Crystals**; where it runs through the sky it breaks loose as **storm-light**.
+* **The Primal Edge (Chaos & Nature):** A wild, untamed force fueling evolution, survival, physical dominance, and unchecked magical power.
+
+The physical world of Aryathos was forged at the exact intersection of these two forces. For millennia, the world thrived in a volatile balance. However, the discovery of **Aether Crystals** and **Primal Ley-lines** shattered this equilibrium, leading to the **Great Fracture**.
+
+### The Wardstones
+After the Great Fracture the first Arkanor raised the **Wardstones**: towering pillars crowned with a great Aether crystal, set wherever a ley-line breaks the surface. A Wardstone drinks the wild Aether around it and holds the land steady. While its crystal burns, the valley around it is safe from **crystal storms**. Every frontier valley of the Covenant is built around one.
+
+### Crystal Storms & Gloomshard
+When an Aether crystal turns **volatile**, it darkens from within and its light starts to pull. Miners call such crystal **gloomshard**. Raw, uncut Aether "calls the storms": where much of it is cut and moved, crystal storms rise. These are flashes of storm-light that seed new shards into rock, plants and living flesh. Beasts caught in them grow crystals from their backs and go mad with the light inside (the **Shardfang** wolves).
+
+---
+
+## 2. THE FACTIONS & THE GREAT WAR
+
+### Faction 1: The Radiant Covenant (Order & Progress)
+* **Ideology:** Preservation of order, technological and arcane advancement, unity under divine/cosmic law.
+* **Capital City:** *Aetheria, the Shining Citadel*
+* **Core Goal:** Harness the Aether to stabilize the world and eradicate the chaotic corruptions of the Primal Edge.
+* **Playable Races:**
+  1. **Arkanor:** Tall, long-lived and noble, silver-haired even in youth, grave and proud. They are the people most deeply bound to raw arcane magic. They carve Aether into runes on their arms and on their great rune-axes, and they raised the first Wardstones. Their warrior-mages are the **Runeknights**, who fight with rune-axe, Aether and storm-light.
+  2. **Sylvari / Luminar:** Graceful guardians of cosmic light and sacred forests.
+  3. **Arkanite Mechanists:** Genius engineers who fuse mechanical cybernetics with Aether crystal energy, often replacing their own limbs with crystal-powered ones.
+  4. **Valenar:** Resilient humans who serve as the political and martial backbone of the Covenant.
+* **Allied Peoples:** The **Orebounds**, stout, bearded mountain-folk of the Orebound Holds. They are miners and smiths of Aether crystal, and their hammers forge the Covenant's crystal steel. They are not a member race of the Covenant but stand with it through the Azure Concord.
+
+### Faction 2: The Wildborne Vanguard (Chaos & Survival)
+* **Ideology:** Freedom, natural instinct, primal strength, rejection of autocratic celestial order.
+* **Capital City:** *Krag'Gore, the Maw of the Wild*
+* **Core Goal:** Destroy the rigid construct of the Covenant, free the world's ancient primal spirits, and rule through strength.
+* **Playable Races:**
+  1. **Thorkan:** Massive, minotaur-like bovine warriors connected to earth and ancestral spirits. Most clans follow Warbound Kor'gath. The crystal-marked **Skyhorn clans** of the eastern highlands broke with him and keep an oath to the Wardstones instead.
+  2. **Bravor:** Fierce, tribal orc-like juggernauts driven by honor and battle mastery.
+  3. **Vanthar:** Swift, stealthy jungle trackers and shadow-bound hunters.
+  4. **Shadowbound / Risen:** Resurrected ancestral spirits imbued with shadow energy, seeking retribution against the Covenant's absolute light.
+
+### Orders, Leagues & Reputation
+* **The Wardstone Watch** (Radiant Covenant): the wardens and rangers who keep the Wardstones burning in the frontier valleys. They hunt crystal-maddened beasts and drive off anyone who cuts raw crystal near a Wardstone.
+* **The Azure Concord**: the pact of the "blue-crystal peoples". These are the Covenant's Arkanor, Sylvari and Valenar, the Orebound Holds, and the Skyhorn Thorkan, who swore to share the Wardstones' light and trade in cut, tamed Aether. Its quartermasters supply every Wardstone post.
+
+---
+
+## 3. MAIN CAMPAIGN & STORYLINE
+
+### Prologue (Covenant): Silverrun Vale
+New Arkanor champions begin in **Silverrun Vale**, a pine valley on the Covenant frontier ringed by snow-capped mountains. In its heart stands **Wardstone Post**, a small camp of the Wardstone Watch around the valley's Wardstone.
+
+Crystal storms have begun to rise over the Vale, and the Wardstone hums uneasily:
+* **Wolves at the Wardstone:** The storms have twisted the wolves of the **Shardfang Hills**. Shards grow from their backs and they prowl ever closer to the Wardstone. *(Warden Thalos)*
+* **Stolen Light:** Hooded **Gloomshard Scavengers** dig crystal at the **Gloomshard Dig Site** and their camp in the east. They cut the shards raw and sell them to anyone, and their digging calls the storms. The champion recovers the stolen shards. *(Magister Ivren)*
+* **The Shardmaw:** The shards were not cut at random: every one was cut to feed something. The scavengers carry them to the **Shardmaw Den** in the northwest, home of **Grimjaw the Shardmaw**. He was a great cave bear whose hide the crystals have overgrown, until his roar shatters stone. Killing him quiets the storms over the Vale. *(Magister Ivren, then Warden Thalos)*
+
+What the champion finds in the den leads straight into Act I: someone has been paying the scavengers, and the shards were feeding a hidden sigil of **The Eclipse Hand**.
+
+**People of Wardstone Post:**
+* **Warden Thalos**, Keeper of the Wardstone (Wardstone Watch): stern, tired, devoted to the light he guards.
+* **Magister Ivren**, Arcanist of the Spire, sent from Aetheria to study the storms. She is the first to suspect the shards are being gathered on purpose.
+* **Quartermaster Bren** (Azure Concord): blunt and practical. Coin first.
+* **Herbalist Mira**: teaches the old ways of **Silverleaf** (for wounds) and **Stormbloom** (for the mind), Herbalism and Alchemy.
+
+### Act I: The Awakening of the Veiled Core
+Strange corruptions begin emerging across Aryathos. Aether crystals are turning volatile, and primal ley-lines are overflowing with shadow energy. Players start as newly initiated champions of their respective factions, investigating local disturbances. They discover an ancient cult known as **The Eclipse Hand**, attempting to awaken the **Veiled Core**, a dormant artifact containing the concentrated essence of creation. The cult buys volatile crystal through gangs like the Gloomshard Scavengers and feeds it to the Core's hidden sigils.
+
+### Act II: The Shattered Fronts
+War erupts between the Radiant Covenant and the Wildborne Vanguard as both blame each other for the corruption of the land. Key regional conflicts take place in:
+* **The Crystal Canyons:** Fighting over control of Aether crystal mines.
+* **The Iron-Bark Wilds:** Ancient forests holding sacred primal altars.
+* **The Whispering Ruins:** Underground catacombs where the Risen/Shadowbound were first reawakened.
+
+### Act III: The Eclipse Threat
+As the war reaches a stalemate, the Eclipse Hand successfully breaks the seals on the Veiled Core. It is revealed that the cult's leader is an ancient cosmic entity known as **Malakor the Unmaker**, who seeks to drain both Aether and Primal Edge energies to reboot Aryathos into total void.
+
+### Act IV: The Fractured Alliance (Climax & End-Game)
+Facing total annihilation, players from both factions must navigate a tense, unstable truce. While the Covenant and Vanguard remain natural enemies in world PvP, champions must venture into the **Heart of the Rift** to defeat Malakor and decide the fate of the Veiled Core:
+* **Covenant Ending / Progression:** Seal the Core to usher in an era of absolute Order and technological dominance.
+* **Vanguard Ending / Progression:** Shatter the Core to release raw primal magic back into the wild world.
+
+---
+
+## 4. WORLD MAP & KEY REGIONS
+
+| Region Name | Controlling Faction | Landscape / Aesthetic |
+| :--- | :--- | :--- |
+| **Aetheria** | Radiant Covenant | Soaring white marble spires, floating crystal islands, serene blue lighting. |
+| **Silverrun Vale** | Radiant Covenant (Wardstone Watch) | Arkanor starting valley: pine forests, a mountain lake, blue crystal outcrops, snow-capped peaks all around. |
+| **Krag'Gore** | Wildborne Vanguard | Massive volcanic fortresses, wooden structures, rugged mountain peaks. |
+| **The Whispering Wastes** | Contested / Shadowbound | Dark, mist-covered ruins glowing with deep purple crystal veins. |
+| **Sylvan Glade** | Covenant (Sylvari) | Bioluminescent magical forests with towering ancient trees. |
+| **The Blood Iron Plains** | Vanguard (Thorkan/Bravor) | Vistas of red earth, tribal encampments, giant beasts. |
+
+**Places in Silverrun Vale:** Wardstone Post, Silverrun Lake, Shardfang Hills, Gloomshard Camp, Gloomshard Dig Site, Shardmaw Den.
+
+---
+
+## 5. KEY NPCS & HISTORICAL FIGURES
+
+1. **High Luminary Vaelen (Radiant Covenant Leader):** An ancient Arkanor arch-mage who believes the only way to save Aryathos is total alignment with Aether crystals.
+2. **Warbound Kor'gath (Wildborne Vanguard Leader):** A legendary Thorkan chieftain who united the tribal clans to resist Covenant expansion.
+3. **The Silent Empress (Shadowbound Paragon):** A mysterious undead entity who unlocked the secrets of shadow magic to grant her people free will.
+4. **Arch-Mechanist Gearspark:** The mastermind behind the Arkanite Mechanists' cybernetic crystal limbs.
+
+---
+
+## 6. CLASSES
+
+* **Runeknight** (Arkanor): A rune-axe warrior who binds Aether into runes. *Rune Strike* for melee; *Aether Shard* and *Storm Surge* (storm-light) from range; *Crystal Mending* to heal; *Storm Nova* to blast everything around. Three talent paths: **Aether** (raw power and crits), **Storm** (storm-light), **Warding** (crystal skin and mending).
+
+---
+
+## 7. PROMPTING GUIDE FOR CLAUDE (HOW TO USE THIS MD)
+
+* **Writing Quests:** Ask Claude to write questlines fitting either the Covenant (order/tech/arcane) or Vanguard (survival/honor/spirits) themes.
+* **Dialogue Generation:** Inform Claude of the race's characteristics (e.g., formal and grand for Arkanor, blunt and honorable for Thorkan/Bravor).
+* **Game Mechanics Integration:** Use this lore to design faction reputation systems, world events, and dungeon lore background.

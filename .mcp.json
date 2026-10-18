@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "blender": {
+      "type": "stdio",
+      "command": "C:\\Users\\ntsom\\AppData\\Roaming\\Python\\Python313\\Scripts\\blender-mcp.exe",
+      "args": [],
+      "env": {}
+    }
+  }
+}

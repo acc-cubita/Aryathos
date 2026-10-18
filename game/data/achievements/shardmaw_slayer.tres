@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3]
+
+[ext_resource type="Script" path="res://data/achievement_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"shardmaw_slayer"
+display_name = "Shardmaw Slayer"
+description = "Defeat Grimjaw the Shardmaw."
+points = 15
+category = 1
+icon_color = Color(0.35, 0.6, 0.95, 1)
+icon_glyph = "Gr"
+criteria = 0
+target = &"grimjaw"
+count = 1

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"shard_etched_bracers"
+display_name = "Shard-Etched Bracers"
+quality = 2
+slot = 10
+icon_glyph = "Br"
+icon_color = Color(0.4, 0.5, 0.6, 1)
+health_bonus = 10
+mana_bonus = 0
+spell_power = 0
+sell_price = 45

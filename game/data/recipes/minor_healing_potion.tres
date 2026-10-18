@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3]
+
+[ext_resource type="Script" path="res://data/recipe_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/item_data.gd" id="2_item"]
+[ext_resource type="Resource" path="res://data/professions/alchemy.tres" id="3_alchemy"]
+[ext_resource type="Resource" path="res://data/items/minor_healing_potion.tres" id="4_product"]
+[ext_resource type="Resource" path="res://data/items/silverleaf.tres" id="5_silverleaf"]
+[ext_resource type="Resource" path="res://data/items/empty_vial.tres" id="6_empty_vial"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"minor_healing_potion"
+profession = ExtResource("3_alchemy")
+required_skill = 1
+product = ExtResource("4_product")
+reagents = Array[ExtResource("2_item")]([ExtResource("5_silverleaf"), ExtResource("6_empty_vial")])
+reagent_counts = PackedInt32Array(1, 1)

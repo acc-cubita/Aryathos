@@ -1,0 +1,24 @@
+# Godot cache and imports (regenerated automatically)
+game/.godot/
+
+# Engine binaries are downloaded separately (see README.md)
+tools/godot/
+
+# Screenshots and temporary output from test runs
+game/tests/output/
+
+# Third-party downloads (asset packs, scans, models, music): download again from the
+# sources listed in game/CREDITS.md and the tools/art scripts
+art/vendor/
+art/characters/arkanor_meshy/
+
+# Working files the art scripts rebuild (tools/art/blender/*.py)
+*.blend
+*.blend1
+art/characters/*/tex/
+art/characters/*/preview/
+art/characters/*/mh_preview/
+
+# Python caches
+__pycache__/
+*.pyc

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://data/ability_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"shatterclaw"
+display_name = "Shatterclaw"
+description = "A raking blow with crystal-hard claws."
+cooldown = 9.0
+max_range = 1.8
+min_amount = 10
+max_amount = 14
+color = Color(0.5, 0.8, 1, 1)

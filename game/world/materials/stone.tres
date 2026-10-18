@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://world/shaders/prop.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" path="res://art/textures/props_pbr/stone_albedo.png" id="2_albedo"]
+[ext_resource type="Texture2D" path="res://art/textures/props_pbr/stone_nrao.png" id="3_nrao"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/albedo_texture = ExtResource("2_albedo")
+shader_parameter/nrao_texture = ExtResource("3_nrao")
+shader_parameter/scale = 0.5
+shader_parameter/grain_axis = 1
+

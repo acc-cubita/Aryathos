@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TalentData" format=3]
+
+[ext_resource type="Script" path="res://data/talent_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"crystal_skin"
+display_name = "Crystal Skin"
+description = "Increases your maximum health by {value}%."
+icon_color = Color(0.3, 0.65, 0.5, 1)
+icon_glyph = "CS"
+tree = 2
+tier = 1
+column = 0
+max_rank = 3
+effect = 6
+value_per_rank = 4.0

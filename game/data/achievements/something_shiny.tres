@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3]
+
+[ext_resource type="Script" path="res://data/achievement_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"something_shiny"
+display_name = "Something Shiny"
+description = "Wear a rare (blue) item."
+points = 10
+category = 5
+icon_color = Color(0, 0.44, 0.87, 1)
+icon_glyph = "Bl"
+criteria = 7
+target = &""
+count = 3

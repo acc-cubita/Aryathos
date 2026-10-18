@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3]
+
+[ext_resource type="Script" path="res://data/achievement_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"a_lesson_learned"
+display_name = "A Lesson Learned"
+description = "Die for the first time."
+points = 5
+category = 0
+icon_color = Color(0.5, 0.5, 0.55, 1)
+icon_glyph = "RIP"
+criteria = 9
+target = &""
+count = 1

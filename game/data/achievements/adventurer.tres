@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3]
+
+[ext_resource type="Script" path="res://data/achievement_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"adventurer"
+display_name = "Adventurer"
+description = "Reach level 5."
+points = 10
+category = 0
+icon_color = Color(0.8, 0.65, 0.25, 1)
+icon_glyph = "5"
+criteria = 1
+target = &""
+count = 5

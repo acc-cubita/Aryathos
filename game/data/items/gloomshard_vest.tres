@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"gloomshard_vest"
+display_name = "Gloomshard Vest"
+flavor_text = ""
+quality = 2
+slot = 3
+icon_glyph = "Ch"
+icon_color = Color(0.35, 0.45, 0.3, 1)
+health_bonus = 20
+mana_bonus = 0
+spell_power = 2
+min_damage = 0
+max_damage = 0
+sell_price = 70

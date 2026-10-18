@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TalentData" format=3]
+
+[ext_resource type="Script" path="res://data/talent_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"thunderous_strikes"
+display_name = "Thunderous Strikes"
+description = "Increases your weapon damage by {value}%."
+icon_color = Color(0.75, 0.75, 0.9, 1)
+icon_glyph = "TS"
+tree = 1
+tier = 2
+column = 0
+max_rank = 3
+effect = 8
+value_per_rank = 5.0

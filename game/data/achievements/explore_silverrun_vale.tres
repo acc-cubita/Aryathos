@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3]
+
+[ext_resource type="Script" path="res://data/achievement_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"explore_silverrun_vale"
+display_name = "Explore Silverrun Vale"
+description = "Discover all 6 places in Silverrun Vale."
+points = 15
+category = 3
+icon_color = Color(0.3, 0.7, 0.5, 1)
+icon_glyph = "Ex"
+criteria = 4
+target = &""
+count = 6

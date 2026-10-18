@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"empty_vial"
+display_name = "Empty Vial"
+flavor_text = ""
+quality = 1
+icon_glyph = "Vi"
+icon_color = Color(0.7, 0.8, 0.8, 1)
+sell_price = 1
+buy_price = 4
+max_stack = 20

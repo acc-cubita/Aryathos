@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"stormcaller_axe"
+display_name = "Stormcaller's Axe"
+flavor_text = "It hums before the thunder."
+quality = 3
+slot = 1
+icon_glyph = "Ax"
+icon_color = Color(0.35, 0.55, 0.95, 1)
+health_bonus = 0
+mana_bonus = 0
+spell_power = 4
+min_damage = 10
+max_damage = 17
+sell_price = 220

@@ -1,0 +1,459 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://world/zone.gd" id="1_zone"]
+[ext_resource type="Script" path="res://world/terrain.gd" id="2_terrain"]
+[ext_resource type="Script" path="res://world/zone_decorator.gd" id="3_decor"]
+[ext_resource type="PackedScene" path="res://units/player/player.tscn" id="4_player"]
+[ext_resource type="Script" path="res://ui/hud.gd" id="5_hud"]
+[ext_resource type="Script" path="res://units/enemies/enemy_spawner.gd" id="6_spawner"]
+[ext_resource type="Resource" path="res://data/enemies/shardfang_wolf.tres" id="7_wolf"]
+[ext_resource type="Resource" path="res://data/enemies/gloomshard_scavenger.tres" id="8_scavenger"]
+[ext_resource type="Script" path="res://units/npcs/npc.gd" id="9_npc"]
+[ext_resource type="Script" path="res://data/quest_data.gd" id="10_quest"]
+[ext_resource type="Resource" path="res://data/quests/wolves_at_the_wardstone.tres" id="11_wolves"]
+[ext_resource type="Resource" path="res://data/quests/stolen_light.tres" id="12_light"]
+[ext_resource type="Resource" path="res://data/enemies/grimjaw.tres" id="13_grimjaw"]
+[ext_resource type="Resource" path="res://data/quests/the_shardmaw.tres" id="14_shardmaw"]
+[ext_resource type="Script" path="res://data/item_data.gd" id="15_item"]
+[ext_resource type="Resource" path="res://data/items/minor_healing_potion.tres" id="16_heal"]
+[ext_resource type="Resource" path="res://data/items/minor_mana_potion.tres" id="17_mana"]
+[ext_resource type="Resource" path="res://data/items/wardstone_buckler.tres" id="18_buckler"]
+[ext_resource type="Resource" path="res://data/items/travelers_belt.tres" id="19_belt"]
+[ext_resource type="Resource" path="res://data/items/watchkeeper_mantle.tres" id="20_mantle"]
+[ext_resource type="Resource" path="res://data/items/wardstone_signet.tres" id="21_signet"]
+[ext_resource type="Resource" path="res://data/factions/wardstone_watch.tres" id="22_watch"]
+[ext_resource type="Resource" path="res://data/gathering/silverleaf.tres" id="50_silverleaf"]
+[ext_resource type="Resource" path="res://data/gathering/stormbloom.tres" id="51_stormbloom"]
+[ext_resource type="Script" path="res://world/gather_spawner.gd" id="52_gather"]
+[ext_resource type="Script" path="res://data/profession_data.gd" id="53_profession"]
+[ext_resource type="Resource" path="res://data/professions/herbalism.tres" id="54_herbalism"]
+[ext_resource type="Resource" path="res://data/professions/alchemy.tres" id="55_alchemy"]
+[ext_resource type="Resource" path="res://data/items/empty_vial.tres" id="56_vial"]
+[ext_resource type="Material" path="res://world/materials/terrain.tres" id="60_terrain_mat"]
+[ext_resource type="Material" path="res://world/materials/water.tres" id="61_water_mat"]
+[ext_resource type="Material" path="res://world/materials/grass.tres" id="62_grass_mat"]
+[ext_resource type="Script" path="res://world/grass_field.gd" id="63_grass"]
+[ext_resource type="Material" path="res://world/materials/leaves_summer.tres" id="70_leaves"]
+[ext_resource type="Material" path="res://world/materials/bark_oak.tres" id="71_bark"]
+[ext_resource type="Material" path="res://world/materials/leaves_autumn.tres" id="75_autumn"]
+[ext_resource type="Material" path="res://world/materials/needles.tres" id="76_needles"]
+[ext_resource type="Material" path="res://world/materials/bark_pine.tres" id="77_pine_bark"]
+[ext_resource type="Script" path="res://world/prop_group.gd" id="73_props"]
+[ext_resource type="Texture2D" path="res://art/sky/kloofendal_partly_cloudy_4k_clamped.exr" id="74_skyhdr"]
+
+[sub_resource type="PanoramaSkyMaterial" id="sky_material"]
+panorama = ExtResource("74_skyhdr")
+
+[sub_resource type="Sky" id="sky"]
+sky_material = SubResource("sky_material")
+radiance_size = 2
+process_mode = 1
+
+[sub_resource type="Environment" id="environment"]
+background_mode = 2
+sky = SubResource("sky")
+ambient_light_source = 3
+reflected_light_source = 2
+tonemap_mode = 4
+ssao_enabled = true
+ssao_radius = 1.2
+ssao_intensity = 1.5
+ssao_detail = 0.6
+ssao_light_affect = 0.1
+ssil_enabled = true
+ssil_radius = 4.0
+ssil_intensity = 0.7
+glow_enabled = true
+glow_intensity = 0.6
+glow_bloom = 0.02
+glow_hdr_threshold = 1.2
+fog_enabled = true
+fog_light_color = Color(0.6, 0.68, 0.8, 1)
+fog_sun_scatter = 0.25
+fog_density = 0.0018
+fog_aerial_perspective = 0.6
+fog_sky_affect = 0.12
+adjustment_enabled = true
+adjustment_contrast = 1.06
+adjustment_saturation = 0.92
+
+[node name="SilverrunVale" type="Node3D"]
+script = ExtResource("1_zone")
+zone_name = "Silverrun Vale"
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("environment")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.8192, 0.4394, -0.3687, 0, 0.6428, 0.766, 0.5736, -0.6275, 0.5266, 0, 30, 0)
+light_color = Color(1, 0.93, 0.8, 1)
+light_energy = 1.35
+shadow_enabled = true
+shadow_blur = 1.0
+directional_shadow_blend_splits = true
+directional_shadow_max_distance = 140.0
+
+[node name="Terrain" type="StaticBody3D" parent="."]
+script = ExtResource("2_terrain")
+flat_areas = PackedVector3Array(0, 0, 18)
+lakes = PackedVector3Array(-62, 45, 30)
+path_segments = PackedVector2Array(0, 0, -5, -40, -5, -40, 8, -75, 8, -75, 45, -95, 0, 0, 40, 6, 40, 6, 78, 4)
+ground_material = ExtResource("60_terrain_mat")
+water_material = ExtResource("61_water_mat")
+
+[node name="Decorator" type="Node3D" parent="."]
+script = ExtResource("3_decor")
+clear_areas = PackedVector3Array(0, 0, 20, 78, 4, 13, 50, -100, 11, -62, -95, 10)
+crystal_areas = PackedVector3Array(78, 4, 16, 50, -100, 18, -62, -95, 12)
+leaf_material = ExtResource("70_leaves")
+autumn_leaf_material = ExtResource("75_autumn")
+needle_material = ExtResource("76_needles")
+bark_material = ExtResource("71_bark")
+pine_bark_material = ExtResource("77_pine_bark")
+
+[node name="Grass" type="MultiMeshInstance3D" parent="."]
+material_override = ExtResource("62_grass_mat")
+script = ExtResource("63_grass")
+
+[node name="Props" type="Node3D" parent="."]
+
+[node name="WardstonePost" type="Node3D" parent="Props"]
+position = Vector3(0, 0, 0)
+script = ExtResource("73_props")
+style = "watch"
+
+[node name="Tent" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(-10, 0, -10)
+rotation = Vector3(0, 0.785, 0)
+
+[node name="Tent2" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(10.5, 0, -10.5)
+rotation = Vector3(0, -0.785, 0)
+
+[node name="Tent3" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(-14.5, 0, 2.5)
+rotation = Vector3(0, 1.742, 0)
+
+[node name="Tent4" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(12, 0, 13.5)
+rotation = Vector3(0, -2.415, 0)
+
+[node name="Campfire" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(-5.5, 0, -9.5)
+
+[node name="Crate" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(-9.6, 0, 8.0)
+rotation = Vector3(0, 0.3, 0)
+
+[node name="Crate2" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(-10.4, 0, 6.6)
+rotation = Vector3(0, -0.2, 0)
+
+[node name="Barrel" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(-9.4, 0, 4.6)
+
+[node name="Crate3" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(9.8, 0, 5.0)
+rotation = Vector3(0, 0.5, 0)
+
+[node name="Barrel2" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(9.6, 0, 7.4)
+
+[node name="Banner" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(-4.8, 0, -17)
+
+[node name="Banner2" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(0.8, 0, -17.5)
+
+[node name="Banner3" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(17, 0, -1.0)
+rotation = Vector3(0, -1.571, 0)
+
+[node name="Banner4" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(17, 0, 6.0)
+rotation = Vector3(0, -1.571, 0)
+
+[node name="FenceArc" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(0, 0, 0)
+metadata/radius = 19.0
+metadata/from = 105.0
+metadata/to = 200.0
+
+[node name="FenceArc2" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(0, 0, 0)
+metadata/radius = 19.0
+metadata/from = 215.0
+metadata/to = 250.0
+
+[node name="FenceArc3" type="Marker3D" parent="Props/WardstonePost"]
+position = Vector3(0, 0, 0)
+metadata/radius = 19.0
+metadata/from = 22.0
+metadata/to = 80.0
+
+[node name="GloomshardCamp" type="Node3D" parent="Props"]
+position = Vector3(78, 0, 4)
+script = ExtResource("73_props")
+style = "gloomshard"
+
+[node name="Tent" type="Marker3D" parent="Props/GloomshardCamp"]
+position = Vector3(-7, 0, -7)
+rotation = Vector3(0, 0.785, 0)
+
+[node name="Tent2" type="Marker3D" parent="Props/GloomshardCamp"]
+position = Vector3(8, 0, 7)
+rotation = Vector3(0, -2.29, 0)
+
+[node name="Tent3" type="Marker3D" parent="Props/GloomshardCamp"]
+position = Vector3(-8, 0, 6)
+rotation = Vector3(0, 2.214, 0)
+
+[node name="Campfire" type="Marker3D" parent="Props/GloomshardCamp"]
+position = Vector3(1.5, 0, -2.5)
+
+[node name="Crate" type="Marker3D" parent="Props/GloomshardCamp"]
+position = Vector3(4, 0, 4.5)
+rotation = Vector3(0, 0.4, 0)
+
+[node name="Crate2" type="Marker3D" parent="Props/GloomshardCamp"]
+position = Vector3(4.9, 0, 5.6)
+rotation = Vector3(0, -0.3, 0)
+
+[node name="Cart" type="Marker3D" parent="Props/GloomshardCamp"]
+position = Vector3(6.5, 0, -5.5)
+rotation = Vector3(0, 0.8, 0)
+
+[node name="Banner" type="Marker3D" parent="Props/GloomshardCamp"]
+position = Vector3(-1, 0, -10)
+
+[node name="DigSite" type="Node3D" parent="Props"]
+position = Vector3(50, 0, -100)
+script = ExtResource("73_props")
+style = "gloomshard"
+
+[node name="Cart" type="Marker3D" parent="Props/DigSite"]
+position = Vector3(-3, 0, 3)
+rotation = Vector3(0, 0.4, 0)
+
+[node name="Cart2" type="Marker3D" parent="Props/DigSite"]
+position = Vector3(4, 0, -2.5)
+rotation = Vector3(0, -0.6, 0)
+
+[node name="Crate" type="Marker3D" parent="Props/DigSite"]
+position = Vector3(2, 0, 5)
+rotation = Vector3(0, 0.2, 0)
+
+[node name="Crate2" type="Marker3D" parent="Props/DigSite"]
+position = Vector3(2.9, 0, 6)
+rotation = Vector3(0, 0.9, 0)
+
+[node name="Barrel" type="Marker3D" parent="Props/DigSite"]
+position = Vector3(5, 0, 4)
+
+[node name="Tent" type="Marker3D" parent="Props/DigSite"]
+position = Vector3(-7.5, 0, -6)
+rotation = Vector3(0, 0.896, 0)
+
+[node name="ShardmawDen" type="Node3D" parent="Props"]
+position = Vector3(-62, 0, -95)
+script = ExtResource("73_props")
+style = "gloomshard"
+
+[node name="Boulder" type="Marker3D" parent="Props/ShardmawDen"]
+position = Vector3(-8, 0, -4)
+metadata/size = 5.5
+metadata/seed = 51
+
+[node name="Boulder2" type="Marker3D" parent="Props/ShardmawDen"]
+position = Vector3(6.5, 0, -7)
+metadata/size = 4.5
+metadata/seed = 52
+
+[node name="Boulder3" type="Marker3D" parent="Props/ShardmawDen"]
+position = Vector3(-9, 0, 6.5)
+metadata/size = 6.0
+metadata/seed = 53
+
+[node name="Boulder4" type="Marker3D" parent="Props/ShardmawDen"]
+position = Vector3(8, 0, 7)
+metadata/size = 3.5
+metadata/seed = 54
+
+[node name="Bones" type="Marker3D" parent="Props/ShardmawDen"]
+position = Vector3(1.5, 0, 3)
+rotation = Vector3(0, 0.7, 0)
+
+[node name="Bones2" type="Marker3D" parent="Props/ShardmawDen"]
+position = Vector3(-3.5, 0, -2.5)
+rotation = Vector3(0, -1.1, 0)
+
+[node name="Wardstone" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4)
+
+[node name="Units" type="Node3D" parent="."]
+
+[node name="Spawners" type="Node3D" parent="."]
+
+[node name="WolvesNorth" type="Marker3D" parent="Spawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, -48)
+script = ExtResource("6_spawner")
+enemy_data = ExtResource("7_wolf")
+count = 4
+radius = 12.0
+
+[node name="WolvesNorthEast" type="Marker3D" parent="Spawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0, -72)
+script = ExtResource("6_spawner")
+enemy_data = ExtResource("7_wolf")
+count = 4
+radius = 10.0
+
+[node name="WolvesWest" type="Marker3D" parent="Spawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 0, -15)
+script = ExtResource("6_spawner")
+enemy_data = ExtResource("7_wolf")
+count = 3
+radius = 9.0
+
+[node name="ScavengersEast" type="Marker3D" parent="Spawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 78, 0, 4)
+script = ExtResource("6_spawner")
+enemy_data = ExtResource("8_scavenger")
+count = 5
+radius = 12.0
+
+[node name="ScavengersDigSite" type="Marker3D" parent="Spawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, -100)
+script = ExtResource("6_spawner")
+enemy_data = ExtResource("8_scavenger")
+count = 4
+radius = 12.0
+
+[node name="ShardmawDen" type="Marker3D" parent="Spawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -62, 0, -95)
+script = ExtResource("6_spawner")
+enemy_data = ExtResource("13_grimjaw")
+count = 1
+radius = 0.0
+
+[node name="NPCs" type="Node3D" parent="."]
+
+[node name="WardenThalos" type="CharacterBody3D" parent="NPCs"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 3.5, 0, 0)
+script = ExtResource("9_npc")
+npc_id = &"thalos"
+reputation_faction = ExtResource("22_watch")
+title = "Keeper of the Wardstone"
+greeting = "Stay close to the Wardstone's light, {name}."
+quests = Array[ExtResource("10_quest")]([ExtResource("11_wolves"), ExtResource("12_light")])
+unit_name = "Warden Thalos"
+armor_color = Color(0.5, 0.55, 0.65, 1)
+
+[node name="MagisterIvren" type="CharacterBody3D" parent="NPCs"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -3.5, 0, 0)
+script = ExtResource("9_npc")
+npc_id = &"magister_ivren"
+reputation_faction = ExtResource("22_watch")
+title = "Arcanist of the Spire"
+greeting = "The Wardstone hums tonight. Something stirs in the crystals."
+quests = Array[ExtResource("10_quest")]([ExtResource("14_shardmaw")])
+unit_name = "Magister Ivren"
+armor_color = Color(0.42, 0.33, 0.58, 1)
+glow_color = Color(0.65, 0.5, 1, 1)
+
+[node name="QuartermasterBren" type="CharacterBody3D" parent="NPCs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, 6)
+script = ExtResource("9_npc")
+npc_id = &"quartermaster_bren"
+reputation_faction = ExtResource("22_watch")
+title = "General Goods"
+greeting = "Potions, belts, shields. Coin first, {name}."
+vendor_items = Array[ExtResource("15_item")]([ExtResource("16_heal"), ExtResource("17_mana"), ExtResource("18_buckler"), ExtResource("19_belt"), ExtResource("20_mantle"), ExtResource("21_signet"), ExtResource("56_vial")])
+unit_name = "Quartermaster Bren"
+armor_color = Color(0.5, 0.4, 0.3, 1)
+glow_color = Color(1, 0.75, 0.3, 1)
+
+[node name="HerbalistMira" type="CharacterBody3D" parent="NPCs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 6)
+script = ExtResource("9_npc")
+npc_id = &"herbalist_mira"
+title = "Herbalism & Alchemy Trainer"
+reputation_faction = ExtResource("22_watch")
+greeting = "Silverleaf for wounds, Stormbloom for the mind. Want to learn the old ways, {name}?"
+teaches = Array[ExtResource("53_profession")]([ExtResource("54_herbalism"), ExtResource("55_alchemy")])
+unit_name = "Herbalist Mira"
+armor_color = Color(0.35, 0.5, 0.3, 1)
+glow_color = Color(0.5, 1, 0.45, 1)
+model_scene = "res://art/characters/arkanor/arkanor_female.glb"
+
+[node name="GatherSpawners" type="Node3D" parent="."]
+
+[node name="SilverleafWest" type="Marker3D" parent="GatherSpawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 0, -28)
+script = ExtResource("52_gather")
+node_data = ExtResource("50_silverleaf")
+count = 5
+radius = 14.0
+
+[node name="SilverleafNorth" type="Marker3D" parent="GatherSpawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, -35)
+script = ExtResource("52_gather")
+node_data = ExtResource("50_silverleaf")
+count = 5
+radius = 14.0
+
+[node name="SilverleafLake" type="Marker3D" parent="GatherSpawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38, 0, 22)
+script = ExtResource("52_gather")
+node_data = ExtResource("50_silverleaf")
+count = 4
+radius = 12.0
+
+[node name="SilverleafSouth" type="Marker3D" parent="GatherSpawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 30)
+script = ExtResource("52_gather")
+node_data = ExtResource("50_silverleaf")
+count = 5
+radius = 14.0
+
+[node name="StormbloomCamp" type="Marker3D" parent="GatherSpawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, 0, -12)
+script = ExtResource("52_gather")
+node_data = ExtResource("51_stormbloom")
+count = 4
+radius = 10.0
+
+[node name="StormbloomDen" type="Marker3D" parent="GatherSpawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, -78)
+script = ExtResource("52_gather")
+node_data = ExtResource("51_stormbloom")
+count = 4
+radius = 10.0
+
+[node name="PointsOfInterest" type="Node3D" parent="."]
+
+[node name="Wardstone Post" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10)
+
+[node name="Silverrun Lake" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -62, 0, 45)
+
+[node name="Shardfang Hills" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -60)
+
+[node name="Gloomshard Camp" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 78, 0, 18)
+
+[node name="Gloomshard Dig Site" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, -115)
+
+[node name="Shardmaw Den" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -62, 0, -110)
+
+[node name="PlayerSpawn" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 7)
+
+[node name="Player" parent="." instance=ExtResource("4_player")]
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("5_hud")

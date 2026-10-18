@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3]
+
+[ext_resource type="Script" path="res://data/achievement_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"apprentice_alchemist"
+display_name = "Apprentice Alchemist"
+description = "Create 10 potions."
+points = 10
+category = 6
+icon_color = Color(0.8, 0.3, 0.6, 1)
+icon_glyph = "Al"
+criteria = 11
+target = &"items_crafted"
+count = 10

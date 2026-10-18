@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Resource" path="res://data/factions/azure_concord.tres" id="41_concord"]
+[ext_resource type="Resource" path="res://data/factions/wardstone_watch.tres" id="40_watch"]
+[ext_resource type="Script" path="res://data/faction_data.gd" id="42_faction"]
+[ext_resource type="Script" path="res://data/quest_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/quests/stolen_light.tres" id="2_light"]
+[ext_resource type="Resource" path="res://data/items/ivren_runed_gloves.tres" id="3_gloves"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"the_shardmaw"
+title = "The Shardmaw"
+offer_text = "These shards were not dug at random, {name}. Every one was cut to feed something.
+
+The scavengers carry them to the old den in the northwest, where Grimjaw the Shardmaw lairs. The crystals have grown into him. He is no longer just a bear.
+
+End him, and the storms may quiet. Then tell Warden Thalos what you found. And beware his roar: step away when he draws breath."
+progress_text = "Is Grimjaw still breathing? I can feel the storm-light pulling toward that den."
+complete_text = "Grimjaw is dead? Then the Vale owes you more than it can say, {name}.
+
+But if someone was feeding him shards, they will try again. We will need you when they do."
+enemy_id = &"grimjaw"
+objective = "Grimjaw the Shardmaw slain"
+required = 1
+xp_reward = 500
+reward_item = ExtResource("3_gloves")
+requires = ExtResource("2_light")
+turn_in_npc = &"thalos"
+reputation_factions = Array[ExtResource("42_faction")]([ExtResource("40_watch"), ExtResource("41_concord")])
+reputation_amounts = PackedInt32Array(350, 150)

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"silverrun_band"
+display_name = "Silverrun Band"
+quality = 2
+slot = 12
+icon_glyph = "Ri"
+icon_color = Color(0.75, 0.78, 0.85, 1)
+health_bonus = 0
+mana_bonus = 10
+spell_power = 2
+sell_price = 60

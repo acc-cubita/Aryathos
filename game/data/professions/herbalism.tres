@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ProfessionData" format=3]
+
+[ext_resource type="Script" path="res://data/profession_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"herbalism"
+display_name = "Herbalism"
+description = "Gather herbs from the wild. Herbs show on your minimap."
+kind = 0

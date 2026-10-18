@@ -1,0 +1,42 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://units/player/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://units/player/camera_rig.gd" id="2_rig"]
+[ext_resource type="Script" path="res://data/ability_data.gd" id="3_ability"]
+[ext_resource type="Resource" path="res://data/abilities/rune_strike.tres" id="4_strike"]
+[ext_resource type="Resource" path="res://data/abilities/aether_shard.tres" id="5_shard"]
+[ext_resource type="Resource" path="res://data/abilities/storm_surge.tres" id="6_surge"]
+[ext_resource type="Resource" path="res://data/abilities/crystal_mending.tres" id="7_mending"]
+[ext_resource type="Resource" path="res://data/items/worn_rune_axe.tres" id="8_axe"]
+[ext_resource type="Script" path="res://data/talent_data.gd" id="20_talent"]
+[ext_resource type="Resource" path="res://data/talents/sharpened_shards.tres" id="21_sharpened_shards"]
+[ext_resource type="Resource" path="res://data/talents/arcane_focus.tres" id="22_arcane_focus"]
+[ext_resource type="Resource" path="res://data/talents/swift_shards.tres" id="23_swift_shards"]
+[ext_resource type="Resource" path="res://data/talents/mana_attunement.tres" id="24_mana_attunement"]
+[ext_resource type="Resource" path="res://data/talents/aetherial_mastery.tres" id="25_aetherial_mastery"]
+[ext_resource type="Resource" path="res://data/talents/gathering_storm.tres" id="26_gathering_storm"]
+[ext_resource type="Resource" path="res://data/talents/rune_discipline.tres" id="27_rune_discipline"]
+[ext_resource type="Resource" path="res://data/talents/thunderous_strikes.tres" id="28_thunderous_strikes"]
+[ext_resource type="Resource" path="res://data/talents/storm_nova_talent.tres" id="29_storm_nova_talent"]
+[ext_resource type="Resource" path="res://data/talents/crystal_skin.tres" id="30_crystal_skin"]
+[ext_resource type="Resource" path="res://data/talents/mending_light.tres" id="31_mending_light"]
+[ext_resource type="Resource" path="res://data/talents/quick_mending.tres" id="32_quick_mending"]
+[ext_resource type="Resource" path="res://data/talents/unbreakable.tres" id="33_unbreakable"]
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_player")
+unit_name = "Aldren"
+starting_weapon = ExtResource("8_axe")
+talent_trees = Array[String](["Aether", "Storm", "Warding"])
+talents = Array[ExtResource("20_talent")]([ExtResource("21_sharpened_shards"), ExtResource("22_arcane_focus"), ExtResource("23_swift_shards"), ExtResource("24_mana_attunement"), ExtResource("25_aetherial_mastery"), ExtResource("26_gathering_storm"), ExtResource("27_rune_discipline"), ExtResource("28_thunderous_strikes"), ExtResource("29_storm_nova_talent"), ExtResource("30_crystal_skin"), ExtResource("31_mending_light"), ExtResource("32_quick_mending"), ExtResource("33_unbreakable")])
+abilities = Array[ExtResource("3_ability")]([ExtResource("4_strike"), ExtResource("5_shard"), ExtResource("6_surge"), ExtResource("7_mending")])
+
+[node name="CameraRig" type="Node3D" parent="."]
+script = ExtResource("2_rig")
+
+[node name="SpringArm3D" type="SpringArm3D" parent="CameraRig"]
+spring_length = 9.0
+margin = 0.3
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig/SpringArm3D"]
+fov = 70.0

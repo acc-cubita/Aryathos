@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/factions/wardstone_watch.tres" id="2_watch"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"wardstone_signet"
+display_name = "Wardstone Signet"
+flavor_text = "A sliver of the Wardstone itself."
+quality = 3
+slot = 12
+icon_glyph = "Si"
+icon_color = Color(0.4, 0.75, 1, 1)
+health_bonus = 0
+mana_bonus = 15
+spell_power = 5
+sell_price = 120
+buy_price = 500
+required_faction = ExtResource("2_watch")
+required_standing = 5

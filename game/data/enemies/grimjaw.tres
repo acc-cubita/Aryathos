@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Resource" path="res://data/factions/wardstone_watch.tres" id="40_watch"]
+[ext_resource type="Script" path="res://data/enemy_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/item_data.gd" id="2_item"]
+[ext_resource type="Resource" path="res://data/items/shardmaw_hide.tres" id="3_hide"]
+[ext_resource type="Script" path="res://data/ability_data.gd" id="4_ability"]
+[ext_resource type="Resource" path="res://data/abilities/shatterclaw.tres" id="5_claw"]
+[ext_resource type="Resource" path="res://data/abilities/crystal_roar.tres" id="6_roar"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"grimjaw"
+display_name = "Grimjaw the Shardmaw"
+beast = "bear"
+wander_speed = 1.2
+music = "res://audio/music/determined_pursuit.wav"
+min_level = 4
+max_level = 4
+is_elite = true
+body = 1
+main_color = Color(0.3, 0.32, 0.38, 1)
+glow_color = Color(0.4, 0.8, 1, 1)
+model_scale = 1.2
+base_health = 420
+min_damage = 9
+max_damage = 15
+attack_interval = 2.4
+move_speed = 6.5
+abilities = Array[ExtResource("4_ability")]([ExtResource("5_claw"), ExtResource("6_roar")])
+aggro_radius = 14.0
+social_radius = 0.0
+leash_radius = 40.0
+wander_radius = 3.0
+respawn_time = 120.0
+money_min = 80
+money_max = 150
+loot_items = Array[ExtResource("2_item")]([ExtResource("3_hide")])
+loot_chances = PackedFloat32Array(1.0)
+reputation_faction = ExtResource("40_watch")
+reputation_on_kill = 25

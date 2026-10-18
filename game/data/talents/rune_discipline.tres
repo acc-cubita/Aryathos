@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TalentData" format=3]
+
+[ext_resource type="Script" path="res://data/talent_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/abilities/rune_strike.tres" id="2_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"rune_discipline"
+display_name = "Rune Discipline"
+description = "Reduces the mana cost of Rune Strike by {value}%."
+icon_color = Color(0.55, 0.6, 0.75, 1)
+icon_glyph = "RD"
+tree = 1
+tier = 1
+column = 1
+max_rank = 2
+effect = 3
+ability = ExtResource("2_ability")
+value_per_rank = 25.0

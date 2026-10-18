@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://data/ability_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"rune_strike"
+display_name = "Rune Strike"
+description = "Strike with your rune-charged axe. Starts your auto-attack."
+icon_color = Color(0.55, 0.6, 0.75, 1)
+icon_glyph = "RS"
+effect = 0
+targeting = 0
+cast_time = 0.0
+cooldown = 0.0
+mana_cost = 10
+max_range = 1.8
+starts_auto_attack = true
+min_amount = 10
+max_amount = 14
+color = Color(0.85, 0.92, 1, 1)
+projectile_speed = 0.0

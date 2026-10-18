@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Resource" path="res://data/factions/wardstone_watch.tres" id="40_watch"]
+[ext_resource type="Script" path="res://data/enemy_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/item_data.gd" id="2_item"]
+[ext_resource type="Resource" path="res://data/items/minor_mana_potion.tres" id="30_minor_mana_potion"]
+[ext_resource type="Resource" path="res://data/items/wardstone_cloak.tres" id="21_wardstone_cloak"]
+[ext_resource type="Resource" path="res://data/items/silverrun_band.tres" id="20_silverrun_band"]
+[ext_resource type="Resource" path="res://data/items/cracked_shard.tres" id="3_cracked_shard"]
+[ext_resource type="Resource" path="res://data/items/scavenger_cap.tres" id="4_scavenger_cap"]
+[ext_resource type="Resource" path="res://data/items/gloomshard_vest.tres" id="5_gloomshard_vest"]
+[ext_resource type="Resource" path="res://data/items/aether_leggings.tres" id="6_aether_leggings"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"gloomshard_scavenger"
+display_name = "Gloomshard Scavenger"
+character = "res://art/characters/scavenger/scavenger.glb"
+weapon = "pick"
+min_level = 2
+max_level = 3
+body = 0
+main_color = Color(0.35, 0.3, 0.28, 1)
+glow_color = Color(0.55, 1, 0.35, 1)
+base_health = 70
+health_per_level = 15
+min_damage = 4
+max_damage = 7
+attack_interval = 2.2
+move_speed = 5.5
+aggro_radius = 11.0
+social_radius = 9.0
+money_min = 9
+money_max = 28
+loot_items = Array[ExtResource("2_item")]([ExtResource("3_cracked_shard"), ExtResource("4_scavenger_cap"), ExtResource("5_gloomshard_vest"), ExtResource("6_aether_leggings"), ExtResource("20_silverrun_band"), ExtResource("21_wardstone_cloak"), ExtResource("30_minor_mana_potion")])
+loot_chances = PackedFloat32Array(0.4, 0.06, 0.05, 0.05, 0.04, 0.04, 0.06)
+reputation_faction = ExtResource("40_watch")
+reputation_on_kill = 10

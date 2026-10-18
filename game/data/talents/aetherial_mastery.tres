@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TalentData" format=3]
+
+[ext_resource type="Script" path="res://data/talent_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"aetherial_mastery"
+display_name = "Aetherial Mastery"
+description = "Increases the damage of all your abilities by {value}%."
+icon_color = Color(0.6, 0.8, 1, 1)
+icon_glyph = "AM"
+tree = 0
+tier = 3
+column = 0
+max_rank = 1
+effect = 0
+value_per_rank = 10.0

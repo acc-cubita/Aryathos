@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TalentData" format=3]
+
+[ext_resource type="Script" path="res://data/talent_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"arcane_focus"
+display_name = "Arcane Focus"
+description = "Increases your chance to land a critical strike by {value}%."
+icon_color = Color(0.5, 0.45, 0.95, 1)
+icon_glyph = "AF"
+tree = 0
+tier = 1
+column = 1
+max_rank = 3
+effect = 5
+value_per_rank = 1.0

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"shardmaw_hide"
+display_name = "Shardmaw Hide Armor"
+flavor_text = "Shards still grow along the seams."
+quality = 3
+slot = 3
+icon_glyph = "Ch"
+icon_color = Color(0.3, 0.45, 0.7, 1)
+health_bonus = 35
+mana_bonus = 0
+spell_power = 4
+sell_price = 180

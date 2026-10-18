@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3]
+
+[ext_resource type="Script" path="res://data/achievement_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"scavenger_bane"
+display_name = "Scavenger Bane"
+description = "Kill 25 Gloomshard Scavengers."
+points = 10
+category = 1
+icon_color = Color(0.4, 0.6, 0.3, 1)
+icon_glyph = "Sc"
+criteria = 0
+target = &"gloomshard_scavenger"
+count = 25

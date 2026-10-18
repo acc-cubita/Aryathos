@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://data/ability_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"storm_surge"
+display_name = "Storm Surge"
+description = "Call a crackling bolt of storm energy. Instant."
+icon_color = Color(0.5, 0.6, 0.95, 1)
+icon_glyph = "SS"
+effect = 0
+targeting = 0
+cast_time = 0.0
+cooldown = 8.0
+mana_cost = 14
+max_range = 20.0
+starts_auto_attack = false
+min_amount = 14
+max_amount = 18
+color = Color(0.75, 0.85, 1, 1)
+projectile_speed = 60.0
+projectile_style = 2

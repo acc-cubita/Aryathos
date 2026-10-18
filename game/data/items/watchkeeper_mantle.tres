@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/factions/wardstone_watch.tres" id="2_watch"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"watchkeeper_mantle"
+display_name = "Watchkeeper's Mantle"
+flavor_text = "Worn by those the Watch trusts."
+quality = 2
+slot = 8
+icon_glyph = "Mn"
+icon_color = Color(0.35, 0.45, 0.7, 1)
+health_bonus = 15
+mana_bonus = 0
+spell_power = 2
+sell_price = 50
+buy_price = 200
+required_faction = ExtResource("2_watch")
+required_standing = 4

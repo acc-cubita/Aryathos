@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3]
+
+[ext_resource type="Script" path="res://data/achievement_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"green_thumb"
+display_name = "Green Thumb"
+description = "Gather 25 herbs."
+points = 10
+category = 6
+icon_color = Color(0.35, 0.7, 0.3, 1)
+icon_glyph = "Gt"
+criteria = 11
+target = &"herbs_gathered"
+count = 25

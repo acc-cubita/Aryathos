@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TalentData" format=3]
+
+[ext_resource type="Script" path="res://data/talent_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/abilities/aether_shard.tres" id="2_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"swift_shards"
+display_name = "Swift Shards"
+description = "Reduces the cast time of Aether Shard by {value} sec."
+icon_color = Color(0.35, 0.7, 1, 1)
+icon_glyph = "Sw"
+tree = 0
+tier = 2
+column = 0
+max_rank = 2
+effect = 1
+ability = ExtResource("2_ability")
+value_per_rank = 0.25

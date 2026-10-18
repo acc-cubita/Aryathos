@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"minor_mana_potion"
+display_name = "Minor Mana Potion"
+quality = 1
+slot = 0
+icon_glyph = "MP"
+icon_color = Color(0.2, 0.35, 0.95, 1)
+sell_price = 6
+buy_price = 25
+max_stack = 20
+use_effect = 2
+use_amount = 80
+use_cooldown = 30.0
+cooldown_group = &"potion"

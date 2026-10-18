@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TalentData" format=3]
+
+[ext_resource type="Script" path="res://data/talent_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/abilities/aether_shard.tres" id="2_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"sharpened_shards"
+display_name = "Sharpened Shards"
+description = "Increases the damage of Aether Shard by {value}%."
+icon_color = Color(0.3, 0.55, 1, 1)
+icon_glyph = "SS"
+tree = 0
+tier = 1
+column = 0
+max_rank = 3
+effect = 0
+ability = ExtResource("2_ability")
+value_per_rank = 6.0

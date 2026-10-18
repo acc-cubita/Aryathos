@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://data/ability_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"crystal_roar"
+display_name = "Crystal Roar"
+description = "A shattering roar. Step out of range before it finishes."
+cast_time = 2.0
+cooldown = 14.0
+max_range = 12.0
+min_amount = 22
+max_amount = 30
+color = Color(0.4, 0.75, 1, 1)

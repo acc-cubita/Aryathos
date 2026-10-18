@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://world/shaders/rock.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" path="res://art/textures/terrain/rock.png" id="2_rock"]
+[ext_resource type="Texture2D" path="res://art/textures/terrain/grass.png" id="3_moss"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/rock_texture = ExtResource("2_rock")
+shader_parameter/moss_texture = ExtResource("3_moss")

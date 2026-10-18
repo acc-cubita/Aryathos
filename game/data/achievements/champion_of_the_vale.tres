@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3]
+
+[ext_resource type="Script" path="res://data/achievement_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"champion_of_the_vale"
+display_name = "Champion of the Vale"
+description = "Complete The Shardmaw."
+points = 20
+category = 2
+icon_color = Color(0.95, 0.8, 0.3, 1)
+icon_glyph = "Ch"
+criteria = 2
+target = &"the_shardmaw"
+count = 1

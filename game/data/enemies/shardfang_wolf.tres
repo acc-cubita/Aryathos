@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://data/enemy_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/item_data.gd" id="2_item"]
+[ext_resource type="Resource" path="res://data/items/minor_healing_potion.tres" id="30_minor_healing_potion"]
+[ext_resource type="Resource" path="res://data/items/shard_etched_bracers.tres" id="20_shard_etched_bracers"]
+[ext_resource type="Resource" path="res://data/items/matted_pelt.tres" id="3_matted_pelt"]
+[ext_resource type="Resource" path="res://data/items/glowing_fang.tres" id="4_glowing_fang"]
+[ext_resource type="Resource" path="res://data/items/shardhide_gloves.tres" id="5_shardhide_gloves"]
+[ext_resource type="Resource" path="res://data/items/vale_runner_boots.tres" id="6_vale_runner_boots"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"shardfang_wolf"
+display_name = "Shardfang Wolf"
+beast = "wolf"
+wander_speed = 1.1
+min_level = 1
+max_level = 2
+body = 1
+main_color = Color(0.42, 0.4, 0.45, 1)
+glow_color = Color(0.35, 0.7, 1, 1)
+base_health = 55
+health_per_level = 14
+min_damage = 3
+max_damage = 6
+attack_interval = 2.0
+move_speed = 6.0
+aggro_radius = 10.0
+social_radius = 8.0
+money_min = 4
+money_max = 14
+loot_items = Array[ExtResource("2_item")]([ExtResource("3_matted_pelt"), ExtResource("4_glowing_fang"), ExtResource("5_shardhide_gloves"), ExtResource("6_vale_runner_boots"), ExtResource("20_shard_etched_bracers"), ExtResource("30_minor_healing_potion")])
+loot_chances = PackedFloat32Array(0.5, 0.3, 0.05, 0.05, 0.04, 0.06)
