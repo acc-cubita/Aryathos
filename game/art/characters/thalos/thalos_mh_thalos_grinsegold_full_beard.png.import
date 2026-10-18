@@ -1,0 +1,44 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://b6ua7pql0m7vi"
+path.bptc="res://.godot/imported/thalos_mh_thalos_grinsegold_full_beard.png-07c21833e6159d98abb2bffc0bad8424.bptc.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "ed5b09a67558fb0adf6d8d9f7bb66497"
+}
+
+[deps]
+
+source_file="res://art/characters/thalos/thalos_mh_thalos_grinsegold_full_beard.png"
+dest_files=["res://.godot/imported/thalos_mh_thalos_grinsegold_full_beard.png-07c21833e6159d98abb2bffc0bad8424.bptc.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=true
+compress/lossy_quality=0.7
+compress/uastc_level=0
+compress/rdo_quality_loss=0.0
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/channel_remap/red=0
+process/channel_remap/green=1
+process/channel_remap/blue=2
+process/channel_remap/alpha=3
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1
