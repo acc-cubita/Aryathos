@@ -15,6 +15,7 @@ const GAITS := {
 	"turn": ["turn_left"],     # turning on the spot
 	"jump": ["move_forward"],  # a running jump
 	"stand": [],  # standing, seen from behind (the sheathed weapon)
+	"run_front": ["move_forward"],  # running, seen from ahead (the sway)
 }
 const FRAMES := 10
 const START := Vector3(-4, 0, -24)  # on the road north of the camp, open ground ahead
@@ -71,11 +72,14 @@ func _run() -> void:
 			leap.action = "jump"
 			leap.pressed = true
 			Input.parse_input_event(leap)
+		var sways := Vector2(INF, -INF)
 		var slides := PackedFloat32Array()
 		for frame in FRAMES:
 			await _follow(player, 1.0 / 12.0, slides)
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png(folder.path_join("%s_%d.png" % [gait, frame]))
+			var tilt := rad_to_deg(player.model._upright.swaying)
+			sways = Vector2(minf(sways.x, tilt), maxf(sways.y, tilt))
 		for action: String in GAITS[gait]:
 			Input.action_release(action)
 		if player.has_method("set_walking"):
@@ -83,8 +87,8 @@ func _run() -> void:
 		var slide := 0.0
 		for s in slides:
 			slide += s
-		print("gait %s: speed %.1f m/s, planted foot slides %.2f m/s, state %s" % [gait,
-				Vector2(player.velocity.x, player.velocity.z).length(), slide / maxf(slides.size(), 1.0), player.model._state])
+		print("gait %s: speed %.1f m/s, torso sway %.1f..%.1f deg, state %s" % [gait,
+				Vector2(player.velocity.x, player.velocity.z).length(), sways.x, sways.y, player.model._state])
 	get_tree().quit()
 
 
@@ -99,6 +103,8 @@ func _follow(player: Player, seconds: float, slides: PackedFloat32Array) -> void
 		var motion := Vector3(player.velocity.x, 0.0, player.velocity.z)
 		var side := motion.normalized().cross(Vector3.UP) if motion.length() > 0.5 else player.global_transform.basis.x
 		_camera.global_position = player.global_position + side * 5.5 + Vector3.UP * 1.3
+		if _gait.ends_with("_front") and motion.length() > 0.5:
+			_camera.global_position = player.global_position + motion.normalized() * 6.0 + Vector3.UP * 1.4
 		if motion.length() < 0.5 and _gait == "stand":  # from straight behind
 			_camera.global_position = player.global_position + player.global_transform.basis.z * 3.4 + Vector3.UP * 1.4
 		_camera.look_at(player.global_position + Vector3.UP * 0.95)
@@ -152,6 +158,21 @@ func _clip_phases() -> void:
 			speed += v
 		print("clip %s: %.3f s, left foot ahead at %.2f, right at %.2f, planted foot speed %.2f m/s (%d samples)" % [
 				clip, length, float(front[0]) / samples, float(front[1]) / samples, speed / maxf(speeds.size(), 1), speeds.size()])
+		# sideways sway: the torso's tilt (hips to neck) and the head's, side to side (deg)
+		var hips := skeleton.find_bone("Hips")
+		var neck := skeleton.find_bone("Neck")
+		var head := skeleton.find_bone("Head")
+		var torso_roll := Vector2(INF, -INF)
+		var head_roll := Vector2(INF, -INF)
+		for i in samples:
+			player.seek(length * i / samples, true)
+			var torso := skeleton.get_bone_global_pose(neck).origin - skeleton.get_bone_global_pose(hips).origin
+			var t := rad_to_deg(atan2(torso.x, torso.y))
+			var up := skeleton.get_bone_global_pose(head).basis.y
+			var h := rad_to_deg(atan2(up.x, up.y))
+			torso_roll = Vector2(minf(torso_roll.x, t), maxf(torso_roll.y, t))
+			head_roll = Vector2(minf(head_roll.x, h), maxf(head_roll.y, h))
+		print("    sway: torso %.1f..%.1f deg, head %.1f..%.1f deg" % [torso_roll.x, torso_roll.y, head_roll.x, head_roll.y])
 
 
 func _wait(seconds: float) -> void:

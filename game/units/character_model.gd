@@ -109,8 +109,9 @@ const ONCE := ["jump_start", "land"]
 ## past these angles (deg: sideways, up/down) they stop turning.
 const LOOK := {"Neck": 0.4, "Head": 0.65}
 const LOOK_LIMITS := Vector2(70.0, 30.0)
-## Most a runner leans into a turn (rad), and how much per (rad/s of turn x m/s of speed).
-const MAX_LEAN := 0.14
+## Most a runner leans into a turn (rad), and how much per (rad/s of turn x m/s of speed):
+## a touch only (WoW's runners hardly lean).
+const MAX_LEAN := 0.035
 const LEAN := 0.012
 ## Parts of the MakeHuman meshes (by material name) drawn as alpha-tested strands.
 const STRANDS := ["beard", "moustache", "ponytail", "braid", "bun", "hair", "eyebrow", "eyelash", "short0", "long0", "bob0", "afro"]
@@ -534,6 +535,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if _unit == null or _unit.is_dead:
 		_upright.weight = 0.0
+		_upright.sway_weight = 0.0
 		return
 	_steps.update(_skeleton, _unit, delta)
 	var ground := Vector2(_unit.velocity.x, _unit.velocity.z)
@@ -543,6 +545,8 @@ func _process(delta: float) -> void:
 	# a runner stands taller than the sprint clip (fades in from a jog to a run)
 	_upright.weight = move_toward(_upright.weight, clampf((speed - RUN_FROM) / (SPRINT_FROM - RUN_FROM), 0.0, 1.0), delta * 4.0)
 	_turn_to_motion(delta, speed)
+	# a warrior's bearing on the move: no rocking from side to side
+	_upright.sway_weight = move_toward(_upright.sway_weight, 1.0 if speed > 0.3 and _unit.is_on_floor() else 0.0, delta * 4.0)
 	if _sheathes:
 		# out while auto-attacking and as long as the fight goes on; away a while after
 		if _unit.auto_attacking or (_drawn and _unit.in_combat()):
