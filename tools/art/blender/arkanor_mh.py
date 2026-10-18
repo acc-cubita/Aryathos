@@ -27,6 +27,7 @@ OUT = ROOT / "art" / "characters" / "arkanor"
 PACKS = ["makehuman_system_assets_cc0", "skins02_cc0", "skins01_cc0", "bodyparts05_cc0", "eyebrows01_cc0",
          "suits02_cc0", "shoes01_cc0", "hair02_ccby", "bodyparts06_cc-by"]
 
+from bl_ext.user_default.mpfb.services.assetservice import AssetService  # noqa: E402
 from bl_ext.user_default.mpfb.services.humanservice import HumanService  # noqa: E402
 from bl_ext.user_default.mpfb.services.locationservice import LocationService  # noqa: E402
 
@@ -52,6 +53,14 @@ BODIES = {
                     "rehmanpolanski_viking_pants/rehmanpolanski_viking_pants.mhclo",
                     "rehmanpolanski_viking_boots/rehmanpolanski_viking_boots.mhclo"],
         "x": -0.55,
+        # more looks for character creation, fitted too and hidden in the game until
+        # chosen (CharacterModel.LOOKS): hair styles and beards
+        "variants": {"hair": ["short02/short02.mhclo", "long01/long01.mhclo", "braid01/braid01.mhclo"],
+                     "clothes": ["grinsegold_full_beard/grinsegold_full_beard.mhclo",  # CC-BY grinsegold
+                                 "rehmanpolanski_beard_viking/rehmanpolanski_beard_viking.mhclo"]},
+        # parts left as their own meshes so the game can show or hide them
+        "variant_parts": ["ponytail01", "short02", "long01", "braid01", "elvs_scruffy_beard1",
+                          "rehmanpolanski_moustache_viking", "grinsegold_full_beard", "rehmanpolanski_beard_viking"],
     },
     "female": {
         "phenotype": {"gender": 0.0, "age": 0.55, "muscle": 0.72, "weight": 0.5, "proportions": 0.85,
@@ -72,6 +81,9 @@ BODIES = {
         # pieces that must sit over the suit (meters pushed out along their normals)
         "push": {"culturalibre_heroine_boots_1": 0.006},
         "x": 0.55,
+        "variants": {"hair": ["long01/long01.mhclo", "braid01/braid01.mhclo",
+                              "short03/short03.mhclo"]},
+        "variant_parts": ["elvs_braid_bun", "long01", "braid01", "short03"],
     },
 }
 
@@ -139,6 +151,10 @@ def build(key, spec=None):
     settings["subdiv_levels"] = 0
     basemesh = HumanService.deserialize_from_dict(info, settings)
     rig = basemesh.parent
+    for kind, assets in spec.get("variants", {}).items():
+        for asset in assets:
+            path = AssetService.find_asset_absolute_path(asset, asset_subdir=kind)
+            HumanService.add_mhclo_asset(path, basemesh, asset_type=kind, subdiv_levels=0, material_type="MAKESKIN")
     rig.location.x = spec["x"]
     if spec.get("silver", True):
         silver(rig)

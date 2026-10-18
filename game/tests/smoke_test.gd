@@ -55,6 +55,7 @@ func _run() -> void:
 	await _loot_checks(player)
 	await _boss_checks(player)
 	await _interface_checks(player)
+	await _creation_checks(player)
 	await _merchant_checks(player)
 	await _talent_checks(player)
 	await _reputation_checks(player)
@@ -324,6 +325,36 @@ func _boss_checks(player: Player) -> void:
 	_check(quests.state(shardmaw) == QuestLog.State.READY, "killing Grimjaw completes The Shardmaw")
 	_check(boss.loot_items.has(load("res://data/items/shardmaw_hide.tres")), "Grimjaw always drops Shardmaw Hide Armor")
 	_check(quests.turn_ins_for(&"thalos").has(shardmaw), "The Shardmaw is handed in to Warden Thalos")
+
+
+## Character creation: the look and name a new hero is given, and heroes show one hair style.
+func _creation_checks(player: Player) -> void:
+	var mira: Npc = Game.zone.get_node("NPCs/HerbalistMira")
+	var hairs := func(model: Node) -> Array:
+		return model.find_children("*", "MeshInstance3D", true, false).filter(func(m: MeshInstance3D) -> bool:
+			return m.visible and ["_elvs_braid_bun", "_long01", "_braid01", "_short03", "_ponytail01", "_short02"].any(
+					func(end: String) -> bool: return String(m.name).ends_with(end)))
+	_check(hairs.call(mira.model).size() == 1, "Herbalist Mira shows one hair style, not all of them")
+	var old_name := player.unit_name
+	var screen := CharacterCreation.new(player)
+	add_child(screen)
+	screen.look = {"gender": "female", "hair": 3, "hair_color": 2, "skin": 1, "beard": 0}
+	_check(screen.create("x") != "" and screen.create("Ly ra") != "", "names that are too short or not letters are refused")
+	_check(screen.create("seraphine") == "" and player.unit_name == "Seraphine" and player.look.gender == "female",
+			"Create names the hero (Seraphine) and gives her the chosen look")
+	var shown: Array = hairs.call(player.model)
+	_check(shown.size() == 1 and String(shown[0].name).ends_with("_short03"), "her chosen short hair is the only one showing")
+	_check(not get_tree().paused, "the game goes on after Create")
+	var saved: Variant = JSON.parse_string(FileAccess.get_file_as_string(Game.save_path))
+	_check(saved is Dictionary and saved.get("name") == "Seraphine" and (saved.get("look") as Dictionary).get("hair") == 3,
+			"the new hero is saved with her name and look")
+	player.set_look({"gender": "male", "beard": 1})
+	var beards := player.model.find_children("*", "MeshInstance3D", true, false).filter(func(m: MeshInstance3D) -> bool:
+		return m.visible and ("beard" in String(m.name) or "moustache" in String(m.name)))
+	_check(beards.size() == 1 and String(beards[0].name).ends_with("_grinsegold_full_beard"), "a male hero wears the one beard chosen")
+	player.set_look(CharacterModel.DEFAULT_LOOK)
+	player.unit_name = old_name
+	screen.queue_free()
 
 
 func _interface_checks(player: Player) -> void:

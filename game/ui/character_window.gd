@@ -96,7 +96,11 @@ func _build_preview() -> Control:
 	light.rotation_degrees = Vector3(-35, 25, 0)
 	viewport.add_child(light)
 	_model_pivot.rotation.y = PI
-	_model_pivot.add_child(CharacterModel.create(CharacterModel.ARKANOR_MALE, _player.glow_color))
+	_model_pivot.add_child(CharacterModel.create_hero(_player.look, _player.glow_color))
+	_player.look_changed.connect(func() -> void:
+		for old in _model_pivot.get_children():
+			old.queue_free()
+		_model_pivot.add_child(CharacterModel.create_hero(_player.look, _player.glow_color)))
 	viewport.add_child(_model_pivot)
 	var camera := Camera3D.new()
 	camera.position = Vector3(0, 1.05, 3.4)

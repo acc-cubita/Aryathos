@@ -34,6 +34,8 @@ var player: Player = null
 var zone: Zone = null
 ## Where the character is saved. Test runs use their own file so they never touch a real save.
 var save_path := "user://saves/character.json"
+## Running a test or tool (no character creation screen, a throwaway save).
+var testing := false
 
 var _autosave_at := AUTOSAVE_INTERVAL
 
@@ -41,8 +43,9 @@ var _autosave_at := AUTOSAVE_INTERVAL
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	for arg in OS.get_cmdline_user_args():
-		if arg == "--smoke-test" or arg.begins_with("--screenshot") or arg.begins_with("--scenery") or arg.begins_with("--model-shots") or arg.begins_with("--crowd") or arg.begins_with("--vfx-shots"):
+		if arg == "--smoke-test" or arg.begins_with("--screenshot") or arg.begins_with("--scenery") or arg.begins_with("--model-shots") or arg.begins_with("--crowd") or arg.begins_with("--vfx-shots") or arg.begins_with("--creation-shots"):
 			save_path = "user://saves/test.json"
+			testing = true
 			delete_save()
 		if arg == "--smoke-test":
 			add_child(load("res://tests/smoke_test.gd").new())
@@ -56,6 +59,8 @@ func _ready() -> void:
 			add_child(load("res://tests/crowd.gd").new())
 		elif arg.begins_with("--vfx-shots"):
 			add_child(load("res://tests/vfx_shots.gd").new())
+		elif arg.begins_with("--creation-shots"):
+			add_child(load("res://tests/creation_shots.gd").new())
 
 
 func _physics_process(delta: float) -> void:

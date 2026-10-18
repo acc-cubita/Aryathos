@@ -81,13 +81,13 @@ def pixels_of(image):
     return px.reshape(h, w, 4)
 
 
-def silver_image(image, name):
+def silver_image(image, name, level=SILVER_LEVEL):
     """The hair texture greyed and scaled to the silver level (same rule as arkanor_mh)."""
     px = pixels_of(image)
     visible = px[px[..., 3] > 0.5] if (px[..., 3] > 0.5).any() else px.reshape(-1, 4)
     luma = px[..., :3] @ np.array([0.3, 0.59, 0.11], np.float32)
     mean = max(float((visible[:, :3] @ np.array([0.3, 0.59, 0.11], np.float32)).mean()), 0.02)
-    grey = np.clip(luma * (SILVER_LEVEL / mean), 0, 1)[..., None] * SILVER_TINT
+    grey = np.clip(luma * (level / mean), 0, 1)[..., None] * SILVER_TINT
     out = bpy.data.images.new(name, image.size[0], image.size[1], alpha=True)
     out.pixels.foreach_set(np.dstack([grey, px[..., 3:]]).astype(np.float32).ravel())
     out.filepath_raw = str(TEX / (name + ".png"))
@@ -108,7 +108,7 @@ def find_texture(tree, *names):
     return None
 
 
-def game_material(obj, key, source, silver=True):
+def game_material(obj, key, source, silver=True, level=SILVER_LEVEL):
     """A plain Principled material glTF can carry: colour (+ alpha) and normal map.
     Hair turns silver (Arkanor) unless silver is False."""
     part = part_name(obj, key)
@@ -117,7 +117,7 @@ def game_material(obj, key, source, silver=True):
     normal = find_texture(tree, "normalmaptexture")
     hairy = any(word in part for word in HAIRY)
     if colour is not None and hairy and silver:
-        colour = silver_image(colour, "mh_%s_%s" % (key, part))
+        colour = silver_image(colour, "mh_%s_%s" % (key, part), level)
     mat = bpy.data.materials.new(part)
     mat.use_nodes = True
     nodes, links = mat.node_tree.nodes, mat.node_tree.links
@@ -176,20 +176,26 @@ def grip_markers(rig):
             rig.data.bones[name].use_deform = True  # kept by the glTF export (deform bones only)
 
 
-def convert(key, name=None, silver=True):
-    """Body mh_<key> -> one skinned mesh <name> (default arkanor_<key>) on rig <name>_rig."""
+def convert(key, name=None, silver=True, variants=(), level=SILVER_LEVEL):
+    """Body mh_<key> -> one skinned mesh <name> (default arkanor_<key>) on rig <name>_rig.
+    Parts named in `variants` (hair styles, beards) stay their own meshes, <name>_<part>,
+    for the game to show or hide; hair is silvered to `level`."""
     name = name or "arkanor_%s" % key
     rig = bpy.data.objects["mh_%s" % key]
     rename_bones(rig)
     parts = [o for o in rig.children_recursive if o.type == "MESH" and not o.hide_render]
     for obj in parts:
         bake_mesh(obj)
-        materials = [game_material(obj, key, slot.material, silver) for slot in obj.material_slots if slot.material]
+        materials = [game_material(obj, key, slot.material, silver, level) for slot in obj.material_slots if slot.material]
         obj.data.materials.clear()
         for mat in materials:
             obj.data.materials.append(mat)
+    loose = [o for o in parts if part_name(o, key) in variants]
+    for obj in loose:
+        obj.name = obj.data.name = "%s_%s" % (name, part_name(obj, key))
     body = next(o for o in parts if o.name.endswith(".body"))
-    with bpy.context.temp_override(active_object=body, selected_editable_objects=parts):
+    joined = [o for o in parts if o not in loose]
+    with bpy.context.temp_override(active_object=body, selected_editable_objects=joined):
         bpy.ops.object.join()
     body.name = body.data.name = name
     rig.name = rig.data.name = name + "_rig"
@@ -217,12 +223,14 @@ def export(name, folder=GAME_ART):
     textures no larger than MAX_TEXTURE."""
     rig = bpy.data.objects[name + "_rig"]
     body = bpy.data.objects[name]
-    shrink_textures(body)
+    meshes = [o for o in rig.children_recursive if o.type == "MESH"]  # the body and any loose variants
+    for obj in meshes:
+        shrink_textures(obj)
     x = rig.location.x
     rig.location.x = 0.0  # centred on its feet
     bpy.context.view_layer.update()
     bpy.ops.object.select_all(action="DESELECT")
-    for obj in (rig, body):
+    for obj in [rig] + meshes:
         obj.hide_set(False)
         obj.select_set(True)
     bpy.context.view_layer.objects.active = rig
@@ -235,11 +243,22 @@ def export(name, folder=GAME_ART):
     return path
 
 
+## The heroes' hair styles and beards, kept as their own meshes for character creation
+## (as arkanor_mh.BODIES[key]["variant_parts"]); their hair is silvered brighter than the
+## NPCs' (HERO_SILVER) for the game to tint it down to the chosen colour.
+HERO_VARIANTS = {
+    "male": ["ponytail01", "short02", "long01", "braid01", "elvs_scruffy_beard1",
+             "rehmanpolanski_moustache_viking", "grinsegold_full_beard", "rehmanpolanski_beard_viking"],
+    "female": ["elvs_braid_bun", "long01", "braid01", "short03"],
+}
+HERO_SILVER = 0.85
+
+
 if __name__ == "__main__":
     bpy.ops.wm.open_mainfile(filepath=str(SOURCE))
     TEX.mkdir(parents=True, exist_ok=True)
     for key in ("male", "female"):
-        rig, body = convert(key)
+        rig, body = convert(key, variants=HERO_VARIANTS[key], level=HERO_SILVER)
         tris = sum(len(p.vertices) - 2 for p in body.data.polygons)
         print("game: %s %d bones, %d tris, materials %s -> %s" % (
             key, len(rig.data.bones), tris, [m.name for m in body.data.materials], export(body.name)))

@@ -12,6 +12,26 @@ extends Node3D
 
 const ARKANOR_MALE := "res://art/characters/arkanor/arkanor_male.glb"
 const ARKANOR_FEMALE := "res://art/characters/arkanor/arkanor_female.glb"
+## A hero's look (character creation): which hair and beard meshes show, by the MakeHuman
+## asset they were made from (tools/art/blender/arkanor_game.py HERO_VARIANTS), and the
+## hair and skin tints. Options are [shown name, parts].
+const LOOKS := {
+	"male": {"path": ARKANOR_MALE,
+		"hair": [["Ponytail", ["ponytail01"]], ["Short", ["short02"]], ["Long", ["long01"]], ["Braid", ["braid01"]]],
+		"beard": [["Scruffy", ["elvs_scruffy_beard1", "rehmanpolanski_moustache_viking"]], ["Full", ["grinsegold_full_beard"]],
+				["Braided", ["rehmanpolanski_beard_viking"]], ["None", []]]},
+	"female": {"path": ARKANOR_FEMALE, "grip_roll": 13.0,
+		"hair": [["Braided Bun", ["elvs_braid_bun"]], ["Long", ["long01"]], ["Braid", ["braid01"]], ["Short", ["short03"]]],
+		"beard": [["None", []]]},
+}
+## (grip_roll: degrees the weapon turns about the fingers in that model's fist; the female
+## wrist rests rolled 13 degrees further in, which would tip the axe across her body.)
+## Arkanor are silver-haired even in youth: the hero hair is silvered bright and tinted down.
+const HAIR_COLORS := [["White", Color(1, 1, 1)], ["Silver", Color(0.78, 0.79, 0.82)], ["Ash", Color(0.66, 0.62, 0.56)],
+		["Steel", Color(0.55, 0.62, 0.74)], ["Smoke", Color(0.42, 0.42, 0.44)]]
+const SKIN_TONES := [["Fair", Color(1, 1, 1)], ["Light", Color(0.94, 0.86, 0.78)], ["Tan", Color(0.82, 0.68, 0.56)],
+		["Bronze", Color(0.66, 0.52, 0.42)]]
+const DEFAULT_LOOK := {"gender": "male", "hair": 0, "hair_color": 1, "skin": 0, "beard": 0}
 const LIBRARIES := {
 	"ual1": "res://art/animations/ual1.glb",
 	"ual2": "res://art/animations/ual2.glb",
@@ -87,7 +107,7 @@ var _lean := 0.0
 
 ## path: a character scene (ARKANOR_*, the scavenger...). weapon: a WEAPONS key, or empty
 ## for empty hands. glow tints the swing arcs (and the placeholder axe's rune).
-static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_axe") -> CharacterModel:
+static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_axe", look := {}) -> CharacterModel:
 	var model := CharacterModel.new()
 	model.name = "Model"
 	model._armed = weapon != ""
@@ -112,6 +132,9 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_
 		else:
 			axe = PlaceholderModel.axe(glow)
 		axe.transform = _grip(skeleton)
+		for gender: String in LOOKS:
+			if LOOKS[gender].path == path:
+				axe.transform = axe.transform.rotated_local(Vector3.FORWARD, deg_to_rad(LOOKS[gender].get("grip_roll", 0.0)))
 		hand.add_child(axe)
 		model._trail = WeaponTrail.new()
 		model._trail.base = spec.root
@@ -129,27 +152,69 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_
 	model._look_target.top_level = true
 	model.add_child(model._look_target)
 	for bone_name: String in LOOK:
-		var look := LookAtModifier3D.new()
-		look.name = bone_name + "Look"
-		look.bone_name = bone_name
-		look.forward_axis = SkeletonModifier3D.BONE_AXIS_PLUS_Z  # the rig faces +Z
-		look.primary_rotation_axis = Vector3.AXIS_Y
-		look.use_angle_limitation = true
-		look.symmetry_limitation = true
-		look.primary_limit_angle = deg_to_rad(LOOK_LIMITS.x)
-		look.secondary_limit_angle = deg_to_rad(LOOK_LIMITS.y)
-		look.duration = 0.4
-		look.transition_type = Tween.TRANS_SINE
-		look.influence = LOOK[bone_name]
-		skeleton.add_child(look)
-		look.target_node = look.get_path_to(model._look_target)
+		var aim := LookAtModifier3D.new()
+		aim.name = bone_name + "Look"
+		aim.bone_name = bone_name
+		aim.forward_axis = SkeletonModifier3D.BONE_AXIS_PLUS_Z  # the rig faces +Z
+		aim.primary_rotation_axis = Vector3.AXIS_Y
+		aim.use_angle_limitation = true
+		aim.symmetry_limitation = true
+		aim.primary_limit_angle = deg_to_rad(LOOK_LIMITS.x)
+		aim.secondary_limit_angle = deg_to_rad(LOOK_LIMITS.y)
+		aim.duration = 0.4
+		aim.transition_type = Tween.TRANS_SINE
+		aim.influence = LOOK[bone_name]
+		skeleton.add_child(aim)
+		aim.target_node = aim.get_path_to(model._look_target)
 	model._skeleton = skeleton
 	model._steps = Footsteps.new(skeleton, ["LeftFoot", "RightFoot"])
 	model._planter = FootPlanter.new()
 	model._planter.name = "FootPlanter"
 	skeleton.add_child(model._planter)
 	model._build_tree(scene, skeleton)
+	for gender: String in LOOKS:
+		if LOOKS[gender].path == path:  # a hero: one hair style, one beard, its tints
+			var full := DEFAULT_LOOK.duplicate()
+			full.merge(look, true)
+			full["gender"] = gender
+			model.apply_look(full)
 	return model
+
+
+## A hero (an Arkanor of either gender) dressed in `look` (see LOOKS; DEFAULT_LOOK's keys).
+static func create_hero(look: Dictionary, glow := Color(0.4, 0.85, 1.0), weapon := "rune_axe") -> CharacterModel:
+	var gender: String = look.get("gender", "male")
+	return create(LOOKS.get(gender, LOOKS.male).path, glow, weapon, look)
+
+
+## Shows the chosen hair and beard (hides the others) and tints hair, brows and skin.
+func apply_look(look: Dictionary) -> void:
+	var spec: Dictionary = LOOKS.get(look.get("gender", "male"), LOOKS.male)
+	var hair: Array = spec.hair[clampi(int(look.get("hair", 0)), 0, spec.hair.size() - 1)][1]
+	var beard: Array = spec.beard[clampi(int(look.get("beard", 0)), 0, spec.beard.size() - 1)][1]
+	var hair_tint: Color = HAIR_COLORS[clampi(int(look.get("hair_color", 1)), 0, HAIR_COLORS.size() - 1)][1]
+	var skin_tint: Color = SKIN_TONES[clampi(int(look.get("skin", 0)), 0, SKIN_TONES.size() - 1)][1]
+	var variants := []
+	for option: Array in spec.hair + spec.beard:
+		variants.append_array(option[1])
+	for mesh: MeshInstance3D in find_children("*", "MeshInstance3D", true, false):
+		if mesh.mesh == null:
+			continue  # the weapon's trail, before its first swing
+		var part := ""
+		for each: String in variants:
+			if String(mesh.name).ends_with("_" + each):
+				part = each
+		if part != "":
+			mesh.visible = part in hair or part in beard
+		for surface in mesh.mesh.get_surface_count():
+			var material := mesh.get_surface_override_material(surface) as StandardMaterial3D
+			if material == null:
+				continue
+			var name := material.resource_name.to_lower()
+			if part != "" or "eyebrow" in name:
+				material.albedo_color = hair_tint
+			elif name.begins_with("body"):
+				material.albedo_color = skin_tint
 
 
 ## Hand-painted look for every mesh of an imported scene (the rune axe): the baked colour

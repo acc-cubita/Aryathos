@@ -47,6 +47,8 @@ func _ready() -> void:
 	hud.setup(player, zone_name, ImageTexture.create_from_image(map_image))
 	if Game.load_game():
 		Game.chat("Welcome back, %s." % player.unit_name)
+	elif not Game.testing:
+		hud.open_character_creation()
 	Game.zone_ready.emit()
 
 

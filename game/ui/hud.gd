@@ -166,6 +166,14 @@ func setup(player: Player, zone_name: String, map_texture: Texture2D) -> void:
 	player.activity_ended.connect(_on_cast_ended)
 
 
+## The character creation screen (a new game, no save): the game waits until it is done.
+func open_character_creation() -> CharacterCreation:
+	var screen := CharacterCreation.new(_player)
+	_root.add_child(screen)
+	screen.open()
+	return screen
+
+
 func show_error(text: String) -> void:
 	_error.text = text
 	_error.modulate.a = 1.0

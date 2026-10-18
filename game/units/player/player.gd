@@ -17,6 +17,8 @@ signal place_discovered(place: String)
 signal professions_changed
 signal gathered(item: ItemData, count: int)
 signal crafted(item: ItemData, count: int)
+## The hero's look changed (its model was made again).
+signal look_changed
 ## Gathering and crafting use a cast bar like spells do.
 signal activity_started(text: String)
 signal activity_ended(success: bool)
@@ -32,6 +34,8 @@ const BAG_SIZE := 16
 const GATHER_RANGE := 4.0
 
 @export var race := "Arkanor"
+## How the hero looks (gender, hair, beard, colours): see CharacterModel.LOOKS.
+var look := CharacterModel.DEFAULT_LOOK.duplicate()
 @export var armor_color := Color(0.55, 0.6, 0.7)
 @export var glow_color := Color(0.3, 0.7, 1.0)
 ## Every ability the character knows (the spellbook).
@@ -99,7 +103,7 @@ func _ready() -> void:
 	quest_log = QuestLog.new(self)
 	achievements = AchievementLog.new(self)
 	super()
-	model = CharacterModel.create(CharacterModel.ARKANOR_MALE, glow_color)
+	model = CharacterModel.create_hero(look, glow_color)
 	add_child(model)
 	_ring = _make_target_ring()
 	add_child(_ring)
@@ -708,6 +712,20 @@ func gain_reputation(faction: FactionData, amount: int) -> void:
 
 ## Everything about the character that should survive closing the game.
 ## Items, abilities and quests are stored by id (see Database).
+## A new look (character creation, a loaded save): the model is made again.
+func set_look(new_look: Dictionary) -> void:
+	look = CharacterModel.DEFAULT_LOOK.duplicate()
+	for key: String in look:  # (a save brings numbers back as floats)
+		if new_look.has(key):
+			look[key] = String(new_look[key]) if key == "gender" else int(new_look[key])
+	if model != null:
+		model.queue_free()
+		remove_child(model)
+	model = CharacterModel.create_hero(look, glow_color)
+	add_child(model)
+	look_changed.emit()
+
+
 func to_save_data() -> Dictionary:
 	var bag_data := []
 	for i in BAG_SIZE:
@@ -735,7 +753,7 @@ func to_save_data() -> Dictionary:
 	# A dead character comes back at the camp, half healed.
 	var where := spawn_point if is_dead else global_position
 	return {
-		"version": 1, "level": level, "xp": xp, "money": money,
+		"version": 1, "name": unit_name, "look": look.duplicate(), "level": level, "xp": xp, "money": money,
 		"health": maxi(health, max_health / 2) if is_dead else health, "mana": mana,
 		"position": [where.x, where.y, where.z], "yaw": rotation.y,
 		"bags": bag_data, "equipment": gear, "action_bar": bar, "talents": ranks, "reputation": standing,
@@ -747,6 +765,9 @@ func to_save_data() -> Dictionary:
 
 
 func load_save_data(data: Dictionary) -> void:
+	unit_name = String(data.get("name", unit_name))
+	if data.get("look") is Dictionary:
+		set_look(data["look"])
 	level = clampi(int(data.get("level", 1)), 1, Game.MAX_LEVEL)
 	xp = int(data.get("xp", 0))
 	money = int(data.get("money", 0))
