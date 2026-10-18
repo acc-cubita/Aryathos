@@ -2,14 +2,14 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b3g8wdokqjqvf"
+uid="uid://d0oq76rkoipw4"
 path.bptc="res://.godot/imported/scavenger_robe__normal_gl.png-d5ee1232b28d16b365f65f7493b50b6f.bptc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "4779a5992f92f49a33961b481f68beb2"
+"md5": "be638f2bda48268e32d059277e936ea5"
 }
 
 [deps]

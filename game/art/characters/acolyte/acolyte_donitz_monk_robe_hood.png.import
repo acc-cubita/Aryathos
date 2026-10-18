@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://hbsv6rbgdvlo"
-path.bptc="res://.godot/imported/acolyte_acolyte_toigo_ankle_boots_female.png-7abd66bc5986e8f5a192470da61200ab.bptc.ctex"
+uid="uid://c7dre140jeuxf"
+path.bptc="res://.godot/imported/acolyte_donitz_monk_robe_hood.png-92e6e4a86a007c6b1ce26aeb0757855b.bptc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "5f62caf95df140fd058c98d49bea1944"
+"md5": "558f9e0bbeafd5afa8981f62e856e81c"
 }
 
 [deps]
 
-source_file="res://art/characters/acolyte/acolyte_acolyte_toigo_ankle_boots_female.png"
-dest_files=["res://.godot/imported/acolyte_acolyte_toigo_ankle_boots_female.png-7abd66bc5986e8f5a192470da61200ab.bptc.ctex"]
+source_file="res://art/characters/acolyte/acolyte_donitz_monk_robe_hood.png"
+dest_files=["res://.godot/imported/acolyte_donitz_monk_robe_hood.png-92e6e4a86a007c6b1ce26aeb0757855b.bptc.ctex"]
 
 [params]
 

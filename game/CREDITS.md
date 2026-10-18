@@ -9,11 +9,12 @@ reference; CC-BY assets must be credited in the game's credits.
   - the Shardfang wolf (bite, hit and death animations, crystals and fur tint added).
 - "Realistic Animated Bear 3D Model" by WildMesh 3D (https://sketchfab.com/WildMesh_3D), https://sketchfab.com/3d-models/realistic-animated-bear-3d-model-bffc3c87d2d148ff8533e1cc8a11c9f1
   - Grimjaw the Shardmaw (crystals added).
+- "Full beard" (grinsegold_full_beard) by grinsegold, MakeHuman community asset pack bodyparts06 - Warden Thalos's beard.
 - "Scruffy beard 1" (elvs_scruffy_beard1) by Elvaerwyn, MakeHuman community asset pack bodyparts06 - Arkanor male and Gloomshard Scavenger beards.
 
 ## CC0
 - MakeHuman / MPFB base mesh, skins, eyes, eyebrows, eyelashes, teeth, ponytail01 hair and
-  the viking moustache and clothes (rehmanpolanski), the heroine suit and boots and the
+  the viking moustache, beard (Quartermaster Bren), tattooed skin and clothes (rehmanpolanski), the heroine suit and boots and the
   male boots (culturalibre), the monk robe and hood (donitz) - MakeHuman community asset packs.
 - Sky, rocks, cliffs, camp props (crate, barrel, fire pit) and the scavenger's pick (picke_dirty_01) - Poly Haven.
 - Ground, bark, leaf, wood, linen and stone textures - ambientCG.

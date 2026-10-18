@@ -37,7 +37,7 @@ for _s, _side in (("l", "Left"), ("r", "Right")):
         for _i, _seg in enumerate(_segs):
             BONES["%s_%02d_%s" % (_mh, _i + 1, _s)] = _side + _godot + _seg
 
-HAIRY = ("eyebrow", "hair", "braid", "beard", "moustache", "ponytail", "bun", "updo")
+HAIRY = ("eyebrow", "hair", "braid", "beard", "moustache", "ponytail", "bun", "updo", "short0", "long0", "bob0", "afro")
 SILVER_LEVEL = 0.62
 SILVER_TINT = np.array([1.0, 0.98, 0.94])
 # roughness per part (by name); everything else is cloth
@@ -197,10 +197,27 @@ def convert(key, name=None, silver=True):
     return rig, body
 
 
+## Largest texture side exported: 4K cloth and skin scans are wasted on a game character.
+MAX_TEXTURE = 2048
+
+
+def shrink_textures(obj):
+    for slot in obj.material_slots:
+        if slot.material is None or not slot.material.use_nodes:
+            continue
+        for node in slot.material.node_tree.nodes:
+            image = node.image if node.type == "TEX_IMAGE" else None
+            if image is not None and max(image.size) > MAX_TEXTURE:
+                factor = MAX_TEXTURE / max(image.size)
+                image.scale(int(image.size[0] * factor), int(image.size[1] * factor))
+
+
 def export(name, folder=GAME_ART):
-    """<folder>/<name>.glb: the mesh <name> on its rig <name>_rig, centred on its feet."""
+    """<folder>/<name>.glb: the mesh <name> on its rig <name>_rig, centred on its feet,
+    textures no larger than MAX_TEXTURE."""
     rig = bpy.data.objects[name + "_rig"]
     body = bpy.data.objects[name]
+    shrink_textures(body)
     x = rig.location.x
     rig.location.x = 0.0  # centred on its feet
     bpy.context.view_layer.update()

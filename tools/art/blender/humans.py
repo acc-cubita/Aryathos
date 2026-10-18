@@ -2,7 +2,10 @@
 clothes through MPFB, like the Arkanor bodies (CHARACTERS):
   * scavenger: a gaunt, hooded crystal digger of the Gloomshard gangs, with the dirty pick
     he fights with (Poly Haven picke_dirty_01, CC0);
-  * acolyte: a woman of the Eclipse Hand cult in a hood and robe of deep violet.
+  * acolyte: a woman of the Eclipse Hand cult in a hood and robe of deep violet;
+  * thalos: Warden Thalos, an old Arkanor warden in mail and the Watch's blue;
+  * ivren: Magister Ivren, an Arkanor arcanist of the Spire in white and blue robes;
+  * bren: Quartermaster Bren, a short, broad Orebound with a braided copper beard.
 
     set BLENDER_USER_RESOURCES=D:/my game/art/vendor/makehuman/blender_env
     blender -b --python tools/art/blender/humans.py -- [scavenger] [acolyte] [--shots]
@@ -82,7 +85,72 @@ ACOLYTE = {
               "toigo_ankle_boots_female": ((0.09, 0.07, 0.09), False)},
     "decimate": {"toigo_ankle_boots_female": 0.2},
 }
-CHARACTERS = {"scavenger": SCAVENGER, "acolyte": ACOLYTE}
+THALOS = {
+    # a big man grown old on watch: silver hair and beard (Arkanor), heavy brow
+    "phenotype": {"gender": 1.0, "age": 0.88, "muscle": 0.75, "weight": 0.65, "proportions": 0.8,
+                  "height": 0.6, "cupsize": 0.5, "firmness": 0.5,
+                  "race": {"asian": 0.0, "caucasian": 1.0, "african": 0.0}},
+    "skin_mhmat": "old_caucasian_male/old_caucasian_male.mhmat",
+    "targets": {"head-square": 0.4, "eyebrows-trans-down": 0.35, "eyebrows-angle-down": 0.3,
+                "chin-width-incr": 0.35, "nose-width1-incr": 0.25},
+    "eyebrows": "eyebrow010/eyebrow010.mhclo",
+    "eyes": "grey",
+    "hair": "short02/short02.mhclo",
+    "clothes": ["grinsegold_full_beard/grinsegold_full_beard.mhclo",  # CC-BY grinsegold, see game/CREDITS.md
+                "rehmanpolanski_viking_tunic/rehmanpolanski_viking_tunic.mhclo",
+                "rehmanpolanski_viking_pants/rehmanpolanski_viking_pants.mhclo",
+                "rehmanpolanski_viking_boots/rehmanpolanski_viking_boots.mhclo"],
+    "silver": True,
+    "x": 0.0,
+    # the beard ships black: silver like his hair
+    "grime": {"grinsegold_full_beard": ((0.66, 0.65, 0.62), False)},
+    # the Watch's colours: mail and cloth shifted to steel blue (multipliers on the texture)
+    "tint": {"rehmanpolanski_viking_tunic": (0.75, 0.9, 1.35), "rehmanpolanski_viking_pants": (0.7, 0.85, 1.3)},
+}
+IVREN = {
+    # a slender woman past her middle years: silver hair (Arkanor), keen face
+    "phenotype": {"gender": 0.0, "age": 0.68, "muscle": 0.4, "weight": 0.4, "proportions": 0.8,
+                  "height": 0.6, "cupsize": 0.45, "firmness": 0.45,
+                  "race": {"asian": 0.0, "caucasian": 1.0, "african": 0.0}},
+    "skin_mhmat": "middleage_caucasian_female/middleage_caucasian_female.mhmat",
+    "targets": {"l-cheek-bones-incr": 0.3, "r-cheek-bones-incr": 0.3, "chin-prominent-incr": 0.2,
+                "nose-point-width-decr": 0.2},
+    "eyebrows": "eyebrow002/eyebrow002.mhclo",
+    "eyes": "ice",
+    "hair": "long01/long01.mhclo",
+    "clothes": ["donitz_monk_robe/donitz_monk_robe.mhclo",
+                "donitz_monk_robe_hood_off/donitz_monk_robe_hood_off.mhclo",
+                "toigo_ankle_boots_female/toigo_ankle_boots_female.mhclo"],
+    "silver": True,
+    "x": 0.0,
+    # the Spire's colours: pale blue-grey robes (pure white glares in the sun), a deep blue
+    # hood about the shoulders
+    "grime": {"donitz_monk_robe": ((0.5, 0.54, 0.62), False), "donitz_monk_robe_hood_off": ((0.14, 0.22, 0.5), False),
+              "toigo_ankle_boots_female": ((0.12, 0.12, 0.16), False)},
+    "decimate": {"toigo_ankle_boots_female": 0.2},
+}
+BREN = {
+    # an Orebound: short, broad and heavy-handed, tattooed, a braided copper beard
+    "phenotype": {"gender": 1.0, "age": 0.62, "muscle": 0.9, "weight": 0.85, "proportions": 0.25,
+                  "height": 0.0, "cupsize": 0.5, "firmness": 0.5,
+                  "race": {"asian": 0.0, "caucasian": 1.0, "african": 0.0}},
+    "skin_mhmat": "rehmanpolanski_skin_viking_tattoos/rehmanpolanski_skin_viking_tattoos.mhmat",
+    "targets": {"head-square": 0.5, "nose-width1-incr": 0.5, "nose-volume-incr": 0.4, "chin-width-incr": 0.5,
+                "eyebrows-trans-down": 0.3},
+    "eyebrows": "eyebrow007/eyebrow007.mhclo",
+    "eyes": "brown",
+    "hair": "short02/short02.mhclo",
+    "clothes": ["rehmanpolanski_beard_viking/rehmanpolanski_beard_viking.mhclo",
+                "rehmanpolanski_viking_tunic/rehmanpolanski_viking_tunic.mhclo",
+                "rehmanpolanski_viking_pants/rehmanpolanski_viking_pants.mhclo",
+                "rehmanpolanski_viking_boots/rehmanpolanski_viking_boots.mhclo"],
+    "silver": False,
+    "x": 0.0,
+    # copper beard and hair; a merchant's warm browns
+    "grime": {"rehmanpolanski_beard_viking": ((0.48, 0.24, 0.12), False), "short02": ((0.36, 0.18, 0.09), False)},
+    "tint": {"rehmanpolanski_viking_tunic": (1.25, 1.0, 0.72), "rehmanpolanski_viking_pants": (1.2, 1.0, 0.75)},
+}
+CHARACTERS = {"scavenger": SCAVENGER, "acolyte": ACOLYTE, "thalos": THALOS, "ivren": IVREN, "bren": BREN}
 
 
 def part(rig, asset):
@@ -116,6 +184,30 @@ def grime(rig, key, asset, tint, stained):
         luma = px[..., :3] @ np.array([0.3, 0.59, 0.11], np.float32)
         shade = luma / mh.mean_brightness(node.image) * (stains(h, w) if stained else 1.0)
         colour = np.array(tint, np.float32) * shade[..., None]
+        out = bpy.data.images.new("%s_%s" % (key, asset), w, h, alpha=True)
+        out.pixels.foreach_set(np.dstack([np.clip(colour, 0, 1), px[..., 3:]]).astype(np.float32).ravel())
+        folder = ROOT / "art" / "characters" / key / "tex"
+        folder.mkdir(parents=True, exist_ok=True)
+        out.filepath_raw = str(folder / (asset + ".png"))
+        out.file_format = "PNG"
+        out.save()
+        node.image = out
+
+
+def tint(rig, key, asset, factors):
+    """Shifts a texture's colours by `factors` (per channel) without touching its pattern
+    (mail stays mail, cloth stays cloth); saved to art/characters/<key>/tex/<asset>.png."""
+    for slot in part(rig, asset).material_slots:
+        node = next(n for n in slot.material.node_tree.nodes if n.type == "TEX_IMAGE" and n.name == "diffuseTexture")
+        src = node.image
+        w, h = src.size
+        px = np.empty(w * h * 4, np.float32)
+        src.pixels.foreach_get(px)
+        px = px.reshape(h, w, 4)
+        luma = (px[..., :3] @ np.array([0.3, 0.59, 0.11], np.float32))[..., None]
+        colour = px[..., :3] * np.array(factors, np.float32)
+        # keep the brightness where it was: the shift changes hue, not light
+        colour *= luma / np.maximum(colour @ np.array([0.3, 0.59, 0.11], np.float32), 1e-4)[..., None]
         out = bpy.data.images.new("%s_%s" % (key, asset), w, h, alpha=True)
         out.pixels.foreach_set(np.dstack([np.clip(colour, 0, 1), px[..., 3:]]).astype(np.float32).ravel())
         folder = ROOT / "art" / "characters" / key / "tex"
@@ -173,9 +265,12 @@ def make(key, shots):
     spec = CHARACTERS[key]
     out = ROOT / "art" / "characters" / key
     mh.clear_scene()
+    bpy.ops.outliner.orphans_purge(do_recursive=True)  # no "body.001": each character starts clean
     basemesh, rig = mh.build(key, spec)
-    for asset, (tint, stained) in spec.get("grime", {}).items():
-        grime(rig, key, asset, tint, stained)
+    for asset, (colour, stained) in spec.get("grime", {}).items():
+        grime(rig, key, asset, colour, stained)
+    for asset, factors in spec.get("tint", {}).items():
+        tint(rig, key, asset, factors)
     for asset, ratio in spec.get("decimate", {}).items():
         mod = part(rig, asset).modifiers.new("decimate", "DECIMATE")
         mod.ratio = ratio  # applied with the other modifiers by arkanor_game.bake_mesh
@@ -184,7 +279,7 @@ def make(key, shots):
     bpy.ops.wm.save_as_mainfile(filepath=str(out / ("%s_mh.blend" % key)))
     if shots:
         mh.shots(str(out / "preview"), [key])
-    rig, body = game.convert(key, key, silver=False)
+    rig, body = game.convert(key, key, silver=spec.get("silver", False))
     print("%s: %d bones, %d tris, materials %s -> %s" % (
         key, len(rig.data.bones), sum(len(p.vertices) - 2 for p in body.data.polygons),
         [m.name for m in body.data.materials], game.export(key, ROOT / "game" / "art" / "characters" / key)))

@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b5sr7uylekpxo"
-path.bptc="res://.godot/imported/acolyte_acolyte_donitz_monk_robe_hood.png-9d8fccf50a441a972f5b7c5dd6d828bc.bptc.ctex"
+uid="uid://dx2p20nva3jt8"
+path.bptc="res://.godot/imported/acolyte_donitz_monk_robe.png-e255bf31452a876ae0c8cc2c2ab8a444.bptc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "6a3fa4dfc49e549467cf4112df7293d2"
+"md5": "3aae17663a93e41a35cf4cb90dfece61"
 }
 
 [deps]
 
-source_file="res://art/characters/acolyte/acolyte_acolyte_donitz_monk_robe_hood.png"
-dest_files=["res://.godot/imported/acolyte_acolyte_donitz_monk_robe_hood.png-9d8fccf50a441a972f5b7c5dd6d828bc.bptc.ctex"]
+source_file="res://art/characters/acolyte/acolyte_donitz_monk_robe.png"
+dest_files=["res://.godot/imported/acolyte_donitz_monk_robe.png-e255bf31452a876ae0c8cc2c2ab8a444.bptc.ctex"]
 
 [params]
 

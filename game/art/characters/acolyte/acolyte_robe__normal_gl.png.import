@@ -2,14 +2,14 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b5fn375milka4"
+uid="uid://c6o1q4jnx5vlr"
 path.bptc="res://.godot/imported/acolyte_robe__normal_gl.png-65634852ec9f6d7c657136c5fdc5ff48.bptc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "4779a5992f92f49a33961b481f68beb2"
+"md5": "be638f2bda48268e32d059277e936ea5"
 }
 
 [deps]

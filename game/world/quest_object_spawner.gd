@@ -12,14 +12,21 @@ extends Marker3D
 @export var vanishes := true
 @export var count := 4
 @export var radius := 10.0
+## Spots steeper than this (0 flat .. 1 vertical) are passed over: the player must reach them.
+const MAX_SLOPE := 0.25
 
 
 func spawn(terrain: Terrain, parent: Node) -> void:
 	for i in count:
-		var angle := randf() * TAU
-		var distance := radius * sqrt(randf())
-		var x := global_position.x + cos(angle) * distance
-		var z := global_position.z + sin(angle) * distance
+		var x := global_position.x
+		var z := global_position.z
+		for attempt in 12:
+			var angle := randf() * TAU
+			var distance := radius * sqrt(randf())
+			x = global_position.x + cos(angle) * distance
+			z = global_position.z + sin(angle) * distance
+			if terrain.get_slope(x, z) < MAX_SLOPE:
+				break
 		var thing := QuestObject.new()
 		thing.object_id = object_id
 		thing.display_name = display_name

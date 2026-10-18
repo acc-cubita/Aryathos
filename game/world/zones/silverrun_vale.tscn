@@ -372,6 +372,7 @@ title = "Keeper of the Wardstone"
 greeting = "Stay close to the Wardstone's light, {name}."
 quests = Array[ExtResource("10_quest")]([ExtResource("q_concord_supplies"), ExtResource("11_wolves"), ExtResource("q_eyes_on_the_vale"), ExtResource("12_light"), ExtResource("q_the_sigil_in_the_den")])
 unit_name = "Warden Thalos"
+model_scene = "res://art/characters/thalos/thalos.glb"
 armor_color = Color(0.5, 0.55, 0.65, 1)
 
 [node name="MagisterIvren" type="CharacterBody3D" parent="NPCs"]
@@ -383,6 +384,7 @@ title = "Arcanist of the Spire"
 greeting = "The Wardstone hums tonight. Something stirs in the crystals."
 quests = Array[ExtResource("10_quest")]([ExtResource("14_shardmaw"), ExtResource("q_cut_to_feed"), ExtResource("q_hand_of_the_eclipse"), ExtResource("q_a_name_in_the_dark")])
 unit_name = "Magister Ivren"
+model_scene = "res://art/characters/ivren/ivren.glb"
 armor_color = Color(0.42, 0.33, 0.58, 1)
 glow_color = Color(0.65, 0.5, 1, 1)
 
@@ -396,6 +398,7 @@ greeting = "Potions, belts, shields. Coin first, {name}."
 quests = Array[ExtResource("10_quest")]([ExtResource("q_pelts_for_the_concord")])
 vendor_items = Array[ExtResource("15_item")]([ExtResource("16_heal"), ExtResource("17_mana"), ExtResource("18_buckler"), ExtResource("19_belt"), ExtResource("20_mantle"), ExtResource("21_signet"), ExtResource("56_vial")])
 unit_name = "Quartermaster Bren"
+model_scene = "res://art/characters/bren/bren.glb"
 armor_color = Color(0.5, 0.4, 0.3, 1)
 glow_color = Color(1, 0.75, 0.3, 1)
 

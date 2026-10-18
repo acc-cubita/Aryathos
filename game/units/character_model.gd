@@ -57,7 +57,7 @@ const LOOK_LIMITS := Vector2(70.0, 30.0)
 const MAX_LEAN := 0.14
 const LEAN := 0.012
 ## Parts of the MakeHuman meshes (by material name) drawn as alpha-tested strands.
-const STRANDS := ["beard", "moustache", "ponytail", "braid", "bun", "hair", "eyebrow", "eyelash"]
+const STRANDS := ["beard", "moustache", "ponytail", "braid", "bun", "hair", "eyebrow", "eyelash", "short0", "long0", "bob0", "afro"]
 ## Loose cloth seen from inside too (into a hood, up a sleeve).
 const DOUBLE_SIDED := ["hood", "robe", "cloak", "cape"]
 ## While a swing may leave a glow arc (seconds after it starts, how long); the arc itself

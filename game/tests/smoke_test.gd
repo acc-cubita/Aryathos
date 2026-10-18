@@ -253,8 +253,9 @@ func _cache_checks(player: Player) -> void:
 	quests.accept(cut, &"magister_ivren")
 	_check(quests.wants_object(&"gloomshard_cache"), "with Cut to Feed taken the caches can be smashed")
 	var cache: QuestObject = caches[0]
-	player.teleport(cache.global_position + Vector3(1.2, 0.5, 0), 0.0)
-	await _wait(0.4)
+	var beside := cache.global_position + Vector3(1.2, 0, 0)
+	player.teleport(Vector3(beside.x, Game.zone.terrain.get_height(beside.x, beside.z) + 0.3, beside.z), 0.0)
+	await _wait_until(func() -> bool: return player.is_on_floor() and not player.is_moving, 3.0)
 	_check(player.use_quest_object(cache), "right-clicking a cache starts smashing it")
 	await _wait(cache.use_time + 0.3)
 	_check(quests.progress(cut) == 1 and not cache.available, "a smashed cache counts and is gone")
@@ -532,7 +533,7 @@ func _profession_checks(player: Player) -> void:
 	player.money = 100
 	player.buy(Database.item(&"empty_vial"))
 	player.teleport(player.spawn_point + Vector3.UP * 0.3, 0.0)
-	await _wait(0.5)
+	await _wait_until(func() -> bool: return player.is_on_floor() and not player.is_moving, 3.0)
 	var potions_before := player.count_item(potion)
 	_check(player.craft(recipe), "crafting starts a cast bar")
 	await _wait(2.4)

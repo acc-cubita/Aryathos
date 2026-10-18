@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bqfrknxaxa8ki"
-path.bptc="res://.godot/imported/scavenger_elvs_scruffy_beard1.png-91db01190c8ebbcb3b778e75738a6016.bptc.ctex"
+uid="uid://b0pgyq1gmksur"
+path.bptc="res://.godot/imported/scavenger_scavenger_donitz_monk_robe.png-9aca413c4f726fa8bd1bdeab35b69e4a.bptc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "754debfd819ff481dfd99265d9afdb1e"
+"md5": "18a259813f45e6dfa66b78c0f9db5d1e"
 }
 
 [deps]
 
-source_file="res://art/characters/scavenger/scavenger_elvs_scruffy_beard1.png"
-dest_files=["res://.godot/imported/scavenger_elvs_scruffy_beard1.png-91db01190c8ebbcb3b778e75738a6016.bptc.ctex"]
+source_file="res://art/characters/scavenger/scavenger_scavenger_donitz_monk_robe.png"
+dest_files=["res://.godot/imported/scavenger_scavenger_donitz_monk_robe.png-9aca413c4f726fa8bd1bdeab35b69e4a.bptc.ctex"]
 
 [params]
 

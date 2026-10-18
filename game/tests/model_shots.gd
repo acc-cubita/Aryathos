@@ -23,6 +23,9 @@ func _run() -> void:
 	_camera.make_current()
 	await _wait(1.5)
 	await _shot(Game.zone.get_node("NPCs/HerbalistMira"), folder, "mira", 2.6)
+	for npc_name in ["WardenThalos", "MagisterIvren", "QuartermasterBren"]:
+		await _shot(Game.zone.get_node("NPCs/" + npc_name), folder, npc_name.to_lower(), 2.6)
+		await _shot(Game.zone.get_node("NPCs/" + npc_name), folder, npc_name.to_lower() + "_face", 0.9, 1.6)
 	var scavenger := _enemy(&"gloomshard_scavenger")
 	if scavenger:
 		await _shot(scavenger, folder, "scavenger", 2.6)
@@ -131,12 +134,12 @@ func _run() -> void:
 	get_tree().quit()
 
 
-func _shot(unit: Node3D, folder: String, view_name: String, distance: float) -> void:
-	# front three-quarter view of the unit, chest height
+func _shot(unit: Node3D, folder: String, view_name: String, distance: float, height := 1.0) -> void:
+	# front three-quarter view of the unit, chest height (or `height`: 1.6 for a face)
 	var basis := unit.global_transform.basis
 	var front := -basis.z
-	var eye := unit.global_position + front * distance + basis.x * distance * 0.45 + Vector3.UP * 1.3
-	_camera.look_at_from_position(eye, unit.global_position + Vector3.UP * 1.0)
+	var eye := unit.global_position + front * distance + basis.x * distance * 0.45 + Vector3.UP * (height + 0.3)
+	_camera.look_at_from_position(eye, unit.global_position + Vector3.UP * height)
 	await RenderingServer.frame_post_draw
 	await RenderingServer.frame_post_draw
 	get_viewport().get_texture().get_image().save_png(folder.path_join(view_name + ".png"))
