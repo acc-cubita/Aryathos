@@ -48,7 +48,7 @@ var _travelling := false
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	for arg in OS.get_cmdline_user_args():
-		if arg == "--smoke-test" or arg.begins_with("--screenshot") or arg.begins_with("--scenery") or arg.begins_with("--model-shots") or arg.begins_with("--crowd") or arg.begins_with("--vfx-shots") or arg.begins_with("--creation-shots"):
+		if arg == "--smoke-test" or arg.begins_with("--screenshot") or arg.begins_with("--scenery") or arg.begins_with("--model-shots") or arg.begins_with("--crowd") or arg.begins_with("--vfx-shots") or arg.begins_with("--creation-shots") or arg.begins_with("--gait-shots"):
 			save_path = "user://saves/test.json"
 			testing = true
 			delete_save()
@@ -66,6 +66,8 @@ func _ready() -> void:
 			add_child(load("res://tests/vfx_shots.gd").new())
 		elif arg.begins_with("--creation-shots"):
 			add_child(load("res://tests/creation_shots.gd").new())
+		elif arg.begins_with("--gait-shots"):
+			add_child(load("res://tests/gait_shots.gd").new())
 	_build_loading_screen()
 	zone_ready.connect(func() -> void:
 		_travelling = false

@@ -12,7 +12,7 @@ const HELP_TEXT := """Movement
 W / S  -  run / backpedal
 A / D  -  turn  (strafe while holding right mouse)
 Q / E  -  strafe      Space  -  jump
-R or NumLock  -  autorun
+R or NumLock  -  autorun      Num /  -  walk / run
 Left drag  -  look      Right drag  -  look + steer
 Both mouse buttons  -  run      Wheel  -  zoom
 

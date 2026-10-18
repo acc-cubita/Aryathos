@@ -10,6 +10,7 @@ const BINDINGS := {
 	"turn_right": [KEY_D, KEY_RIGHT],
 	"strafe_left": [KEY_Q],
 	"strafe_right": [KEY_E],
+	"toggle_walk": [KEY_KP_DIVIDE],
 	"jump": [KEY_SPACE],
 	"autorun": [KEY_NUMLOCK, KEY_R],
 	"target_nearest": [KEY_TAB],
@@ -49,7 +50,7 @@ const ALT_BINDINGS := {
 const LABELS := {
 	"move_forward": "Move forward", "move_back": "Move backward",
 	"turn_left": "Turn left", "turn_right": "Turn right",
-	"strafe_left": "Strafe left", "strafe_right": "Strafe right",
+	"strafe_left": "Strafe left", "strafe_right": "Strafe right", "toggle_walk": "Walk / run",
 	"jump": "Jump", "autorun": "Autorun",
 	"target_nearest": "Target nearest enemy", "clear_target": "Clear target / close / menu",
 	"interact": "Interact with target",

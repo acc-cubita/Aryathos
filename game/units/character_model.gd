@@ -53,6 +53,7 @@ const CLIPS := {
 	"idle_loop": "ual1/Idle", "walk_loop": "ual1/Walk", "jog_loop": "ual1/Jog_Fwd", "run_loop": "ual1/Sprint",
 	"back_loop": "ual1/Jog_Fwd", "cast_loop": "ual1/Spell_Simple_Idle", "death": "ual1/Death01",
 	"hit": "ual1/Hit_Chest", "spell": "ual1/Spell_Simple_Shoot",
+	"jump_start": "ual1/Jump_Start", "fall_loop": "ual1/Jump", "land": "ual1/Jump_Land",
 }
 ## An armed character's weapon hand keeps this clip's closed fist whatever else it does.
 const ARMED_IDLE := "ual1/Sword_Idle"
@@ -65,7 +66,15 @@ const BACK_SPEED := 5.36 ## the jog, played backwards
 const MANNEQUIN_HIPS := 0.917
 const JOG_SPEED := 5.36
 const RUN_FROM := 2.8 ## m/s where walking turns into a jog
-const SPRINT_FROM := 6.0 ## m/s where the jog turns into a sprint
+## m/s where the jog turns into a sprint. A hero's 7 m/s run is the jog played a third
+## faster: about 170 steps a minute, 2.5 m each, an easy runner's stride (like WoW's run).
+const SPRINT_FROM := 7.6
+## How fast (1/s) the body turns toward the way it moves (a strafe, a diagonal).
+const STRAFE_TURN := 10.0
+## Turning on the spot faster than this (rad/s) shuffles the feet round.
+const SHUFFLE_TURN := 1.0
+## How long (s) a standing landing plays before the character stands again.
+const LANDING := 0.45
 const PAINTED := preload("res://units/shaders/character.gdshader")
 ## What a character can hold in its right fist. In weapon space +Y runs along the haft from
 ## the fist and -Z points the way the edge faces; root -> edge is where the swing's glow arc
@@ -82,7 +91,9 @@ const WEAPONS := {
 const UPPER_BODY := ["Spine", "Chest", "UpperChest", "Neck", "Head", "LeftShoulder", "LeftUpperArm",
 		"LeftLowerArm", "LeftHand", "RightShoulder", "RightUpperArm", "RightLowerArm", "RightHand"]
 const FINGERS := ["Thumb", "Index", "Middle", "Ring", "Little"]
-const LOOPS := ["idle_loop", "walk_loop", "jog_loop", "run_loop", "back_loop", "cast_loop"]
+const LOOPS := ["idle_loop", "walk_loop", "jog_loop", "run_loop", "back_loop", "cast_loop", "fall_loop"]
+## The states that play once: a leap off the ground (then the fall loop), a standing landing.
+const ONCE := ["jump_start", "land"]
 ## Neck and head turn toward what the character fights (share of the turn each takes);
 ## past these angles (deg: sideways, up/down) they stop turning.
 const LOOK := {"Neck": 0.4, "Head": 0.65}
@@ -117,6 +128,11 @@ var _stride := 1.0
 var _look_target := Marker3D.new()
 var _planter: FootPlanter
 var _upright: SpineUpright
+var _heading := 0.0  # radians the body is turned from the unit's facing (_turn_to_motion)
+var _backwards := false
+var _turn_rate := 0.0
+var _air_time := 0.0
+var _landed_at := -1.0
 var _skeleton: Skeleton3D
 var _steps: Footsteps
 var _last_yaw := 0.0
@@ -325,17 +341,21 @@ func _build_tree(scene: Node3D, skeleton: Skeleton3D) -> void:
 	for anim_name: String in LOOPS:
 		player.get_animation(clips[anim_name]).loop_mode = Animation.LOOP_LINEAR
 	var states := AnimationNodeStateMachine.new()
-	for anim_name: String in LOOPS + ["death"]:
+	for anim_name: String in LOOPS + ONCE + ["death"]:
 		var clip := AnimationNodeAnimation.new()
 		clip.animation = clips[anim_name]
 		if anim_name == "back_loop":
 			clip.play_mode = AnimationNodeAnimation.PLAY_MODE_BACKWARD
 		states.add_node(anim_name, clip)
-	for a: String in LOOPS + ["death"]:
-		for b: String in LOOPS + ["death"]:
+	for a: String in LOOPS + ONCE + ["death"]:
+		for b: String in LOOPS + ONCE + ["death"]:
 			if a != b:
 				var t := AnimationNodeStateMachineTransition.new()
-				t.xfade_time = 0.15 if b == "death" else 0.25
+				t.xfade_time = 0.15 if b in ["death", "jump_start", "land"] else 0.2
+				if [a, b] in [["jump_start", "fall_loop"], ["land", "idle_loop"]]:
+					# a leap runs on into the fall; a landing ends standing
+					t.switch_mode = AnimationNodeStateMachineTransition.SWITCH_MODE_AT_END
+					t.advance_mode = AnimationNodeStateMachineTransition.ADVANCE_MODE_AUTO
 				states.add_transition(a, b, t)
 	var start := AnimationNodeStateMachineTransition.new()
 	start.advance_mode = AnimationNodeStateMachineTransition.ADVANCE_MODE_AUTO
@@ -420,7 +440,7 @@ func _ready() -> void:
 	if _unit == null:
 		return  # a preview (character window): just breathe
 	_planter.unit = _unit
-	_last_yaw = global_rotation.y
+	_last_yaw = _unit.global_rotation.y
 	_unit.attacked.connect(_on_attacked)
 	_unit.cast_started.connect(func(ability: AbilityData) -> void:
 		for particles in _hand_glows:
@@ -448,31 +468,63 @@ func _process(delta: float) -> void:
 	_steps.update(_skeleton, _unit, delta)
 	var ground := Vector2(_unit.velocity.x, _unit.velocity.z)
 	var speed := ground.length()
-	var facing := -_unit.global_transform.basis.z
 	_aim_look()
 	_lean_into_turns(delta, speed)
 	# a runner stands taller than the sprint clip (fades in from a jog to a run)
 	_upright.weight = move_toward(_upright.weight, clampf((speed - RUN_FROM) / (SPRINT_FROM - RUN_FROM), 0.0, 1.0), delta * 4.0)
+	_turn_to_motion(delta, speed)
 	var pace := 1.0
-	if speed > 0.3:
-		# each gait plays as fast as the feet travel, for this character's leg length
-		if ground.dot(Vector2(facing.x, facing.z)) < -0.5 * speed:
-			_go("back_loop")
-			pace = clampf(speed / (BACK_SPEED * _stride), 0.5, 1.6)
-		elif speed >= SPRINT_FROM:
-			_go("run_loop")
-			pace = clampf(speed / (RUN_SPEED * _stride), 0.55, 1.4)
-		elif speed >= RUN_FROM:
-			_go("jog_loop")
-			pace = clampf(speed / (JOG_SPEED * _stride), 0.5, 1.4)
-		else:
-			_go("walk_loop")
-			pace = clampf(speed / (WALK_SPEED * _stride), 0.6, 1.8)
-	elif _unit.casting != null:
-		_go("cast_loop")
+	if not _unit.is_on_floor():
+		# a leap, then the fall (also off a ledge, once clearly in the air)
+		_air_time += delta
+		if _unit.velocity.y > 1.0 and _state not in ["jump_start", "fall_loop"]:
+			_go("jump_start")
+		elif _air_time > 0.2 and _state not in ["jump_start", "fall_loop"]:
+			_go("fall_loop")
 	else:
-		_go("idle_loop")
+		_air_time = 0.0
+		if _state in ["jump_start", "fall_loop"] and speed <= 0.3:
+			_go("land")  # a runner lands running; one standing lands with bent knees
+			_landed_at = Game.time
+		elif _state == "land" and speed <= 0.3 and Game.time < _landed_at + LANDING:
+			pass
+		elif speed > 0.3:
+			# each gait plays as fast as the feet travel, for this character's leg length
+			if _backwards:
+				_go("back_loop")
+				pace = clampf(speed / (BACK_SPEED * _stride), 0.5, 1.6)
+			elif speed >= SPRINT_FROM:
+				_go("run_loop")
+				pace = clampf(speed / (RUN_SPEED * _stride), 0.55, 1.4)
+			elif speed >= RUN_FROM:
+				_go("jog_loop")
+				pace = clampf(speed / (JOG_SPEED * _stride), 0.5, 1.45)
+			else:
+				_go("walk_loop")
+				pace = clampf(speed / (WALK_SPEED * _stride), 0.6, 1.8)
+		elif absf(_turn_rate) > SHUFFLE_TURN and _unit.casting == null:
+			_go("walk_loop")  # turning on the spot: the feet shuffle round
+			pace = 0.9
+		elif _unit.casting != null:
+			_go("cast_loop")
+		else:
+			_go("idle_loop")
 	_tree.set("parameters/pace/scale", pace)
+
+
+## Like WoW, the body turns the way it moves: a quarter round for a diagonal, sideways for
+## a strafe; backing off diagonally, its back turns toward the motion. The head keeps
+## looking ahead or at the target (_aim_look), as far as the neck turns.
+func _turn_to_motion(delta: float, speed: float) -> void:
+	var want := 0.0
+	_backwards = false
+	if speed > 0.3:
+		var local := _unit.global_transform.basis.inverse() * _unit.velocity
+		var angle := atan2(local.x, -local.z)  # 0 ahead, +PI/2 to the right
+		_backwards = absf(angle) > deg_to_rad(100.0)
+		want = wrapf(angle + PI, -PI, PI) if _backwards else clampf(angle, -PI * 0.5, PI * 0.5)
+	_heading = lerp_angle(_heading, want, 1.0 - exp(-STRAFE_TURN * delta))
+	rotation.y = -_heading
 
 
 ## Neck and head turn toward the unit's target while it is alive and near; otherwise ahead.
@@ -487,14 +539,17 @@ func _aim_look() -> void:
 
 
 func _look_ahead() -> void:
-	_look_target.global_position = global_position + Vector3.UP * 1.55 - global_transform.basis.z * 6.0
+	# ahead of the unit, not of the body (which turns toward a strafe)
+	var facing := (_unit.global_transform.basis.z if _unit else global_transform.basis.z)
+	_look_target.global_position = global_position + Vector3.UP * 1.55 - facing * 6.0
 
 
 ## A runner leans into a turn: the faster the turn and the run, the more.
 func _lean_into_turns(delta: float, speed: float) -> void:
-	var yaw := global_rotation.y
+	var yaw := _unit.global_rotation.y  # the unit's own turning, not a strafe's
 	var turn := wrapf(yaw - _last_yaw, -PI, PI) / maxf(delta, 0.001)
 	_last_yaw = yaw
+	_turn_rate = turn
 	var want := clampf(turn * speed * LEAN, -MAX_LEAN, MAX_LEAN)
 	_lean = lerpf(_lean, want, 1.0 - exp(-6.0 * delta))
 	rotation.z = _lean

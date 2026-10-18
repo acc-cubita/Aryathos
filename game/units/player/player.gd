@@ -25,6 +25,8 @@ signal activity_ended(success: bool)
 
 const RUN_SPEED := 7.0
 const BACKPEDAL_SPEED := 4.5
+## With walking on (/ like WoW): a brisk walk, forward or back.
+const WALK_SPEED := 1.6
 const TURN_SPEED := PI
 const JUMP_VELOCITY := 8.0
 const TAB_TARGET_RANGE := 40.0
@@ -54,6 +56,8 @@ const POINTS_PER_TIER := 3
 ## or null. Starts with the known abilities.
 var action_bar: Array[Resource] = []
 var autorun := false
+## Walking instead of running (toggled with /).
+var walking := false
 var is_moving := false
 ## Forward/back input this frame (-1..1); the camera uses it to swing behind.
 var forward_input := 0.0
@@ -120,6 +124,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_jump_queued = true
 	elif event.is_action_pressed("autorun"):
 		autorun = not autorun
+	elif event.is_action_pressed("toggle_walk"):
+		set_walking(not walking)
 	elif event.is_action_pressed("move_forward") or event.is_action_pressed("move_back"):
 		autorun = false
 	elif event.is_action_pressed("interact"):
@@ -170,7 +176,7 @@ func _think(delta: float) -> void:
 	var local := Vector3(strafe, 0.0, -forward_input)
 	if local.length() > 1.0:
 		local = local.normalized()
-	var speed := RUN_SPEED if forward_input >= 0.0 else BACKPEDAL_SPEED
+	var speed := WALK_SPEED if walking else (RUN_SPEED if forward_input >= 0.0 else BACKPEDAL_SPEED)
 	var wish := Basis(Vector3.UP, rotation.y) * local * speed
 
 	# Like WoW, there is no air control: momentum is kept until landing.
@@ -187,6 +193,10 @@ func _think(delta: float) -> void:
 	if is_moving and activity != "":
 		cancel_activity()
 	_tick_activity()
+
+
+func set_walking(on: bool) -> void:
+	walking = on
 
 
 # --- Combat -----------------------------------------------------------------
