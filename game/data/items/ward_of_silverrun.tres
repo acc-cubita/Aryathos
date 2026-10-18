@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ward_of_silverrun"
+display_name = "Ward of Silverrun"
+flavor_text = "A chip of the Vale's own Wardstone. It is warm to the touch."
+quality = 3
+slot = 13
+icon_glyph = "Wd"
+icon_color = Color(0.35, 0.7, 1.0, 1)
+health_bonus = 25
+mana_bonus = 25
+spell_power = 5
+sell_price = 150

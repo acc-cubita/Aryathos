@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://data/quest_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/faction_data.gd" id="2_faction"]
+[ext_resource type="Resource" path="res://data/factions/wardstone_watch.tres" id="10_watch"]
+[ext_resource type="Resource" path="res://data/items/duskbane_mantle.tres" id="4_reward"]
+[ext_resource type="Resource" path="res://data/quests/the_sigil_in_the_den.tres" id="5_requires"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hand_of_the_eclipse"
+title = "Hand of the Eclipse"
+offer_text = "Where there is a sigil, there are hands to tend it. Since Grimjaw fell, the wardens have seen robed figures on both sides of the den, chanting where the crystal light pools.
+
+They are acolytes of the Eclipse Hand, and their bolts swallow light. Strike first and strike hard. Six of them, {name}, and the sigil goes hungry."
+progress_text = "The acolytes still chant by the den. I can feel it in the Wardstone."
+complete_text = "Six fewer voices feeding the dark.
+
+Take this mantle. It was woven at the Spire to turn aside exactly what they throw."
+kind = 0
+enemy_id = &"eclipse_acolyte"
+objective = "Eclipse Hand Acolyte slain"
+required = 6
+xp_reward = 600
+reward_item = ExtResource("4_reward")
+reputation_factions = Array[ExtResource("2_faction")]([ExtResource("10_watch")])
+reputation_amounts = PackedInt32Array(250)
+min_level = 4
+requires = ExtResource("5_requires")

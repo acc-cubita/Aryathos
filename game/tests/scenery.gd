@@ -13,6 +13,7 @@ const VIEWS := {
 	"gloomshard": [Vector3(78, 0, 21), 0.0, -0.28, 12.0],
 	"digsite": [Vector3(50, 0, -86), 0.0, -0.3, 12.0],
 	"caches": [Vector3(50, 0, -112), 0.3, -0.35, 9.0],
+	"den_top": [Vector3(-62, 0, -100), 0.0, -1.3, 55.0],
 	"forest": [Vector3(30, 0, -40), 0.6, -0.1, 7.0],
 	# from the open camp toward the border mountains
 	"north": [Vector3(0, 0, -12), 0.0, 0.08, 8.0],
@@ -64,7 +65,14 @@ func _run() -> void:
 		print("fps per second: ", samples)
 		get_tree().quit()
 		return
+	# --scenery-only=a,b: just those views
+	var only := PackedStringArray()
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--scenery-only="):
+			only = arg.get_slice("=", 1).split(",")
 	for view_name: String in VIEWS:
+		if not only.is_empty() and not only.has(view_name):
+			continue
 		var view: Array = VIEWS[view_name]
 		var at: Vector3 = view[0]
 		if view_name == "herb":

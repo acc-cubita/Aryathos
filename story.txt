@@ -61,7 +61,11 @@ Crystal storms have begun to rise over the Vale, and the Wardstone hums uneasily
 
 * **Cut to Feed:** Most of the cut shards never reach a buyer. They are packed into caches at the dig site, stockpiles big enough to call a storm on their own. The champion smashes them. *(Magister Ivren)*
 
-What the champion finds in the den leads straight into Act I: someone has been paying the scavengers, and the shards were feeding a hidden sigil of **The Eclipse Hand**.
+* **The Sigil in the Den:** Behind Grimjaw's lair, at the foot of the cliff, a dark sun is carved into the rock with fed shards drifting round it: the mark of **The Eclipse Hand**. *(Warden Thalos, then Magister Ivren)*
+* **Hand of the Eclipse:** Robed **Eclipse Hand Acolytes** chant on both sides of the den. Their Eclipse Bolts swallow light. *(Magister Ivren)*
+* **A Name in the Dark:** A sealed missive taken from an acolyte reads: *"The Vale has fed the Core enough. Withdraw the hands to the Crystal Canyons. The seals must break before the solstice."* Warden Thalos gives the champion a chip of the Vale's own Wardstone, the **Ward of Silverrun**. *(Magister Ivren, then Warden Thalos)*
+
+The missive leads straight into Act I: the Eclipse Hand has been feeding the **Veiled Core**, and its trail runs to the Crystal Canyons.
 
 **People of Wardstone Post:**
 * **Warden Thalos**, Keeper of the Wardstone (Wardstone Watch): stern, tired, devoted to the light he guards.

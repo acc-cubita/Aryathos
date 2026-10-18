@@ -1,16 +1,18 @@
-"""The Gloomshard Scavenger: a gaunt, hooded crystal digger (MakeHuman body and CC0 clothes
-through MPFB, like the Arkanor bodies) and the dirty pick he fights with (Poly Haven
-picke_dirty_01, CC0).
+"""The people of Silverrun Vale who are not Arkanor heroes: MakeHuman bodies with CC0
+clothes through MPFB, like the Arkanor bodies (CHARACTERS):
+  * scavenger: a gaunt, hooded crystal digger of the Gloomshard gangs, with the dirty pick
+    he fights with (Poly Haven picke_dirty_01, CC0);
+  * acolyte: a woman of the Eclipse Hand cult in a hood and robe of deep violet.
 
     set BLENDER_USER_RESOURCES=D:/my game/art/vendor/makehuman/blender_env
-    blender -b --python tools/art/blender/scavenger.py -- [--shots]
+    blender -b --python tools/art/blender/humans.py -- [scavenger] [acolyte] [--shots]
 
-Builds the body (arkanor_mh.build), renders previews with --shots
-(art/characters/scavenger/preview), makes it a game character (arkanor_game.convert:
-humanoid bone names, one mesh, grip markers) and exports
-game/art/characters/scavenger/scavenger.glb. The pick goes to game/art/weapons/pick.glb in
-the weapon frame of the rune axe (grip at the origin, haft +Z, point +Y), and the trail
-points CharacterModel needs are printed in Godot's frame.
+Per character: builds the body (arkanor_mh.build), dyes its cloth (grime), thins hidden
+parts (decimate), renders previews with --shots (art/characters/<key>/preview), makes it a
+game character (arkanor_game.convert: humanoid bone names, one mesh, grip markers) and
+exports game/art/characters/<key>/<key>.glb. The scavenger also makes
+game/art/weapons/pick.glb in the weapon frame of the rune axe (grip at the origin, haft +Z,
+point +Y) and prints the trail points CharacterModel needs, in Godot's frame.
 """
 import sys
 from pathlib import Path
@@ -24,8 +26,6 @@ import arkanor_game as game  # noqa: E402
 import arkanor_mh as mh  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
-OUT = ROOT / "art" / "characters" / "scavenger"
-GAME_ART = ROOT / "game" / "art" / "characters" / "scavenger"
 PICK_SOURCE = ROOT / "art" / "vendor" / "polyhaven" / "models" / "picke_dirty_01" / "picke_dirty_01_1k.gltf"
 PICK = ROOT / "game" / "art" / "weapons" / "pick.glb"
 ## the scan is 1.12 m long: a little shorter swings with one hand
@@ -53,13 +53,36 @@ SCAVENGER = {
                 "culturalibre_male_boots/culturalibre_male_boots.mhclo"],
     "silver": False,
     "x": 0.0,
+    # the robe and hood turn a grimy, faded olive-brown (sRGB), stained by weeks of
+    # digging; the (ginger) beard a dull dark brown
+    "grime": {"donitz_monk_robe": ((0.25, 0.23, 0.17), True), "donitz_monk_robe_hood": ((0.19, 0.18, 0.14), True),
+              "elvs_scruffy_beard1": ((0.17, 0.13, 0.1), False)},
+    # share of triangles kept: the boots (30k triangles) hide under the robe
+    "decimate": {"culturalibre_male_boots": 0.1},
 }
-# the robe and hood turn a grimy, faded olive-brown (sRGB), stained by weeks of digging;
-# the (ginger) beard a dull dark brown
-GRIME = {"donitz_monk_robe": ((0.25, 0.23, 0.17), True), "donitz_monk_robe_hood": ((0.19, 0.18, 0.14), True),
-         "elvs_scruffy_beard1": ((0.17, 0.13, 0.1), False)}
-# share of triangles kept: the boots (30k triangles) hide under the robe
-DECIMATE = {"culturalibre_male_boots": 0.1}
+ACOLYTE = {
+    # a slight, pale young woman with violet paint around the eyes
+    "phenotype": {"gender": 0.0, "age": 0.45, "muscle": 0.35, "weight": 0.35, "proportions": 0.75,
+                  "height": 0.55, "cupsize": 0.45, "firmness": 0.55,
+                  "race": {"asian": 0.1, "caucasian": 0.9, "african": 0.0}},
+    "skin_mhmat": "toigo_light_skin_female_with_violet_makeup/toigo_light_skin_female_with_violet_makeup.mhmat",
+    # sharp cheekbones, a narrow chin, brows tilted up: the calm of a zealot
+    "targets": {"l-cheek-bones-incr": 0.5, "r-cheek-bones-incr": 0.5, "l-cheek-volume-decr": 0.3,
+                "r-cheek-volume-decr": 0.3, "eyebrows-angle-up": 0.3, "chin-prominent-incr": 0.15},
+    "eyebrows": "eyebrow009/eyebrow009.mhclo",
+    "eyes": "grey",
+    "hair": "",  # under the hood
+    "clothes": ["donitz_monk_robe/donitz_monk_robe.mhclo",
+                "donitz_monk_robe_hood/donitz_monk_robe_hood.mhclo",
+                "toigo_ankle_boots_female/toigo_ankle_boots_female.mhclo"],
+    "silver": False,
+    "x": 0.0,
+    # deep violet-black robes, the hood darkest (the Eclipse)
+    "grime": {"donitz_monk_robe": ((0.15, 0.09, 0.21), False), "donitz_monk_robe_hood": ((0.08, 0.05, 0.11), False),
+              "toigo_ankle_boots_female": ((0.09, 0.07, 0.09), False)},
+    "decimate": {"toigo_ankle_boots_female": 0.2},
+}
+CHARACTERS = {"scavenger": SCAVENGER, "acolyte": ACOLYTE}
 
 
 def part(rig, asset):
@@ -81,9 +104,9 @@ def stains(h, w, cells=24, seed=7):
     return 0.5 + (out - out.min()) / max(float(out.max() - out.min()), 1e-6)
 
 
-def grime(rig, asset, tint, stained):
+def grime(rig, key, asset, tint, stained):
     """Repaints a texture in `tint` (keeping its weave, folds or strands), stained or not;
-    saved to art/characters/scavenger/tex/<asset>.png."""
+    saved to art/characters/<key>/tex/<asset>.png."""
     for slot in part(rig, asset).material_slots:
         node = next(n for n in slot.material.node_tree.nodes if n.type == "TEX_IMAGE" and n.name == "diffuseTexture")
         w, h = node.image.size
@@ -93,10 +116,11 @@ def grime(rig, asset, tint, stained):
         luma = px[..., :3] @ np.array([0.3, 0.59, 0.11], np.float32)
         shade = luma / mh.mean_brightness(node.image) * (stains(h, w) if stained else 1.0)
         colour = np.array(tint, np.float32) * shade[..., None]
-        out = bpy.data.images.new(asset, w, h, alpha=True)
+        out = bpy.data.images.new("%s_%s" % (key, asset), w, h, alpha=True)
         out.pixels.foreach_set(np.dstack([np.clip(colour, 0, 1), px[..., 3:]]).astype(np.float32).ravel())
-        (OUT / "tex").mkdir(parents=True, exist_ok=True)
-        out.filepath_raw = str(OUT / "tex" / (asset + ".png"))
+        folder = ROOT / "art" / "characters" / key / "tex"
+        folder.mkdir(parents=True, exist_ok=True)
+        out.filepath_raw = str(folder / (asset + ".png"))
         out.file_format = "PNG"
         out.save()
         node.image = out
@@ -145,22 +169,30 @@ def pick():
         top - 0.06, tip[0], tip[2], -tip[1], PICK))
 
 
-if __name__ == "__main__":
-    args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+def make(key, shots):
+    spec = CHARACTERS[key]
+    out = ROOT / "art" / "characters" / key
     mh.clear_scene()
-    basemesh, rig = mh.build("scavenger", SCAVENGER)
-    for asset, (tint, stained) in GRIME.items():
-        grime(rig, asset, tint, stained)
-    for asset, ratio in DECIMATE.items():
+    basemesh, rig = mh.build(key, spec)
+    for asset, (tint, stained) in spec.get("grime", {}).items():
+        grime(rig, key, asset, tint, stained)
+    for asset, ratio in spec.get("decimate", {}).items():
         mod = part(rig, asset).modifiers.new("decimate", "DECIMATE")
         mod.ratio = ratio  # applied with the other modifiers by arkanor_game.bake_mesh
-    print("scavenger: tris", mh.stats(basemesh))
-    OUT.mkdir(parents=True, exist_ok=True)
-    bpy.ops.wm.save_as_mainfile(filepath=str(OUT / "scavenger_mh.blend"))
-    if "--shots" in args:
-        mh.shots(str(OUT / "preview"), ["scavenger"])
-    rig, body = game.convert("scavenger", "scavenger", silver=False)
-    print("scavenger: %d bones, %d tris, materials %s -> %s" % (
-        len(rig.data.bones), sum(len(p.vertices) - 2 for p in body.data.polygons),
-        [m.name for m in body.data.materials], game.export("scavenger", GAME_ART)))
-    pick()
+    print("%s: tris %s" % (key, mh.stats(basemesh)))
+    out.mkdir(parents=True, exist_ok=True)
+    bpy.ops.wm.save_as_mainfile(filepath=str(out / ("%s_mh.blend" % key)))
+    if shots:
+        mh.shots(str(out / "preview"), [key])
+    rig, body = game.convert(key, key, silver=False)
+    print("%s: %d bones, %d tris, materials %s -> %s" % (
+        key, len(rig.data.bones), sum(len(p.vertices) - 2 for p in body.data.polygons),
+        [m.name for m in body.data.materials], game.export(key, ROOT / "game" / "art" / "characters" / key)))
+    if key == "scavenger":
+        pick()
+
+
+if __name__ == "__main__":
+    args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+    for key in [a for a in args if a in CHARACTERS] or list(CHARACTERS):
+        make(key, "--shots" in args)

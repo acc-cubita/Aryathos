@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://data/ability_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"eclipse_bolt"
+display_name = "Eclipse Bolt"
+description = "A bolt of light swallowed by darkness."
+icon_color = Color(0.4, 0.2, 0.6, 1)
+icon_glyph = "EB"
+effect = 0
+targeting = 0
+cast_time = 2.0
+cooldown = 3.5
+mana_cost = 0
+max_range = 25.0
+starts_auto_attack = false
+min_amount = 9
+max_amount = 13
+color = Color(0.62, 0.35, 1, 1)
+projectile_speed = 18.0
+projectile_style = 0

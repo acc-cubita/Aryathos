@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://data/quest_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/faction_data.gd" id="2_faction"]
+[ext_resource type="Resource" path="res://data/factions/wardstone_watch.tres" id="10_watch"]
+[ext_resource type="Resource" path="res://data/factions/azure_concord.tres" id="11_concord"]
+[ext_resource type="Resource" path="res://data/items/ward_of_silverrun.tres" id="4_reward"]
+[ext_resource type="Resource" path="res://data/quests/hand_of_the_eclipse.tres" id="5_requires"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"a_name_in_the_dark"
+title = "A Name in the Dark"
+offer_text = "The acolytes answer to someone. Cultists like these carry their orders sealed, and burn them before they let them be taken.
+
+Bring me one of their missives unbroken, {name}, and take it straight to Warden Thalos. The Watch must hear this first."
+progress_text = "Ivren sent word you'd bring something. What did you find?"
+complete_text = "\"The Vale has fed the Core enough. Withdraw the hands to the Crystal Canyons. The seals must break before the solstice.\" Signed with a dark sun.
+
+The Veiled Core. I thought it a fable. If the Eclipse Hand means to wake it, Silverrun was only the beginning.
+
+You have done more for this Vale than any warden in years, {name}. Take this. It was cut from our own Wardstone. When you leave the Vale, and you will, it goes with you."
+kind = 1
+enemy_id = &"eclipse_acolyte"
+objective = "Sealed Eclipse Missive"
+required = 1
+drop_chance = 0.4
+xp_reward = 800
+reward_item = ExtResource("4_reward")
+reputation_factions = Array[ExtResource("2_faction")]([ExtResource("10_watch"), ExtResource("11_concord")])
+reputation_amounts = PackedInt32Array(300, 150)
+min_level = 5
+requires = ExtResource("5_requires")
+turn_in_npc = &"thalos"

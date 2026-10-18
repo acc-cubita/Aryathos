@@ -35,6 +35,23 @@ func _run() -> void:
 		wolf.attacked.emit()  # a bite
 		await _wait(0.36)
 		await _shot(wolf, folder, "wolf_bite", 2.6)
+	var acolyte := _enemy(&"eclipse_acolyte")
+	if acolyte:
+		acolyte.rotation.y = PI  # facing the open meadow south of the den
+		await _wait(0.1)
+		await _shot(acolyte, folder, "acolyte", 2.6)
+		var bolt: AbilityData = acolyte.data.abilities[0]
+		acolyte.casting = bolt  # an Eclipse Bolt gathering in her hands
+		acolyte._cast_target = player
+		acolyte._cast_end = Game.time + 30.0
+		acolyte.cast_started.emit(bolt)
+		await _wait(0.8)
+		await _shot(acolyte, folder, "acolyte_cast", 2.6)
+		acolyte.interrupt_cast()
+	var sigils := get_tree().get_nodes_in_group("quest_objects").filter(func(o: QuestObject) -> bool: return o.object_id == &"eclipse_sigil")
+	if not sigils.is_empty():
+		(sigils[0] as Node3D).rotation.y = PI  # seen from the meadow, the cliff behind it
+		await _shot(sigils[0], folder, "sigil", 6.0)
 	var boss := _enemy(&"grimjaw")
 	if boss:
 		await _shot(boss, folder, "grimjaw", 5.5)

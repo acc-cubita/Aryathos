@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"duskbane_mantle"
+display_name = "Duskbane Mantle"
+flavor_text = "Woven at the Spire to turn aside what the dark throws."
+quality = 2
+slot = 8
+icon_glyph = "Sh"
+icon_color = Color(0.4, 0.45, 0.7, 1)
+health_bonus = 22
+mana_bonus = 15
+sell_price = 70

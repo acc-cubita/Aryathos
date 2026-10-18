@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://data/enemy_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/item_data.gd" id="2_item"]
+[ext_resource type="Script" path="res://data/ability_data.gd" id="3_ability"]
+[ext_resource type="Resource" path="res://data/abilities/eclipse_bolt.tres" id="4_bolt"]
+[ext_resource type="Resource" path="res://data/factions/wardstone_watch.tres" id="40_watch"]
+[ext_resource type="Resource" path="res://data/items/minor_mana_potion.tres" id="30_mana"]
+[ext_resource type="Resource" path="res://data/items/cracked_shard.tres" id="31_shard"]
+[ext_resource type="Resource" path="res://data/items/silverrun_band.tres" id="32_band"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"eclipse_acolyte"
+display_name = "Eclipse Hand Acolyte"
+character = "res://art/characters/acolyte/acolyte.glb"
+min_level = 4
+max_level = 5
+body = 0
+main_color = Color(0.2, 0.12, 0.28, 1)
+glow_color = Color(0.62, 0.35, 1, 1)
+base_health = 95
+health_per_level = 16
+min_damage = 5
+max_damage = 8
+attack_interval = 2.0
+move_speed = 5.5
+abilities = Array[ExtResource("3_ability")]([ExtResource("4_bolt")])
+aggro_radius = 13.0
+social_radius = 10.0
+wander_radius = 3.0
+money_min = 18
+money_max = 42
+loot_items = Array[ExtResource("2_item")]([ExtResource("30_mana"), ExtResource("31_shard"), ExtResource("32_band")])
+loot_chances = PackedFloat32Array(0.15, 0.35, 0.03)
+reputation_faction = ExtResource("40_watch")
+reputation_on_kill = 15

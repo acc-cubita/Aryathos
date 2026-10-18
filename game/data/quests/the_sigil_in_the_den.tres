@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://data/quest_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/faction_data.gd" id="2_faction"]
+[ext_resource type="Resource" path="res://data/factions/wardstone_watch.tres" id="10_watch"]
+[ext_resource type="Resource" path="res://data/quests/the_shardmaw.tres" id="5_requires"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"the_sigil_in_the_den"
+title = "The Sigil in the Den"
+offer_text = "Grimjaw is dead, and the storms over the Vale are quieter for it. But my wardens found something where he lay: a carving at the foot of the cliff behind his den, glowing like a bruise.
+
+Go back to the Shardmaw Den and look at it, {name}. Don't touch it. Then tell Magister Ivren what you saw. If anyone knows what it means, she will."
+progress_text = "You've seen the carving? Tell me everything."
+complete_text = "A circle with its heart cut out. A dark sun. The sign of the Eclipse Hand.
+
+They were a story the Spire told its apprentices, {name}: a cult that worships the void before creation. So the shards were never stolen for coin. They were stolen to feed this."
+kind = 5
+object_id = &"eclipse_sigil"
+objective = "Eclipse Sigil examined"
+required = 1
+xp_reward = 450
+reputation_factions = Array[ExtResource("2_faction")]([ExtResource("10_watch")])
+reputation_amounts = PackedInt32Array(200)
+min_level = 4
+requires = ExtResource("5_requires")
+turn_in_npc = &"magister_ivren"

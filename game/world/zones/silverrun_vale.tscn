@@ -47,6 +47,10 @@
 [ext_resource type="Resource" path="res://data/quests/pelts_for_the_concord.tres" id="q_pelts_for_the_concord"]
 [ext_resource type="Resource" path="res://data/quests/cut_to_feed.tres" id="q_cut_to_feed"]
 [ext_resource type="Script" path="res://world/quest_object_spawner.gd" id="q_spawner"]
+[ext_resource type="Resource" path="res://data/quests/the_sigil_in_the_den.tres" id="q_the_sigil_in_the_den"]
+[ext_resource type="Resource" path="res://data/quests/hand_of_the_eclipse.tres" id="q_hand_of_the_eclipse"]
+[ext_resource type="Resource" path="res://data/quests/a_name_in_the_dark.tres" id="q_a_name_in_the_dark"]
+[ext_resource type="Resource" path="res://data/enemies/eclipse_acolyte.tres" id="e_acolyte"]
 
 [sub_resource type="PanoramaSkyMaterial" id="sky_material"]
 panorama = ExtResource("74_skyhdr")
@@ -336,6 +340,20 @@ enemy_data = ExtResource("8_scavenger")
 count = 4
 radius = 12.0
 
+[node name="EclipseWest" type="Marker3D" parent="Spawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -86, 0, -98)
+script = ExtResource("6_spawner")
+enemy_data = ExtResource("e_acolyte")
+count = 3
+radius = 7.0
+
+[node name="EclipseEast" type="Marker3D" parent="Spawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38, 0, -100)
+script = ExtResource("6_spawner")
+enemy_data = ExtResource("e_acolyte")
+count = 3
+radius = 7.0
+
 [node name="ShardmawDen" type="Marker3D" parent="Spawners"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -62, 0, -95)
 script = ExtResource("6_spawner")
@@ -352,7 +370,7 @@ npc_id = &"thalos"
 reputation_faction = ExtResource("22_watch")
 title = "Keeper of the Wardstone"
 greeting = "Stay close to the Wardstone's light, {name}."
-quests = Array[ExtResource("10_quest")]([ExtResource("q_concord_supplies"), ExtResource("11_wolves"), ExtResource("q_eyes_on_the_vale"), ExtResource("12_light")])
+quests = Array[ExtResource("10_quest")]([ExtResource("q_concord_supplies"), ExtResource("11_wolves"), ExtResource("q_eyes_on_the_vale"), ExtResource("12_light"), ExtResource("q_the_sigil_in_the_den")])
 unit_name = "Warden Thalos"
 armor_color = Color(0.5, 0.55, 0.65, 1)
 
@@ -363,7 +381,7 @@ npc_id = &"magister_ivren"
 reputation_faction = ExtResource("22_watch")
 title = "Arcanist of the Spire"
 greeting = "The Wardstone hums tonight. Something stirs in the crystals."
-quests = Array[ExtResource("10_quest")]([ExtResource("14_shardmaw"), ExtResource("q_cut_to_feed")])
+quests = Array[ExtResource("10_quest")]([ExtResource("14_shardmaw"), ExtResource("q_cut_to_feed"), ExtResource("q_hand_of_the_eclipse"), ExtResource("q_a_name_in_the_dark")])
 unit_name = "Magister Ivren"
 armor_color = Color(0.42, 0.33, 0.58, 1)
 glow_color = Color(0.65, 0.5, 1, 1)
@@ -449,6 +467,18 @@ display_name = "Gloomshard Cache"
 action = "Smashing"
 count = 6
 radius = 14.0
+
+[node name="EclipseSigil" type="Marker3D" parent="QuestObjectSpawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -62, 0, -108)
+script = ExtResource("q_spawner")
+object_id = &"eclipse_sigil"
+display_name = "Eclipse Sigil"
+action = "Examining"
+use_time = 3.0
+look = 1
+vanishes = false
+count = 1
+radius = 0.0
 
 [node name="PointsOfInterest" type="Node3D" parent="."]
 

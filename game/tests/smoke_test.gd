@@ -225,6 +225,25 @@ func _new_quest_checks(player: Player) -> void:
 	_check(quests.state(Database.quest(&"cut_to_feed")) == QuestLog.State.UNAVAILABLE, "Cut to Feed waits for Stolen Light")
 
 
+## The Eclipse Hand: acolytes cast Eclipse Bolts, the sigil behind the den, three quests.
+func _eclipse_checks(player: Player) -> void:
+	var acolytes := _alive(&"eclipse_acolyte")
+	_check(acolytes.size() == 6, "six Eclipse Hand Acolytes stand by the Shardmaw Den (%d)" % acolytes.size())
+	var acolyte: Enemy = acolytes[0]
+	_place_facing(player, acolyte, 18.0)
+	await _wait(0.3)
+	acolyte.engage(player)
+	await _wait_until(func() -> bool: return acolyte.casting != null, 3.0)
+	_check(acolyte.casting != null and acolyte.casting.id == &"eclipse_bolt", "an acolyte casts Eclipse Bolt from range")
+	var sigils := get_tree().get_nodes_in_group("quest_objects").filter(func(o: QuestObject) -> bool: return o.object_id == &"eclipse_sigil")
+	_check(sigils.size() == 1, "the Eclipse Sigil waits behind the den")
+	var quests := player.quest_log
+	var sigil_quest := Database.quest(&"the_sigil_in_the_den")
+	_check(sigil_quest.requires == Database.quest(&"the_shardmaw") and Database.quest(&"a_name_in_the_dark").turn_in_npc == &"thalos",
+			"the Eclipse quests follow The Shardmaw and end with Warden Thalos")
+	_check(not quests.wants_object(&"eclipse_sigil"), "the sigil cannot be examined before the quest")
+
+
 ## Cut to Feed (after Stolen Light is handed in): smashing Gloomshard Caches.
 func _cache_checks(player: Player) -> void:
 	var quests := player.quest_log
@@ -288,6 +307,7 @@ func _boss_checks(player: Player) -> void:
 	_check(boss.cooldown_left(boss.data.abilities[1]) == 0.0, "Crystal Roar fizzles when you step out of range")
 	await _wait_until(func() -> bool: return Audio.played.has("boss_music"), 2.0)
 	_check(Audio.played.has("boss_music"), "Grimjaw's fight brings in his music")
+	await _eclipse_checks(player)
 
 	var quests := player.quest_log
 	var ivren: Npc = Game.zone.get_node("NPCs/MagisterIvren")
