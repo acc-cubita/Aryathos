@@ -1,0 +1,157 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://world/zone.gd" id="1_zone"]
+[ext_resource type="Script" path="res://world/terrain.gd" id="2_terrain"]
+[ext_resource type="Script" path="res://world/zone_decorator.gd" id="3_decor"]
+[ext_resource type="PackedScene" path="res://units/player/player.tscn" id="4_player"]
+[ext_resource type="Script" path="res://ui/hud.gd" id="5_hud"]
+[ext_resource type="Script" path="res://world/zone_exit.gd" id="6_exit"]
+[ext_resource type="Material" path="res://world/materials/terrain_canyon.tres" id="60_terrain_mat"]
+[ext_resource type="Material" path="res://world/materials/water.tres" id="61_water_mat"]
+[ext_resource type="Material" path="res://world/materials/grass_canyon.tres" id="62_grass_mat"]
+[ext_resource type="Script" path="res://world/grass_field.gd" id="63_grass"]
+[ext_resource type="Material" path="res://world/materials/leaves_summer.tres" id="70_leaves"]
+[ext_resource type="Material" path="res://world/materials/bark_oak.tres" id="71_bark"]
+[ext_resource type="Material" path="res://world/materials/leaves_autumn.tres" id="75_autumn"]
+[ext_resource type="Material" path="res://world/materials/needles.tres" id="76_needles"]
+[ext_resource type="Material" path="res://world/materials/bark_pine.tres" id="77_pine_bark"]
+[ext_resource type="Texture2D" path="res://art/sky/kloofendal_partly_cloudy_4k_clamped.exr" id="74_skyhdr"]
+
+[sub_resource type="PanoramaSkyMaterial" id="sky_material"]
+panorama = ExtResource("74_skyhdr")
+
+[sub_resource type="Sky" id="sky"]
+sky_material = SubResource("sky_material")
+radiance_size = 2
+process_mode = 1
+
+[sub_resource type="Environment" id="environment"]
+background_mode = 2
+sky = SubResource("sky")
+ambient_light_source = 3
+reflected_light_source = 2
+tonemap_mode = 4
+ssao_enabled = true
+ssao_radius = 1.2
+ssao_intensity = 1.5
+ssao_detail = 0.6
+ssao_light_affect = 0.1
+ssil_enabled = true
+ssil_radius = 4.0
+ssil_intensity = 0.7
+glow_enabled = true
+glow_intensity = 0.6
+glow_bloom = 0.02
+glow_hdr_threshold = 1.2
+fog_enabled = true
+fog_light_color = Color(0.86, 0.74, 0.62, 1)
+fog_sun_scatter = 0.3
+fog_density = 0.0016
+fog_aerial_perspective = 0.6
+fog_sky_affect = 0.12
+adjustment_enabled = true
+adjustment_contrast = 1.06
+adjustment_saturation = 0.95
+
+[node name="CrystalCanyons" type="Node3D"]
+script = ExtResource("1_zone")
+zone_name = "Crystal Canyons"
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("environment")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.7071, 0.4545, -0.5417, 0, 0.766, 0.6428, 0.7071, -0.4545, 0.5417, 0, 40, 0)
+light_color = Color(1, 0.9, 0.76, 1)
+light_energy = 1.45
+shadow_enabled = true
+shadow_blur = 1.0
+directional_shadow_blend_splits = true
+directional_shadow_max_distance = 140.0
+
+[node name="Terrain" type="StaticBody3D" parent="."]
+script = ExtResource("2_terrain")
+shape = 1
+size = 360
+noise_seed = 2024
+hill_height = 2.5
+border_height = 30.0
+flat_areas = PackedVector3Array(-108, 18, 24, -50, -110, 30, 10, 5, 38, 88, -78, 26, 125, 125, 20)
+path_segments = PackedVector2Array(-176, 20, -120, 18, -120, 18, -108, 18, -100, 22, -32, 30, -32, 30, 0, 14, -108, 2, -82, -58, -82, -58, -58, -92, 36, 30, 75, 80)
+ground_material = ExtResource("60_terrain_mat")
+water_material = ExtResource("61_water_mat")
+canyon_segments = PackedVector2Array(-180, 20, -120, 18, -108, 0, -82, -58, -82, -58, -58, -92, -90, 22, -32, 30, -32, 30, -5, 12, 30, -12, 70, -58, 38, 30, 75, 80, 75, 80, 112, 112)
+canyon_widths = PackedFloat32Array(22, 18, 18, 20, 20, 18, 12, 12)
+buttes = PackedVector3Array(0, -6, 7, 24, 14, 9, -10, 24, 5, 28, -18, 6)
+wall_run = 18.0
+strata = 5.0
+
+[node name="Decorator" type="Node3D" parent="."]
+script = ExtResource("3_decor")
+decor_seed = 31
+tree_count = 0
+bush_count = 0
+rock_count = 40
+cliff_count = 0
+crystal_cluster_count = 24
+clear_areas = PackedVector3Array(-108, 18, 22)
+crystal_areas = PackedVector3Array(-50, -110, 26, 125, 125, 14)
+leaf_material = ExtResource("70_leaves")
+autumn_leaf_material = ExtResource("75_autumn")
+needle_material = ExtResource("76_needles")
+bark_material = ExtResource("71_bark")
+pine_bark_material = ExtResource("77_pine_bark")
+
+[node name="Grass" type="MultiMeshInstance3D" parent="."]
+material_override = ExtResource("62_grass_mat")
+script = ExtResource("63_grass")
+
+[node name="Units" type="Node3D" parent="."]
+
+[node name="Spawners" type="Node3D" parent="."]
+
+[node name="NPCs" type="Node3D" parent="."]
+
+[node name="GatherSpawners" type="Node3D" parent="."]
+
+[node name="PointsOfInterest" type="Node3D" parent="."]
+
+[node name="Hammerfall Hold" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -108, 0, 18)
+
+[node name="The Glittering Cut" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, -110)
+
+[node name="Dustwind Mesas" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 5)
+
+[node name="Rustwind Flats" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 88, 0, -78)
+
+[node name="Duskreach Gorge" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, 58)
+
+[node name="The First Seal" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 125, 0, 125)
+
+[node name="Exits" type="Node3D" parent="."]
+
+[node name="ToSilverrunVale" type="Area3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -166, 0, 20)
+script = ExtResource("6_exit")
+target_zone = "res://world/zones/silverrun_vale.tscn"
+arrival = "FromCrystalCanyons"
+radius = 5.0
+
+[node name="Arrivals" type="Node3D" parent="."]
+
+[node name="FromSilverrunVale" type="Marker3D" parent="Arrivals"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -150, 0, 20)
+
+[node name="PlayerSpawn" type="Marker3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -100, 0, 18)
+
+[node name="Player" parent="." instance=ExtResource("4_player")]
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("5_hud")

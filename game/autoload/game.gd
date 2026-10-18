@@ -27,6 +27,8 @@ const CHAT_LOOT := Color(0.3, 0.9, 0.35)
 const CHAT_REPUTATION := Color(0.5, 0.6, 1.0)
 
 const AUTOSAVE_INTERVAL := 30.0
+## The zone a new character starts in.
+const START_ZONE := "res://world/zones/silverrun_vale.tscn"
 
 ## Game clock in seconds. Follows Engine.time_scale and stops when the tree is paused.
 var time := 0.0
@@ -38,6 +40,9 @@ var save_path := "user://saves/character.json"
 var testing := false
 
 var _autosave_at := AUTOSAVE_INTERVAL
+var _loading := CanvasLayer.new()
+var _loading_title := Hud.make_label("", 40, Hud.GOLD)
+var _travelling := false
 
 
 func _ready() -> void:
@@ -61,6 +66,11 @@ func _ready() -> void:
 			add_child(load("res://tests/vfx_shots.gd").new())
 		elif arg.begins_with("--creation-shots"):
 			add_child(load("res://tests/creation_shots.gd").new())
+	_build_loading_screen()
+	zone_ready.connect(func() -> void:
+		_travelling = false
+		await get_tree().process_frame
+		_loading.visible = false)
 
 
 func _physics_process(delta: float) -> void:
@@ -81,15 +91,19 @@ func quit_game() -> void:
 	get_tree().quit()
 
 
-func save_game() -> bool:
+## Saves the character and the zone it is in (`extra` overrides, e.g. while travelling).
+func save_game(extra := {}) -> bool:
 	if not is_instance_valid(player):
 		return false
+	var data := player.to_save_data()
+	data["zone"] = zone.scene_file_path if is_instance_valid(zone) else START_ZONE
+	data.merge(extra, true)
 	DirAccess.make_dir_recursive_absolute(save_path.get_base_dir())
 	var file := FileAccess.open(save_path, FileAccess.WRITE)
 	if file == null:
 		push_error("Could not save to %s (error %d)" % [save_path, FileAccess.get_open_error()])
 		return false
-	file.store_string(JSON.stringify(player.to_save_data(), "\t", false, true))
+	file.store_string(JSON.stringify(data, "\t", false, true))
 	return true
 
 
@@ -102,7 +116,46 @@ func load_game() -> bool:
 		push_warning("The save file %s is damaged; starting a new character." % save_path)
 		return false
 	player.load_save_data(data)
+	# just come from another zone: at the way in from there (or the zone's spawn)
+	var arrival := String(data.get("arrive_at", ""))
+	if is_instance_valid(zone) and (arrival != "" or String(data.get("zone", zone.scene_file_path)) != zone.scene_file_path):
+		zone.arrive(arrival)
 	return true
+
+
+## The zone the saved character is in (the first zone for a new one); a tool can start
+## in another with --zone=<file name>.
+func saved_zone() -> String:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--zone="):
+			return "res://world/zones/%s.tscn" % arg.get_slice("=", 1)
+	if FileAccess.file_exists(save_path):
+		var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(save_path))
+		if data is Dictionary and ResourceLoader.exists(String(data.get("zone", ""))):
+			return data["zone"]
+	return START_ZONE
+
+
+## Opens a zone behind the loading screen: the screen is drawn first, then stays up while
+## the zone builds itself, until it is ready.
+func open_zone(path: String) -> void:
+	_loading_title.text = path.get_file().get_basename().capitalize()
+	_loading.visible = true
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	zone = null
+	player = null
+	get_tree().change_scene_to_file(path)
+
+
+## Leaves this zone for another (a ZoneExit): the character is saved to arrive at the
+## other zone's Arrivals/<arrival> marker, and that zone opens.
+func travel(target_zone: String, arrival: String) -> void:
+	if _travelling:
+		return
+	_travelling = true
+	save_game({"zone": target_zone, "arrive_at": arrival})
+	await open_zone(target_zone)
 
 
 func delete_save() -> void:
@@ -113,8 +166,29 @@ func delete_save() -> void:
 ## Erases the save and starts over with a fresh character.
 func new_character() -> void:
 	delete_save()
-	player = null
-	get_tree().reload_current_scene()
+	open_zone(START_ZONE)
+
+
+func _build_loading_screen() -> void:
+	_loading.layer = 120
+	_loading.visible = false
+	_loading.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_loading)
+	var shade := ColorRect.new()
+	shade.color = Color(0.03, 0.035, 0.05)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_loading.add_child(shade)
+	var box := VBoxContainer.new()
+	box.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	box.grow_vertical = Control.GROW_DIRECTION_BOTH
+	box.add_theme_constant_override("separation", 14)
+	_loading_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(_loading_title)
+	var note := Hud.make_label("Loading...", 18, Color(0.7, 0.72, 0.78))
+	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(note)
+	_loading.add_child(box)
 
 
 func xp_to_next_level(level: int) -> int:

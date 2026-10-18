@@ -1,6 +1,6 @@
 """Packs scanned CC0 ground and bark materials (ambientCG, art/vendor/ambientcg/*.zip).
 
-    python tools/art/terrain_pbr.py
+    python tools/art/terrain_pbr.py [canyon]
 
 Per layer writes game/art/textures/terrain_pbr/:
   <layer>_albedo.png  RGB = colour (sRGB), A = height (blends layers at uneven edges)
@@ -8,8 +8,11 @@ Per layer writes game/art/textures/terrain_pbr/:
 Two textures per layer keep the terrain shader within the sampler limit.
 Barks (tree trunks) go to game/art/textures/bark/ and prop surfaces (camp wood, tent
 canvas, carved stone) to game/art/textures/props_pbr/, in the same two-texture layout.
+The Crystal Canyons' ground (CANYON, recoloured toward the red rock) goes to
+game/art/textures/terrain_canyon/; "canyon" packs only that.
 """
 import io
+import sys
 import zipfile
 from pathlib import Path
 
@@ -29,6 +32,15 @@ LAYERS = {
     "rock": "Rock030",     # grey layered rock: cliffs
     "sand": "Ground033",   # pale sand: lake shores
     "snow": "Snow006",
+}
+CANYON_OUT = ROOT / "game" / "art" / "textures" / "terrain_canyon"
+## layer: (asset, recolour): the texture's light and dark kept, its colour pulled toward
+## (r, g, b multipliers of its brightness, share 0..1)
+CANYON = {
+    "grass": ("Grass004", ((1.35, 1.12, 0.55), 0.95)),  # dry straw grass on the floors and mesa tops
+    "dirt": ("Ground105", ((1.45, 0.95, 0.65), 0.5)),   # ochre earth with pebbles: roads and camps
+    "rock": ("Rock029", None),                          # orange-red layered rock: the canyon walls
+    "sand": ("Ground098", ((1.25, 1.0, 0.75), 0.3)),    # wind-rippled sand: the dry washes
 }
 BARKS = {
     "oak": "Bark001",   # grey furrowed bark: broadleaf trees
@@ -50,7 +62,7 @@ def read(archive, asset, map_name, mode):
     return np.asarray(img)
 
 
-def pack(layer, asset, out=OUT):
+def pack(layer, asset, out=OUT, recolour=None, nrao=True):
     with zipfile.ZipFile(VENDOR / ("%s_2K-JPG.zip" % asset)) as archive:
         color = read(archive, asset, "Color", "RGB")
         height = read(archive, asset, "Displacement", "L").astype(float)
@@ -60,14 +72,30 @@ def pack(layer, asset, out=OUT):
             ao = read(archive, asset, "AmbientOcclusion", "L")
         except KeyError:
             ao = np.full(rough.shape, 255, np.uint8)
+    if recolour is not None:
+        tint, share = recolour
+        luma = (color.astype(float) @ np.array([0.3, 0.59, 0.11]))[..., None]
+        color = np.clip(color * (1 - share) + luma * np.array(tint) * share, 0, 255).astype(np.uint8)
     # stretch the height to the full range so every layer blends with the same sharpness
     lo, hi = np.percentile(height, (1, 99))
     height = np.clip((height - lo) / max(hi - lo, 1.0) * 255, 0, 255).astype(np.uint8)
     Image.fromarray(np.dstack([color, height]), "RGBA").save(out / ("%s_albedo.png" % layer))
-    Image.fromarray(np.dstack([normal[..., 0], normal[..., 1], rough, ao]), "RGBA").save(out / ("%s_nrao.png" % layer))
+    if nrao:
+        Image.fromarray(np.dstack([normal[..., 0], normal[..., 1], rough, ao]), "RGBA").save(out / ("%s_nrao.png" % layer))
+
+
+def pack_canyon():
+    CANYON_OUT.mkdir(parents=True, exist_ok=True)
+    for layer, (asset, recolour) in CANYON.items():
+        # a layer made from the vale's own scan shares its normals (terrain_pbr/<layer>_nrao.png)
+        pack(layer, asset, CANYON_OUT, recolour, nrao=asset != LAYERS.get(layer))
+        print("packed canyon", layer, "from", asset)
 
 
 if __name__ == "__main__":
+    if sys.argv[1:] == ["canyon"]:
+        pack_canyon()
+        sys.exit()
     OUT.mkdir(parents=True, exist_ok=True)
     BARK_OUT.mkdir(parents=True, exist_ok=True)
     for layer, asset in LAYERS.items():
@@ -80,3 +108,4 @@ if __name__ == "__main__":
     for prop, asset in PROPS.items():
         pack(prop, asset, PROPS_OUT)
         print("packed prop", prop, "from", asset)
+    pack_canyon()

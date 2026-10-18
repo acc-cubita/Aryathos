@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://world/zone.gd" id="1_zone"]
+[ext_resource type="Script" path="res://world/zone_exit.gd" id="x_exit"]
 [ext_resource type="Script" path="res://world/terrain.gd" id="2_terrain"]
 [ext_resource type="Script" path="res://world/zone_decorator.gd" id="3_decor"]
 [ext_resource type="PackedScene" path="res://units/player/player.tscn" id="4_player"]
@@ -108,7 +109,8 @@ directional_shadow_max_distance = 140.0
 script = ExtResource("2_terrain")
 flat_areas = PackedVector3Array(0, 0, 18)
 lakes = PackedVector3Array(-62, 45, 30)
-path_segments = PackedVector2Array(0, 0, -5, -40, -5, -40, 8, -75, 8, -75, 45, -95, 0, 0, 40, 6, 40, 6, 78, 4)
+path_segments = PackedVector2Array(0, 0, -5, -40, -5, -40, 8, -75, 8, -75, 45, -95, 0, 0, 40, 6, 40, 6, 78, 4, 78, 4, 140, 4)
+passes = PackedVector3Array(150, 4, 26)
 ground_material = ExtResource("60_terrain_mat")
 water_material = ExtResource("61_water_mat")
 
@@ -502,6 +504,20 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, -115)
 
 [node name="Shardmaw Den" type="Marker3D" parent="PointsOfInterest"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -62, 0, -110)
+
+[node name="Exits" type="Node3D" parent="."]
+
+[node name="ToCrystalCanyons" type="Area3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 137, 0, 4)
+script = ExtResource("x_exit")
+target_zone = "res://world/zones/crystal_canyons.tscn"
+arrival = "FromSilverrunVale"
+radius = 5.0
+
+[node name="Arrivals" type="Node3D" parent="."]
+
+[node name="FromCrystalCanyons" type="Marker3D" parent="Arrivals"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 122, 0, 4)
 
 [node name="PlayerSpawn" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 7)

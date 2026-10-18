@@ -27,6 +27,8 @@ uniform float rock_scale = 0.18;
 uniform float rock_large = 0.22;
 uniform vec3 rock_warm : source_color = vec3(1.08, 1.0, 0.9);
 uniform vec3 scree_tint : source_color = vec3(0.85, 0.84, 0.82);
+// strength of the faint horizontal bands across rock (strata)
+uniform float rock_bands = 0.07;
 uniform float sand_scale = 0.45;
 uniform float snow_scale = 0.3;
 // Where rock starts and fully covers the ground (1 - normal.y).
@@ -130,7 +132,7 @@ void fragment() {
 		rock.rough = mix(rock.rough, ledges.rough, 0.45);
 		rock.ao = min(rock.ao, ledges.ao);
 		// warmer and cooler stone across the range, and faint layered bands
-		rock.albedo.rgb *= mix(vec3(0.92, 0.95, 1.0), rock_warm, macro) * (1.0 + 0.07 * sin(world_position.y * 0.9 + detail * 6.0));
+		rock.albedo.rgb *= mix(vec3(0.92, 0.95, 1.0), rock_warm, macro) * (1.0 + rock_bands * sin(world_position.y * 0.9 + detail * 6.0));
 		ground = blend(ground, rock, rock_t);
 	}
 	if (COLOR.b > 0.0) {

@@ -24,6 +24,21 @@ const VIEWS := {
 	"crates": [Vector3(-6.5, 0, 6), PI * 0.5, -0.22, 4.0],
 	# next to the first herb (placed at run time, so filled in by _run)
 	"herb": [Vector3.ZERO, 0.0, -0.35, 2.6],
+	# the road east into the mountain pass to the Crystal Canyons
+	"pass": [Vector3(100, 0, 4), -PI * 0.5, -0.12, 9.0],
+}
+## Views of the other zones, by zone name (start one with --zone=<file name>).
+const ZONE_VIEWS := {
+	"Crystal Canyons": {
+		"entrance": [Vector3(-150, 0, 20), -PI * 0.5, -0.1, 9.0],
+		"hold": [Vector3(-126, 0, 18), -PI * 0.5, -0.22, 14.0],
+		"mine": [Vector3(-72, 0, -86), -0.73, -0.25, 14.0],
+		"mesas": [Vector3(-25, 0, 28), -0.99, -0.12, 10.0],
+		"gorge": [Vector3(45, 0, 40), -2.5, -0.1, 9.0],
+		"seal": [Vector3(110, 0, 110), -2.36, -0.2, 12.0],
+		"flats": [Vector3(62, 0, -48), -0.6, -0.15, 10.0],
+		"overview": [Vector3(0, 0, 10), 0.4, -1.1, 140.0],
+	},
 }
 
 
@@ -39,6 +54,7 @@ func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(folder)
 	if Game.zone == null:
 		await Game.zone_ready
+	var views: Dictionary = ZONE_VIEWS.get(Game.zone.zone_name, VIEWS)
 	Game.zone.hud.visible = false
 	# --scenery-off=grass,ssao,msaa,fog,glow,shadows turns features off to measure their cost.
 	for arg in OS.get_cmdline_user_args():
@@ -52,7 +68,7 @@ func _run() -> void:
 			fps_view = arg.get_slice("=", 1) if "=" in arg else "lake"
 	if fps_view != "":
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)  # not held to the screen's rate
-		var view: Array = VIEWS[fps_view]
+		var view: Array = views[fps_view]
 		var spot: Vector3 = view[0]
 		spot.y = Game.zone.terrain.get_height(spot.x, spot.z) + 0.2
 		player.teleport(spot, view[1])
@@ -69,10 +85,10 @@ func _run() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--scenery-only="):
 			only = arg.get_slice("=", 1).split(",")
-	for view_name: String in VIEWS:
+	for view_name: String in views:
 		if not only.is_empty() and not only.has(view_name):
 			continue
-		var view: Array = VIEWS[view_name]
+		var view: Array = views[view_name]
 		var at: Vector3 = view[0]
 		if view_name == "herb":
 			var herbs := get_tree().get_nodes_in_group("gather_nodes")

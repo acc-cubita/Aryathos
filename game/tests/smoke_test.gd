@@ -16,6 +16,17 @@ func _run() -> void:
 		await Game.zone_ready
 	var player := Game.player
 	await _wait(1.0)
+	# --only=travel,class: just those check groups (_<name>_checks; ones that stand on their own)
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--only="):
+			for group in arg.get_slice("=", 1).split(","):
+				var method := "_%s_checks" % group
+				if get_method_argument_count(method) == 0:
+					await call(method)
+				else:
+					await call(method, player)
+			_finish()
+			return
 	_check(player.is_on_floor(), "player stands on the terrain")
 
 	var start := player.global_position
@@ -64,7 +75,12 @@ func _run() -> void:
 	await _profession_checks(player)
 	await _save_checks(player)
 	await _class_checks(player)
+	await _travel_checks(player)
 
+	_finish()
+
+
+func _finish() -> void:
 	print("SMOKE TEST %s" % ("PASSED" if _failures == 0 else "FAILED (%d)" % _failures))
 	get_tree().quit(0 if _failures == 0 else 1)
 
@@ -133,6 +149,36 @@ func _class_checks(player: Player) -> void:
 	_check(saved["class"] == "aethermancer" and player.hero_class == mage
 			and player.abilities.any(func(a: AbilityData) -> bool: return a.id == &"starshard")
 			and player.talent_rank(starshard) == 1, "the save brings back the Aethermancer, her talents and Starshard")
+
+
+## Zone travel (last: it changes the scene). The road east runs through a pass in the
+## mountains; walking into its end saves the character, shows the loading screen and opens
+## the Crystal Canyons with the hero at the way in from the vale; the way back leads home.
+func _travel_checks(player: Player) -> void:
+	var exit: ZoneExit = Game.zone.get_node("Exits/ToCrystalCanyons")
+	var map := Game.zone.get_world_3d().navigation_map
+	var from := Vector3(78, Game.zone.terrain.get_height(78, 4), 4)
+	var path := NavigationServer3D.map_get_path(map, from, exit.global_position, true)
+	_check(path.size() > 1 and path[-1].distance_to(exit.global_position) < 6.0, "a path runs from the Gloomshard Camp up the pass")
+	var level := player.level
+	var hero_class := player.hero_class
+	player.teleport(exit.global_position + Vector3.UP * 0.5, 0.0)
+	await Game.zone_ready
+	var canyons := Game.zone
+	var way_in: Node3D = canyons.get_node("Arrivals/FromSilverrunVale")
+	_check(canyons.zone_name == "Crystal Canyons" and Game.player.flat_distance(way_in.global_position) < 2.0,
+			"walking into the pass opens the Crystal Canyons, the hero at the way in")
+	_check(Game.player.level == level and Game.player.hero_class == hero_class, "the hero comes along whole (level, class)")
+	var saved: Variant = JSON.parse_string(FileAccess.get_file_as_string(Game.save_path))
+	_check(saved is Dictionary and saved.get("zone") == "res://world/zones/crystal_canyons.tscn", "the save knows the zone")
+	for frame in 3:  # (the zone's frame took seconds: count frames, not time)
+		await get_tree().process_frame
+	_check(not Game._loading.visible, "the loading screen is gone")
+	Game.player.teleport(canyons.get_node("Exits/ToSilverrunVale").global_position + Vector3.UP * 0.5, 0.0)
+	await Game.zone_ready
+	var back: Node3D = Game.zone.get_node_or_null("Arrivals/FromCrystalCanyons")
+	_check(Game.zone.zone_name == "Silverrun Vale" and back != null and Game.player.flat_distance(back.global_position) < 2.0,
+			"and back to the vale's pass")
 
 
 func _check(ok: bool, what: String) -> void:
@@ -326,7 +372,11 @@ func _cache_checks(player: Player) -> void:
 	player.teleport(Vector3(beside.x, Game.zone.terrain.get_height(beside.x, beside.z) + 0.3, beside.z), 0.0)
 	await _wait_until(func() -> bool: return player.is_on_floor() and not player.is_moving, 3.0)
 	_check(player.use_quest_object(cache), "right-clicking a cache starts smashing it")
-	await _wait(cache.use_time + 0.3)
+	# a scavenger at the dig site may break off the smashing with a blow: start again
+	await _wait_until(func() -> bool:
+		if player.activity == "" and cache.available and quests.progress(cut) == 0:
+			player.use_quest_object(cache)
+		return quests.progress(cut) == 1, 15.0)
 	_check(quests.progress(cut) == 1 and not cache.available, "a smashed cache counts and is gone")
 
 
@@ -671,7 +721,10 @@ func _profession_checks(player: Player) -> void:
 	await _wait_until(func() -> bool: return player.is_on_floor() and not player.is_moving, 3.0)
 	var potions_before := player.count_item(potion)
 	_check(player.craft(recipe), "crafting starts a cast bar")
-	await _wait_until(func() -> bool: return player.count_item(potion) > potions_before, 5.0)
+	await _wait_until(func() -> bool:
+		if player.activity == "" and player.count_item(potion) == potions_before:
+			player.craft(recipe)  # a blow from something that followed the hero broke it off: again
+		return player.count_item(potion) > potions_before, 15.0)
 	_check(player.count_item(potion) == potions_before + 1 and player.profession_skill(alchemy) == 2, "Alchemy turns Silverleaf + Empty Vial into a potion and raises the skill")
 	_check(player.craft_block_reason(Database.recipe(&"lesser_healing_potion")) != "", "Lesser Healing Potion needs Alchemy 40")
 	for node in [silverleaf, stormbloom, second]:

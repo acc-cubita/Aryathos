@@ -1,0 +1,43 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://world/shaders/terrain.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" path="res://art/textures/terrain_canyon/grass_albedo.png" id="2_grass"]
+[ext_resource type="Texture2D" path="res://art/textures/terrain_pbr/grass_nrao.png" id="3_grass_n"]
+[ext_resource type="Texture2D" path="res://art/textures/terrain_canyon/dirt_albedo.png" id="4_dirt"]
+[ext_resource type="Texture2D" path="res://art/textures/terrain_canyon/dirt_nrao.png" id="5_dirt_n"]
+[ext_resource type="Texture2D" path="res://art/textures/terrain_canyon/rock_albedo.png" id="6_rock"]
+[ext_resource type="Texture2D" path="res://art/textures/terrain_canyon/rock_nrao.png" id="7_rock_n"]
+[ext_resource type="Texture2D" path="res://art/textures/terrain_canyon/sand_albedo.png" id="8_sand"]
+[ext_resource type="Texture2D" path="res://art/textures/terrain_canyon/sand_nrao.png" id="9_sand_n"]
+[ext_resource type="Texture2D" path="res://art/textures/terrain_pbr/snow_albedo.png" id="10_snow"]
+[ext_resource type="Texture2D" path="res://art/textures/terrain_pbr/snow_nrao.png" id="11_snow_n"]
+
+[sub_resource type="FastNoiseLite" id="macro"]
+seed = 11
+frequency = 0.02
+fractal_octaves = 4
+
+[sub_resource type="NoiseTexture2D" id="macro_noise"]
+width = 256
+height = 256
+seamless = true
+noise = SubResource("macro")
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/grass_albedo = ExtResource("2_grass")
+shader_parameter/grass_nrao = ExtResource("3_grass_n")
+shader_parameter/dirt_albedo = ExtResource("4_dirt")
+shader_parameter/dirt_nrao = ExtResource("5_dirt_n")
+shader_parameter/rock_albedo = ExtResource("6_rock")
+shader_parameter/rock_nrao = ExtResource("7_rock_n")
+shader_parameter/sand_albedo = ExtResource("8_sand")
+shader_parameter/sand_nrao = ExtResource("9_sand_n")
+shader_parameter/snow_albedo = ExtResource("10_snow")
+shader_parameter/snow_nrao = ExtResource("11_snow_n")
+shader_parameter/macro_noise = SubResource("macro_noise")
+shader_parameter/rock_bands = 0.16
+shader_parameter/rock_warm = Color(1.12, 0.98, 0.88, 1)
+shader_parameter/scree_tint = Color(1.15, 0.92, 0.78, 1)
+shader_parameter/grass_dry = Color(1.05, 0.95, 0.78, 1)
+shader_parameter/grass_lush = Color(0.95, 1.0, 0.85, 1)

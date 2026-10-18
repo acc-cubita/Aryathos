@@ -32,3 +32,5 @@ const CATEGORIES: Array[String] = ["General", "Combat", "Quests", "Exploration",
 @export var criteria := Criteria.KILL_ENEMY
 @export var target: StringName
 @export var count := 1
+## EXPLORE_ZONE: the places that count (one zone's points of interest).
+@export var places := PackedStringArray()

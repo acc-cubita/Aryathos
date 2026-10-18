@@ -23,17 +23,20 @@ func _ready() -> void:
 	if has_node("Props"):
 		for group: PropGroup in $Props.get_children():
 			group.build(terrain)
-	_build_wardstone($Wardstone)
+	if has_node("Wardstone"):
+		_build_wardstone($Wardstone)
+	for exit: Node3D in _children("Exits"):
+		exit.global_position.y = terrain.get_height(exit.global_position.x, exit.global_position.z)
 	_bake_navigation()
 	add_child(CombatVfx.new())
-	for spawner: EnemySpawner in $Spawners.get_children():
+	for spawner: EnemySpawner in _children("Spawners"):
 		spawner.spawn(terrain, $Units)
-	for spawner: GatherSpawner in $GatherSpawners.get_children():
+	for spawner: GatherSpawner in _children("GatherSpawners"):
 		spawner.spawn(terrain, $Units)
 	if has_node("QuestObjectSpawners"):
 		for spawner: QuestObjectSpawner in $QuestObjectSpawners.get_children():
 			spawner.spawn(terrain, $Units)
-	for npc: Npc in $NPCs.get_children():
+	for npc: Npc in _children("NPCs"):
 		var spot := npc.global_position
 		npc.global_position = Vector3(spot.x, terrain.get_height(spot.x, spot.z) + 0.1, spot.z)
 		npc.reset_physics_interpolation()
@@ -56,9 +59,25 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if Engine.get_process_frames() % 15 != 0 or player.is_dead:
 		return
-	for place: Node3D in $PointsOfInterest.get_children():
+	for place: Node3D in _children("PointsOfInterest"):
 		if player.flat_distance(place.global_position) < discover_radius:
 			player.discover(String(place.name))
+
+
+## Puts the player at Arrivals/<arrival> (the way in from another zone), or at the
+## zone's spawn when there is no such marker.
+func arrive(arrival: String) -> void:
+	var marker: Node3D = get_node_or_null("Arrivals/" + arrival) if arrival != "" else null
+	if marker == null:
+		marker = player_spawn
+	var spot := marker.global_position
+	spot.y = terrain.get_height(spot.x, spot.z) + 0.1
+	player.teleport(spot, marker.rotation.y)
+
+
+## The children of an optional group node (none if the zone has no such node).
+func _children(group: String) -> Array[Node]:
+	return get_node(group).get_children() if has_node(group) else []
 
 
 ## Bakes walkable ground from everything on the world collision layer

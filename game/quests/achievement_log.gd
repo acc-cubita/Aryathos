@@ -78,7 +78,9 @@ func progress(achievement: AchievementData) -> Vector2i:
 		AchievementData.Criteria.QUESTS_COMPLETED:
 			return Vector2i(stat("quests_completed"), needed)
 		AchievementData.Criteria.EXPLORE_ZONE:
-			return Vector2i(_player.discovered.size(), needed)
+			var found := _player.discovered.filter(func(p: String) -> bool:
+				return achievement.places.is_empty() or achievement.places.has(p))
+			return Vector2i(found.size(), needed)
 		AchievementData.Criteria.REACH_STANDING:
 			var faction := Database.faction(achievement.target)
 			var goal := FactionData.THRESHOLDS[needed]
