@@ -240,8 +240,8 @@ func _combat_checks(player: Player) -> void:
 		_face(player, wolf)
 		if player.distance_to_unit(wolf) <= Unit.MELEE_RANGE:
 			player.use_action_slot(0)
-		elif player.casting == null:
-			player.use_action_slot(1)
+		elif player.casting == null and t > 10.0:  # (more spells only if it never comes to hand:
+			player.use_action_slot(1)              # they could kill it before a swing draws the axe)
 		await get_tree().physics_frame
 		t += get_physics_process_delta_time() * Engine.time_scale
 	_check(wolf.is_dead, "wolf killed (%.0f s)" % t)

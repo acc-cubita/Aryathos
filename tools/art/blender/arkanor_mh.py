@@ -45,9 +45,23 @@ MAGE_DECIMATE = {"donitz_monk_robe": 0.5, "donitz_monk_robe_hood_off": 0.5}  # 2
 # body wears (paths relative to MPFB's data/<kind> folders).
 BODIES = {
     "male": {
-        "phenotype": {"gender": 1.0, "age": 0.8, "muscle": 1.0, "weight": 0.72, "proportions": 0.9,
+        "phenotype": {"gender": 1.0, "age": 0.8, "muscle": 1.0, "weight": 0.75, "proportions": 0.9,
                       "height": 0.55, "cupsize": 0.5, "firmness": 0.5,
                       "race": {"asian": 0.0, "caucasian": 1.0, "african": 0.0}},
+        # a warrior's build, matched in front, side and back silhouettes to a reference hero
+        # (heights in eighths of the body): broad shoulders and lats, a deep chest and a
+        # thick waist, heavy arms and calves, big hands and feet, legs a little short
+        "physique": {"measure-shoulder-dist-incr": 0.5, "torso-vshape-incr": 0.8, "torso-muscle-pectoral-incr": 1.0,
+                     "torso-muscle-dorsi-incr": 1.0, "torso-scale-depth-incr": 1.0, "torso-scale-horiz-incr": 0.5,
+                     "measure-waist-circ-incr": 1.0, "measure-hips-circ-incr": 0.4, "stomach-pregnant-incr": 0.1,
+                     "measure-neck-circ-incr": 0.6, "neck-scale-horiz-incr": 0.3, "measure-neck-height-decr": 0.5,
+                     "measure-upperarm-circ-incr": 0.8, "measure-wrist-circ-incr": 0.6, "measure-calf-circ-incr": 0.8,
+                     "upperlegs-height-decr": 0.3, "buttocks-volume-incr": 0.2,
+                     **{side + part: value for side in ("l-", "r-") for part, value in (
+                         ("upperarm-muscle-incr", 1.0), ("upperarm-shoulder-muscle-incr", 0.6),
+                         ("lowerarm-muscle-incr", 1.0), ("lowerarm-scale-horiz-incr", 1.0), ("lowerarm-fat-incr", 0.5),
+                         ("upperleg-muscle-incr", 0.2), ("upperleg-scale-depth-incr", 0.5), ("upperleg-fat-decr", 0.5),
+                         ("lowerleg-muscle-incr", 1.0), ("hand-scale-incr", 1.0), ("foot-scale-incr", 1.0))}},
         "skin_mhmat": "jartur69_old_slavic_male_with_genitals_and_beard/jartur69_old_slavic_male_with_genitals_and_beard.mhmat",
         # a broad, weathered face: square jaw, heavy brow pulled low, wide nose
         "targets": {"head-square": 0.6, "head-age-incr": 0.4, "forehead-trans-forward": 0.35,
@@ -207,7 +221,8 @@ def build(key, spec=None):
         "clothes": spec["clothes"],
         "skin_mhmat": spec["skin_mhmat"],
         "skin_material_type": "ENHANCED_SSS",
-        "targets": [{"target": name, "value": value} for name, value in spec["targets"].items()],
+        "targets": [{"target": name, "value": value}
+                    for name, value in dict(spec["targets"], **spec.get("physique", {})).items()],
     })
     settings = HumanService.get_default_deserialization_settings()
     settings["subdiv_levels"] = 0

@@ -32,7 +32,10 @@ FPS = 30
 ## the left leg (deg). The right half of the cycle mirrors these.
 RUN = {
     "length": 21,
-    "abduct_arm": 14.0,  # the arms held a little out from the body (broad shoulders)
+    "abduct_arm": 22.0,  # the upper arms held out from the body (broad shoulders and lats)
+    "abduct_forearm": 4.0,  # the forearms hang nearly straight down from the elbows
+    "across": 18.0,  # and swing in toward the middle as they come forward (fists before the belly)
+    "adduct_leg": 4.5,  # the feet land near one line under the body (seen from ahead)
     "keys": [
         # (feet: the ankle's bend from square to the shin, + toes down, - toes up)
         # passing: the left leg under the body, knee well bent, foot flat; the right foot
@@ -85,8 +88,9 @@ def set_aim(rig, name, turn):
     bpy.context.view_layer.update()
 
 
-def pose(rig, key, abduct):
+def pose(rig, key, spec):
     """Every bone for one key (the order runs from the hips out)."""
+    abduct = spec["abduct_arm"]
     pelvis = rig.pose.bones["pelvis"]
     pelvis.location = (0.0, 0.0, 0.0)
     bpy.context.view_layer.update()
@@ -105,8 +109,11 @@ def pose(rig, key, abduct):
         # down from the T-pose (about Y), out a little, then forward (about X)
         down = rot("Y", sign * (90.0 - abduct))
         set_aim(rig, "upperarm_" + side, rot("X", -swing) @ down)
-        set_aim(rig, "lowerarm_" + side, rot("X", -swing - bend) @ down)
-        hand = rot("X", -swing - bend + 10.0) @ down
+        # the forearm: its own small lean out, swung forward, then turned in toward the middle
+        fore = rot("Z", -sign * spec["across"]) @ rot("X", -swing - bend)
+        fore_down = rot("Y", sign * (90.0 - spec["abduct_forearm"]))
+        set_aim(rig, "lowerarm_" + side, fore @ fore_down)
+        hand = rot("Z", -sign * spec["across"]) @ rot("X", -swing - bend + 10.0) @ fore_down
         set_aim(rig, "hand_" + side, hand)
         # closed fists: each finger joint curls about the hand's own across-the-palm axis
         for finger in ("index", "middle", "ring", "pinky"):
@@ -115,8 +122,9 @@ def pose(rig, key, abduct):
         for joint, curl in ((2, 25.0), (3, 45.0)):
             set_aim(rig, "thumb_0%d_%s" % (joint, side), hand @ rot("Y", sign * curl))
         thigh, knee, foot = key["legL"] if side == "l" else key["legR"]
-        set_aim(rig, "thigh_" + side, rot("X", -thigh))
-        set_aim(rig, "calf_" + side, rot("X", -(thigh - knee)))
+        inward = rot("Y", sign * spec["adduct_leg"])
+        set_aim(rig, "thigh_" + side, rot("X", -thigh) @ inward)
+        set_aim(rig, "calf_" + side, rot("X", -(thigh - knee)) @ inward)
         # the ankle bends from square to the shin (the rest foot stands square to an upright shin)
         set_aim(rig, "foot_" + side, rot("X", -(thigh - knee) + foot))
         set_aim(rig, "ball_" + side, rot("X", -(thigh - knee) + foot))
@@ -137,7 +145,7 @@ def make_cycle(rig, name, spec):
     keys = spec["keys"] + [mirrored(k, length / 2.0) for k in spec["keys"]]
     keys.append(dict(keys[0], f=float(length)))  # the loop closes on its first pose
     for key in keys:
-        pose(rig, key, spec["abduct_arm"])
+        pose(rig, key, spec)
         key_all(rig, 1 + key["f"])
     for fcurve in _fcurves(action):
         for point in fcurve.keyframe_points:

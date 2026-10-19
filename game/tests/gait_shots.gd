@@ -17,6 +17,8 @@ const GAITS := {
 	"stand": [],  # standing, seen from behind (the sheathed weapon)
 	"run_front": ["move_forward"],  # running, seen from ahead (the sway)
 	"run_close": ["move_forward"],  # running, close beside (the hands)
+	"run_back": ["move_forward"],  # running, seen from behind
+	"stand_front": [],  # standing, seen from ahead (the build of the body)
 }
 const FRAMES := 16
 const START := Vector3(-4, 0, -24)  # on the road north of the camp, open ground ahead
@@ -195,8 +197,12 @@ func _follow(player: Player, seconds: float, slides: PackedFloat32Array) -> void
 			_camera.global_position = player.global_position + side * 2.2 + Vector3.UP * 1.1
 		if _gait.ends_with("_front") and motion.length() > 0.5:
 			_camera.global_position = player.global_position + motion.normalized() * 6.0 + Vector3.UP * 1.4
+		if _gait.ends_with("_back") and motion.length() > 0.5:
+			_camera.global_position = player.global_position - motion.normalized() * 6.0 + Vector3.UP * 1.4
 		if motion.length() < 0.5 and _gait == "stand":  # from straight behind
 			_camera.global_position = player.global_position + player.global_transform.basis.z * 3.4 + Vector3.UP * 1.4
+		if motion.length() < 0.5 and _gait == "stand_front":  # from straight ahead
+			_camera.global_position = player.global_position - player.global_transform.basis.z * 3.4 + Vector3.UP * 1.4
 		_camera.look_at(player.global_position + Vector3.UP * 0.95)
 		await get_tree().process_frame
 		# each foot as the clip moves it about the body (turned to the world), so the body's
