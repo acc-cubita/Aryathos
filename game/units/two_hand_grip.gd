@@ -35,26 +35,26 @@ const LEFT_POLE := Vector3(0.8, -0.8, 0.2)
 ## the same times): keys of [seconds, grip, haft, edge, right pole, left pole]. "sweep":
 ## up to the right shoulder as the body coils right, the head laid back behind it; then the
 ## body unwinds and the arms reach out straight through a flat blow (square to the front at
-## 0.31 s), wrap round to the left low, hold, and come back to ready. (A sweeping edge
-## looks the way the head travels: round the body. The fists stay within the arms' reach,
-## so the arms straighten through the blow.)
+## 0.31 s), the shoulders thrown forward, the leading left arm straight, then wrap round to
+## the left, hold, and come back to ready. (A sweeping edge looks the way the head
+## travels: round the body.)
 const STRIKES := {
 	"sweep": [
 		[0.0, GRIP, HAFT, EDGE, RIGHT_POLE, LEFT_POLE],
 		[0.14, Vector3(-0.12, 0.16, 0.38), Vector3(-0.2, 0.95, -0.15), Vector3(0, 0.2, 1), Vector3(-1, -0.6, -0.3), Vector3(0.2, -1, 0.3)],
 		[0.23, Vector3(-0.28, 0.18, 0.26), Vector3(-0.55, 0.3, -0.75), Vector3(-0.75, 0.3, 0.55), Vector3(-1, -0.7, -0.2), Vector3(0.2, -1, 0.4)],
-		[0.27, Vector3(-0.18, 0.08, 0.46), Vector3(-0.9, 0.05, 0.4), Vector3(0.4, 0, 0.9), Vector3(-0.6, -1, 0), Vector3(0.3, -1, 0.2)],
-		[0.31, Vector3(-0.08, 0.08, 0.44), Vector3(0.15, -0.08, 1.0), Vector3(1, 0, -0.15), Vector3(-0.4, -1, 0), Vector3(0.4, -1, 0)],
-		[0.36, Vector3(0.06, 0.06, 0.34), Vector3(0.9, -0.1, 0.3), Vector3(0.3, 0, -0.9), Vector3(-0.2, -1, 0.3), Vector3(0.8, -0.8, -0.2)],
-		[0.46, Vector3(0.02, 0.04, 0.3), Vector3(0.55, -0.35, -0.75), Vector3(-0.75, 0, -0.55), Vector3(-0.2, -1, 0.4), Vector3(1, -0.6, -0.4)],
-		[0.7, Vector3(0.02, 0.02, 0.3), Vector3(0.6, -0.3, -0.7), Vector3(-0.7, 0, -0.6), Vector3(-0.2, -1, 0.4), Vector3(1, -0.6, -0.4)],
+		[0.27, Vector3(-0.18, 0.08, 0.6), Vector3(-0.9, 0.05, 0.4), Vector3(0.4, 0, 0.9), Vector3(-0.6, -1, 0), Vector3(0.3, -1, 0.2)],
+		[0.31, Vector3(-0.08, 0.08, 0.55), Vector3(0.15, -0.08, 1.0), Vector3(1, 0, -0.15), Vector3(-0.4, -1, 0), Vector3(0.4, -1, 0)],
+		[0.36, Vector3(0.06, 0.06, 0.46), Vector3(0.9, -0.1, 0.3), Vector3(0.3, 0, -0.9), Vector3(-0.2, -1, 0.3), Vector3(0.8, -0.8, -0.2)],
+		[0.46, Vector3(0.02, 0.04, 0.42), Vector3(0.55, -0.35, -0.75), Vector3(-0.75, 0, -0.55), Vector3(-0.2, -1, 0.4), Vector3(1, -0.6, -0.4)],
+		[0.7, Vector3(0.02, 0.02, 0.38), Vector3(0.6, -0.3, -0.7), Vector3(-0.7, 0, -0.6), Vector3(-0.2, -1, 0.4), Vector3(1, -0.6, -0.4)],
 		[1.0, GRIP, HAFT, EDGE, RIGHT_POLE, LEFT_POLE],
 	],
 }
 ## The collarbones: how far (radians per m the hand is past an easy reach, least, most) they
 ## lift for a hand raised and come forward for one reaching out or across the body.
 const SHRUG := Vector3(deg_to_rad(45.0), deg_to_rad(-5.0), deg_to_rad(22.0))
-const REACH := Vector3(deg_to_rad(35.0), deg_to_rad(-5.0), deg_to_rad(16.0))
+const REACH := Vector3(deg_to_rad(80.0), deg_to_rad(-5.0), deg_to_rad(25.0))
 ## An easy reach: the hand this far from its shoulder (in the chest's frame, the side's x
 ## toward the body's middle).
 const EASY := Vector3(0.0, -0.4, 0.2)
