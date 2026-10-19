@@ -22,3 +22,6 @@ art/characters/*/mh_preview/
 # Python caches
 __pycache__/
 *.pyc
+
+# reference videos (not ours to publish)
+*.mp4

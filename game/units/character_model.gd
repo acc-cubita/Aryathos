@@ -47,10 +47,12 @@ const DEFAULT_LOOK := {"gender": "male", "face": 0, "hair": 0, "hair_color": 1, 
 const LIBRARIES := {
 	"ual1": "res://art/animations/ual1.glb",
 	"ual2": "res://art/animations/ual2.glb",
+	# our own, keyed in Blender (tools/art/blender/hero_moves.py)
+	"moves": "res://art/animations/hero_moves.glb",
 }
 ## state -> clip
 const CLIPS := {
-	"idle_loop": "ual1/Idle", "walk_loop": "ual1/Walk", "jog_loop": "ual1/Jog_Fwd", "run_loop": "ual1/Sprint",
+	"idle_loop": "ual1/Idle", "walk_loop": "ual1/Walk", "jog_loop": "moves/Run", "run_loop": "ual1/Sprint",
 	"back_loop": "ual1/Jog_Fwd", "cast_loop": "ual1/Spell_Simple_Idle", "death": "ual1/Death01",
 	"hit": "ual1/Hit_Chest", "spell": "ual1/Spell_Simple_Shoot",
 	"jump_start": "ual1/Jump_Start", "fall_loop": "ual1/Jump", "land": "ual1/Jump_Land",
@@ -65,11 +67,11 @@ const RUN_SPEED := 8.25 ## the sprint
 ## the backwards walk/jog mix (BACK_JOG), from the two clips' strides over BACK_CYCLE
 const BACK_SPEED := (0.97 * 1.333 * (1.0 - BACK_JOG) + 5.36 * 0.933 * BACK_JOG) / BACK_CYCLE
 const MANNEQUIN_HIPS := 0.917
-## the run: the jog with LEG_CALM of the walk's stride, over the jog's 0.933 s cycle
-const JOG_SPEED := (5.36 * 0.933 * (1.0 - LEG_CALM) + 0.97 * 1.333 * LEG_CALM) / 0.933
+## the hero's run (hero_moves.py RUN), as that script measures it on the mannequin
+const JOG_SPEED := 5.0
 const RUN_FROM := 2.8 ## m/s where walking turns into a jog
-## m/s where the jog turns into a sprint. A hero's run (6.4 m/s, WoW's 7 yards) is the
-## calmed jog (_jog_gait) played about half again as fast: some 195 steps a minute.
+## m/s where the run turns into a sprint. A hero's run (6.4 m/s, WoW's 7 yards) is our
+## own run cycle (hero_moves.py), keyed from a study of a reference run.
 const SPRINT_FROM := 7.6
 ## How fast (1/s) the body turns toward the way it moves (a strafe, a diagonal).
 const STRAFE_TURN := 10.0
@@ -82,14 +84,6 @@ const LANDING := 0.45
 ## BACK_CYCLE-second step cycle (both start with the left foot ahead).
 const BACK_JOG := 0.3
 const BACK_CYCLE := 1.15
-## A warrior runs with strong, low arms: the library's jog holds the elbows at 90 degrees
-## with the hands up at the chest. ARM_CALM of the walk's arms (stretched onto the jog's
-## step cycle, so they swing with the same feet) is mixed into the jog's.
-const ARM_CALM := 0.55
-const ARM_BONES := ["Shoulder", "UpperArm", "LowerArm", "Hand"]
-## And LEG_CALM of the walk's legs and hips in the jog's: shorter, more grounded steps.
-const LEG_CALM := 0.3
-const LEG_BONES := ["Hips", "UpperLeg", "LowerLeg", "Foot", "Toes"]
 ## Hands closed into loose fists (FIST of the boxing clip's fingers), not hanging open;
 ## they open to cast.
 const FIST_CLIP := "ual1/Punch_Jab"
@@ -154,6 +148,7 @@ var _look_target := Marker3D.new()
 var _planter: FootPlanter
 var _upright: SpineUpright
 var _steady: HeadSteady
+var _fists: Fists
 var _weapon: Node3D
 var _in_hand: Transform3D  # the weapon's place in the fist
 var _on_back: Transform3D  # and across the back
@@ -245,6 +240,9 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_
 		aim.influence = LOOK[bone_name]
 		skeleton.add_child(aim)
 		aim.target_node = aim.get_path_to(model._look_target)
+	model._fists = Fists.new()
+	model._fists.name = "Fists"
+	skeleton.add_child(model._fists)
 	model._steady = HeadSteady.new()  # after the look-at: the head calm and level
 	model._steady.name = "HeadSteady"
 	skeleton.add_child(model._steady)
@@ -389,9 +387,6 @@ func _build_tree(scene: Node3D, skeleton: Skeleton3D) -> void:
 		if anim_name == "back_loop":
 			states.add_node(anim_name, _back_gait())
 			continue
-		if anim_name == "jog_loop":
-			states.add_node(anim_name, _jog_gait(player))
-			continue
 		var clip := AnimationNodeAnimation.new()
 		clip.animation = clips[anim_name]
 		states.add_node(anim_name, clip)
@@ -489,8 +484,6 @@ func _build_tree(scene: Node3D, skeleton: Skeleton3D) -> void:
 		_tree.set("parameters/fist/blend_amount", 1.0)
 		_tree.set("parameters/ready/blend_amount", 1.0)
 	_tree.set("parameters/states/back_loop/mix/blend_amount", BACK_JOG)
-	_tree.set("parameters/states/jog_loop/arms/blend_amount", ARM_CALM)
-	_tree.set("parameters/states/jog_loop/legs/blend_amount", LEG_CALM)
 	_tree.set("parameters/fists/blend_amount", FIST)
 
 
@@ -514,44 +507,6 @@ func _overlay(player: AnimationPlayer, clip: String, wanted: Callable) -> Array:
 	var node := AnimationNodeAnimation.new()
 	node.animation = clip
 	return [overlay, node]
-
-
-## The run: the jog's legs and body, its arms calmed by the walk's (ARM_CALM, set once
-## the tree runs), the walk stretched onto the jog's step cycle (both start with the left
-## foot ahead) so the arms swing with the same feet.
-func _jog_gait(player: AnimationPlayer) -> AnimationNodeBlendTree:
-	var gait := AnimationNodeBlendTree.new()
-	var jog := AnimationNodeAnimation.new()
-	jog.animation = CLIPS.jog_loop
-	gait.add_node("jog", jog)
-	# (one node's output feeds one input: a walk for the legs, one for the arms, in step)
-	for walk_name: String in ["walk_legs", "walk_arms"]:
-		var walk := AnimationNodeAnimation.new()
-		walk.animation = CLIPS.walk_loop
-		walk.use_custom_timeline = true
-		walk.timeline_length = player.get_animation(CLIPS.jog_loop).length
-		walk.stretch_time_scale = true
-		walk.loop_mode = Animation.LOOP_LINEAR
-		gait.add_node(walk_name, walk)
-	var anim := player.get_animation(CLIPS.walk_loop)
-	var arms := AnimationNodeBlend2.new()
-	var legs := AnimationNodeBlend2.new()
-	arms.filter_enabled = true
-	legs.filter_enabled = true
-	for track in anim.get_track_count():
-		var bone := String(anim.track_get_path(track).get_concatenated_subnames())
-		if (bone.begins_with("Left") or bone.begins_with("Right")) and ARM_BONES.any(func(b: String) -> bool: return bone.ends_with(b)):
-			arms.set_filter_path(anim.track_get_path(track), true)
-		if LEG_BONES.any(func(b: String) -> bool: return bone.ends_with(b)):
-			legs.set_filter_path(anim.track_get_path(track), true)
-	gait.add_node("legs", legs)
-	gait.connect_node("legs", 0, "jog")
-	gait.connect_node("legs", 1, "walk_legs")
-	gait.add_node("arms", arms)
-	gait.connect_node("arms", 0, "legs")
-	gait.connect_node("arms", 1, "walk_arms")
-	gait.connect_node("output", 0, "arms")
-	return gait
 
 
 ## Backing off: the walk and the jog, both backwards and stretched onto one step cycle so

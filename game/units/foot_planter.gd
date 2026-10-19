@@ -15,7 +15,7 @@ const FOLLOW := 12.0
 ## Share of the hips' rise and fall the run keeps (settle_weight fades this in while the
 ## character moves): the jog bounces them 26 cm, a leap at every step. The feet keep their
 ## heights, the legs folding or reaching to the calmer hips.
-const BOB_KEEP := 0.15
+const BOB_KEEP := 0.6
 ## While moving, the hips follow the ground under the lower foot this slowly (1/s): on a
 ## slope the lower foot changes at every step, and each foot is set on the ground anyway.
 const MOVING_DROP_FOLLOW := 4.0

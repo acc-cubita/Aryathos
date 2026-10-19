@@ -18,7 +18,7 @@ const MAX_SWAY := deg_to_rad(4.0)
 const MAX_TWIST := deg_to_rad(12.0)
 ## On the move the torso holds this forward lean (radians, hips to neck; standing it is
 ## 15-20): the jog rocks it 17-27 degrees at every step.
-const LEAN_BAND := Vector2(deg_to_rad(16.0), deg_to_rad(21.0))
+const LEAN_BAND := Vector2(deg_to_rad(10.0), deg_to_rad(24.0))
 ## And the pelvis stays level and square (radians): no rolling of the hips.
 const PELVIS_TILT := deg_to_rad(1.0)
 const PELVIS_TURN := deg_to_rad(3.0)

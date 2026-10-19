@@ -16,6 +16,7 @@ const GAITS := {
 	"jump": ["move_forward"],  # a running jump
 	"stand": [],  # standing, seen from behind (the sheathed weapon)
 	"run_front": ["move_forward"],  # running, seen from ahead (the sway)
+	"run_close": ["move_forward"],  # running, close beside (the hands)
 }
 const FRAMES := 16
 const START := Vector3(-4, 0, -24)  # on the road north of the camp, open ground ahead
@@ -190,6 +191,8 @@ func _follow(player: Player, seconds: float, slides: PackedFloat32Array) -> void
 		var motion := Vector3(player.velocity.x, 0.0, player.velocity.z)
 		var side := motion.normalized().cross(Vector3.UP) if motion.length() > 0.5 else player.global_transform.basis.x
 		_camera.global_position = player.global_position + side * 5.5 + Vector3.UP * 1.3
+		if _gait.ends_with("_close") and motion.length() > 0.5:
+			_camera.global_position = player.global_position + side * 2.2 + Vector3.UP * 1.1
 		if _gait.ends_with("_front") and motion.length() > 0.5:
 			_camera.global_position = player.global_position + motion.normalized() * 6.0 + Vector3.UP * 1.4
 		if motion.length() < 0.5 and _gait == "stand":  # from straight behind
