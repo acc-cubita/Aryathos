@@ -246,6 +246,15 @@ func _combat_checks(player: Player) -> void:
 		t += get_physics_process_delta_time() * Engine.time_scale
 	_check(wolf.is_dead, "wolf killed (%.0f s)" % t)
 	_check(weapon.get_parent() == player.model._hand_mount, "fighting hand to hand brought the axe out into the hand")
+	# arms and body know each other's surface: held ready, no arm in the body, both fists on the haft
+	player.model._two_hands.gap = 0.0
+	var probe := ContactProbe.new()
+	player.model._skeleton.add_child(probe)
+	await _wait(0.8)
+	probe.queue_free()
+	_check(player.model._state == "ready_loop" and probe.deepest < 0.02 and player.model._two_hands.gap < 0.03,
+			"standing ready, the arms stay out of the body (%.1f cm in) and both fists on the haft (%.1f cm off)" % [
+			probe.deepest * 100.0, player.model._two_hands.gap * 100.0])
 	_check(wolf.tapped_by == player, "kill credit goes to the player")
 	var heard: Dictionary = Audio.played
 	_check(heard.has("spell_cast") and heard.has("hit_crystal") and heard.has("wolf_death")
@@ -804,3 +813,13 @@ func _wait_until(condition: Callable, timeout: float) -> void:
 	while t < timeout and not condition.call():
 		await get_tree().physics_frame
 		t += get_physics_process_delta_time() * Engine.time_scale
+
+
+## Reads, last of the skeleton's modifiers (as finally posed), how deep the arms go into the body.
+class ContactProbe extends SkeletonModifier3D:
+	var deepest := 0.0
+
+	func _process_modification() -> void:
+		var contact := get_skeleton().get_node_or_null("BodyContact") as BodyContact
+		if contact:
+			deepest = maxf(deepest, contact.deepest()[0])

@@ -39,11 +39,20 @@ var _gait := ""
 ## turn (yaw), tilt (roll) in the rig's frame (deg) and its height, every frame.
 class HeadProbe extends SkeletonModifier3D:
 	var samples: Array[Vector4] = []
+	## the arms' deepest into the body (m), as finally posed, and where
+	var into_body := 0.0
+	var into_where := ""
 	## and the body: torso lean (deg), pelvis tilt and turn (deg)
 	var body: Array[Vector3] = []
 
 	func _process_modification() -> void:
 		var skeleton := get_skeleton()
+		var contact := skeleton.get_node_or_null("BodyContact") as BodyContact
+		if contact:
+			var deep: Array = contact.deepest()
+			if deep[0] > into_body:
+				into_body = deep[0]
+				into_where = deep[1]
 		var bone := skeleton.find_bone("Head")
 		var head := skeleton.get_bone_global_pose(bone)
 		var rest := skeleton.get_bone_global_rest(bone).basis.inverse()
@@ -93,6 +102,9 @@ func _run() -> void:
 		if not only.is_empty() and not only.has(gait):
 			continue
 		_gait = gait
+		if player.is_dead:  # (the camp's wolves sometimes come for the hero between gaits)
+			player.revive()
+		player.health = player.max_health
 		var spot := START
 		spot.y = Game.zone.terrain.get_height(spot.x, spot.z) + 0.1
 		player.teleport(spot, 0.0)
@@ -121,6 +133,8 @@ func _run() -> void:
 		var spread := 0.0
 		var bob := Vector2(INF, -INF)
 		var raw_bob := Vector2(INF, -INF)
+		var into_body := 0.0
+		var into_where := ""
 		var inner_lean := Vector2(INF, -INF)
 		var drops_range := Vector2(INF, -INF)
 		var slides := PackedFloat32Array()
@@ -128,6 +142,9 @@ func _run() -> void:
 			await _follow(player, 1.0 / 12.0, slides)
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png(folder.path_join("%s_%d.png" % [gait, frame]))
+			if probe.into_body > into_body:
+				into_body = probe.into_body
+				into_where = probe.into_where
 			var tilt := rad_to_deg(player.model._upright.swaying)
 			sways = Vector2(minf(sways.x, tilt), maxf(sways.y, tilt))
 			var skeleton: Skeleton3D = player.model._skeleton
@@ -169,6 +186,10 @@ func _run() -> void:
 				Vector2(player.velocity.x, player.velocity.z).length(), sways.x, sways.y, bends.x, bends.y, drops.x, drops.y, player.model._state])
 		print("    body: shoulders turn %.0f..%.0f deg, hips %.0f..%.0f deg, feet up to %.2f m apart, hips bob %.2f m (clip %.2f, %.2f..%.2f)" % [
 				shoulders.x, shoulders.y, pelvis.x, pelvis.y, spread, bob.y - bob.x, raw_bob.y - raw_bob.x, raw_bob.x, raw_bob.y])
+		print("    arms into the body: up to %.1f cm (%s)" % [into_body * 100.0, into_where])
+		if player.model._two_hands:
+			print("    fists off the haft: up to %.1f cm" % (player.model._two_hands.gap * 100.0))
+			player.model._two_hands.gap = 0.0
 		# the head: how far each angle ranges, and how jerky it is (mean change per frame)
 		var lo := Vector4(INF, INF, INF, INF)
 		var hi := Vector4(-INF, -INF, -INF, -INF)

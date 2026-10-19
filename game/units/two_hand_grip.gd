@@ -35,19 +35,19 @@ const LEFT_POLE := Vector3(0.8, -0.8, 0.2)
 ## the same times): keys of [seconds, grip, haft, edge, right pole, left pole]. "sweep":
 ## up to the right shoulder as the body coils right, the head laid back behind it; then the
 ## body unwinds and the arms reach out straight through a flat blow (square to the front at
-## 0.31 s), the shoulders thrown forward, the leading left arm straight, then wrap round to
-## the left, hold, and come back to ready. (A sweeping edge looks the way the head
+## 0.31 s), the shoulders thrown forward, the leading left arm straight, then on round to
+## the left side (no further: the head stops beside the body), hold, and come back to ready. (A sweeping edge looks the way the head
 ## travels: round the body.)
 const STRIKES := {
 	"sweep": [
 		[0.0, GRIP, HAFT, EDGE, RIGHT_POLE, LEFT_POLE],
-		[0.14, Vector3(-0.12, 0.16, 0.38), Vector3(-0.2, 0.95, -0.15), Vector3(0, 0.2, 1), Vector3(-1, -0.6, -0.3), Vector3(0.2, -1, 0.3)],
-		[0.23, Vector3(-0.28, 0.18, 0.26), Vector3(-0.55, 0.3, -0.75), Vector3(-0.75, 0.3, 0.55), Vector3(-1, -0.7, -0.2), Vector3(0.2, -1, 0.4)],
+		[0.14, Vector3(-0.12, 0.16, 0.46), Vector3(-0.2, 0.95, -0.15), Vector3(0, 0.2, 1), Vector3(-1, -0.6, -0.3), Vector3(0.2, -1, 0.3)],
+		[0.23, Vector3(-0.28, 0.18, 0.36), Vector3(-0.55, 0.3, -0.75), Vector3(-0.75, 0.3, 0.55), Vector3(-1, -0.7, -0.2), Vector3(0.2, -1, 0.4)],
 		[0.27, Vector3(-0.18, 0.08, 0.6), Vector3(-0.9, 0.05, 0.4), Vector3(0.4, 0, 0.9), Vector3(-0.6, -1, 0), Vector3(0.3, -1, 0.2)],
 		[0.31, Vector3(-0.08, 0.08, 0.55), Vector3(0.15, -0.08, 1.0), Vector3(1, 0, -0.15), Vector3(-0.4, -1, 0), Vector3(0.4, -1, 0)],
 		[0.36, Vector3(0.06, 0.06, 0.46), Vector3(0.9, -0.1, 0.3), Vector3(0.3, 0, -0.9), Vector3(-0.2, -1, 0.3), Vector3(0.8, -0.8, -0.2)],
-		[0.46, Vector3(0.02, 0.04, 0.42), Vector3(0.55, -0.35, -0.75), Vector3(-0.75, 0, -0.55), Vector3(-0.2, -1, 0.4), Vector3(1, -0.6, -0.4)],
-		[0.7, Vector3(0.02, 0.02, 0.38), Vector3(0.6, -0.3, -0.7), Vector3(-0.7, 0, -0.6), Vector3(-0.2, -1, 0.4), Vector3(1, -0.6, -0.4)],
+		[0.46, Vector3(0.04, 0.04, 0.36), Vector3(0.85, -0.3, 0.25), Vector3(0.25, 0, -0.85), Vector3(-0.2, -1, 0.4), Vector3(1, -0.6, -0.4)],
+		[0.7, Vector3(0.04, 0.02, 0.34), Vector3(0.85, -0.25, 0.25), Vector3(0.25, 0, -0.85), Vector3(-0.2, -1, 0.4), Vector3(1, -0.6, -0.4)],
 		[1.0, GRIP, HAFT, EDGE, RIGHT_POLE, LEFT_POLE],
 	],
 }
@@ -62,6 +62,15 @@ const EASY := Vector3(0.0, -0.4, 0.2)
 var weight := 0.0
 ## The weapon in the right hand's frame (CharacterModel._in_hand).
 var in_hand := Transform3D.IDENTITY
+## The body's surface (BodyContact): a forearm or hand held in the body brings both fists
+## out by as much, and the arms reach again (CLEAR_TRIES in all), the same frame; how far
+## they came out carries on to the next frame, eased back once clear.
+var contact: BodyContact
+const CLEAR_TRIES := 6
+
+var _clear := Vector3.ZERO  # how far the fists are moved for the body's sake (skeleton space)
+## How far (m) a fist was off the haft at worst (one out of reach): a measure for tests.
+var gap := 0.0
 
 var _chest := -1
 var _arms := {}  # side -> [collarbone, upper arm, lower arm, hand]
@@ -129,8 +138,37 @@ func _process_modification() -> void:
 		if absf(wrist.x) < TORSO.x and wrist.y > -TORSO.y and wrist.y < 0.25:
 			out = maxf(out, TORSO.z + WRIST_CLEAR - wrist.z)
 	right_grip += body * Vector3.BACK * out
-	_hold(skeleton, body, "Right", Transform3D(weapon, right_grip), in_hand, body * key[4])
-	_hold(skeleton, body, "Left", Transform3D(weapon, right_grip - haft * LEFT_DOWN), _left_in_hand, body * key[5])
+	# then reach, and if a forearm or hand is in the body, bring the fists out and reach again
+	var poses := []
+	for side: String in _arms:
+		for bone: int in _arms[side]:
+			poses.append([bone, skeleton.get_bone_pose(bone)])
+	var clear := _clear
+	for attempt in CLEAR_TRIES:
+		_hold(skeleton, body, "Right", Transform3D(weapon, right_grip + clear), in_hand, body * key[4])
+		_hold(skeleton, body, "Left", Transform3D(weapon, right_grip + clear - haft * LEFT_DOWN), _left_in_hand, body * key[5])
+		# a fist short of its place on the haft (out of the arm's reach) brings the weapon to it
+		var miss := Vector3.ZERO
+		for fist: Array in [["Right", Vector3.ZERO, in_hand], ["Left", -haft * LEFT_DOWN, _left_in_hand]]:
+			var hand := skeleton.get_bone_global_pose(_arms[fist[0]][3])
+			var off: Vector3 = hand * (fist[2] as Transform3D).origin - (right_grip + clear + fist[1])
+			if off.length() > miss.length():
+				miss = off
+		var push := contact.hands_push() if contact else Vector3.ZERO
+		if push.length() < 0.003 and miss.length() < 0.01:
+			if attempt == 0:
+				clear *= 0.94  # clear of the body and in reach: ease back to the swing's own path
+			break
+		clear += push * 1.1 + miss
+		if attempt == CLEAR_TRIES - 1:
+			break
+		for pose: Array in poses:
+			skeleton.set_bone_pose(pose[0], pose[1])
+	_clear = clear
+	if weight >= 0.99:  # (fading in, the fists are on their way)
+		for fist: Array in [["Right", Vector3.ZERO, in_hand], ["Left", -haft * LEFT_DOWN, _left_in_hand]]:
+			var hand := skeleton.get_bone_global_pose(_arms[fist[0]][3])
+			gap = maxf(gap, (hand * (fist[2] as Transform3D).origin - (right_grip + clear + fist[1])).length())
 
 
 ## Where a hand's wrist goes for `held` (a grip frame in the hand's frame) to be at `grip`.

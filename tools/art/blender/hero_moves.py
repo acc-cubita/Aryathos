@@ -75,10 +75,10 @@ READY_2H = {
 
 
 ## A two-handed sweep from the ready stance (studied from a reference): the body coils to
-## the right (hips a quarter, shoulders more than half a right angle) as the weapon comes
+## the right (hips a fifth, shoulders more than half a right angle) as the weapon comes
 ## up over the right shoulder, the weight back on the right leg; then the hips lead the
 ## unwinding, the knees drop into the blow and the shoulders come round past square to the
-## left, held, and back. Only the body: the weapon's path, and the arms with it, are
+## left (a third of a right angle: the weapon stops at the left side), held, and back. Only the body: the weapon's path, and the arms with it, are
 ## TwoHandGrip's "sweep" (the same times). 1 s; the blow at 0.31 s.
 _READY = READY_2H["keys"][0]
 STRIKE_2H = dict(READY_2H, length=30, keys=[
@@ -88,8 +88,8 @@ STRIKE_2H = dict(READY_2H, length=30, keys=[
     # the blow: hips round first, square shoulders, both knees down
     dict(_READY, f=9.3, turn=12, shoulders=-4, lean=17, legL=(16, 40, -24), legR=(-4, 28, -32)),
     # round to the left, the weight onto the left leg
-    dict(_READY, f=14.0, turn=26, shoulders=52, lean=15, legL=(16, 38, -22), legR=(-8, 16, -24)),
-    dict(_READY, f=21.0, turn=24, shoulders=46, lean=13, legL=(15, 36, -21), legR=(-7, 17, -24)),
+    dict(_READY, f=14.0, turn=22, shoulders=38, lean=15, legL=(16, 38, -22), legR=(-8, 16, -24)),
+    dict(_READY, f=21.0, turn=20, shoulders=34, lean=13, legL=(15, 36, -21), legR=(-7, 17, -24)),
 ])
 
 

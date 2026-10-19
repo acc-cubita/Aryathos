@@ -157,6 +157,9 @@ var _upright: SpineUpright
 var _steady: HeadSteady
 var _fists: Fists
 var _two_hands: TwoHandGrip  # (a two-handed weapon's)
+var _contact: BodyContact
+## Beyond this far (m) from the camera, arms are not kept out of the body (too small to see).
+const CONTACT_RANGE := 15.0
 var _weapon: Node3D
 var _in_hand: Transform3D  # the weapon's place in the fist
 var _on_back: Transform3D  # and across the back
@@ -264,6 +267,11 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_
 	model._planter = FootPlanter.new()
 	model._planter.name = "FootPlanter"
 	skeleton.add_child(model._planter)
+	model._contact = BodyContact.new()  # last, after all that moves arms and legs: none in the body
+	model._contact.name = "BodyContact"
+	skeleton.add_child(model._contact)
+	if model._two_hands:
+		model._two_hands.contact = model._contact
 	model._build_tree(scene, skeleton)
 	for gender: String in LOOKS:
 		if LOOKS[gender].path == path:  # a hero: one hair style, one beard, its tints
@@ -272,6 +280,9 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_
 			full["gender"] = gender
 			model.apply_look(full)
 			model._upright.shoulders_forward = deg_to_rad(LOOKS[gender].get("shoulders_forward", 0.0))
+	# the body's shape as worn
+	model._contact.setup(skeleton, scene.find_children("*", "MeshInstance3D", true, false).filter(
+			func(m: MeshInstance3D) -> bool: return m.visible and m.skin != null))
 	return model
 
 
@@ -654,6 +665,9 @@ func _process(delta: float) -> void:
 		else:
 			_go("idle_loop")
 	_tree.set("parameters/pace/scale", pace)
+	_contact.pinned = _two_hands != null and _two_hands.weight > 0.5
+	var camera := get_viewport().get_camera_3d()
+	_contact.active = camera != null and camera.global_position.distance_to(global_position) < CONTACT_RANGE
 	if _two_hands:
 		# both hands on the haft while standing ready; a swing takes the arms at once
 		# (a two-handed swing keeps both hands on the haft, whatever the legs do)
