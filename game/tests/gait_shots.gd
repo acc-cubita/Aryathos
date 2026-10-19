@@ -20,6 +20,8 @@ const GAITS := {
 	"run_back": ["move_forward"],  # running, seen from behind
 	"stand_front": [],  # standing, seen from ahead (the build of the body)
 	"stand_side": [],  # standing, seen from the side (the shoulders over the chest)
+	"ready_front": [],  # the weapon out, held ready, seen from ahead
+	"ready_side": [],  # and from the side
 }
 const FRAMES := 16
 const START := Vector3(-4, 0, -24)  # on the road north of the camp, open ground ahead
@@ -91,6 +93,7 @@ func _run() -> void:
 		player.teleport(spot, 0.0)
 		if gait == "walk" and player.has_method("set_walking"):
 			player.set_walking(true)
+		player.model._drawn_until = Game.time + 60.0 if gait.begins_with("ready") else -1.0
 		await _wait(0.4)
 		for action: String in GAITS[gait]:
 			Input.action_press(action)
@@ -202,7 +205,7 @@ func _follow(player: Player, seconds: float, slides: PackedFloat32Array) -> void
 			_camera.global_position = player.global_position - motion.normalized() * 6.0 + Vector3.UP * 1.4
 		if motion.length() < 0.5 and _gait == "stand":  # from straight behind
 			_camera.global_position = player.global_position + player.global_transform.basis.z * 3.4 + Vector3.UP * 1.4
-		if motion.length() < 0.5 and _gait == "stand_front":  # from straight ahead
+		if motion.length() < 0.5 and _gait.ends_with("_front"):  # from straight ahead
 			_camera.global_position = player.global_position - player.global_transform.basis.z * 3.4 + Vector3.UP * 1.4
 		_camera.look_at(player.global_position + Vector3.UP * 0.95)
 		await get_tree().process_frame

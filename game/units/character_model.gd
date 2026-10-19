@@ -57,6 +57,7 @@ const CLIPS := {
 	"back_loop": "ual1/Jog_Fwd", "cast_loop": "ual1/Spell_Simple_Idle", "death": "ual1/Death01",
 	"hit": "ual1/Hit_Chest", "spell": "ual1/Spell_Simple_Shoot",
 	"jump_start": "ual1/Jump_Start", "fall_loop": "ual1/Jump", "land": "ual1/Jump_Land",
+	"ready_loop": "moves/Ready2H",  # standing with a two-handed weapon out (TwoHandGrip holds it)
 }
 ## An armed character's weapon hand keeps this clip's closed fist whatever else it does.
 const ARMED_IDLE := "ual1/Sword_Idle"
@@ -98,10 +99,12 @@ const PAINTED := preload("res://units/shaders/character.gdshader")
 ## scanned materials. "hold": the weapon arm keeps that clip's pose while the weapon is out
 ## (held ready, not swung about by the run); "channel": its pose while channelling a spell;
 ## "middle": how far up the haft from the grip the weapon's middle is (it sits mid-back
-## when sheathed).
+## when sheathed). "two_hands": a two-handed weapon, held ready in both hands (TwoHandGrip)
+## this far (m) further down the haft than the one-handed grip, near its end.
 const WEAPONS := {
 	"rune_axe": {"path": "res://art/weapons/rune_axe.glb", "painted": true,
-			"root": Vector3(0, 0.82, -0.06), "edge": Vector3(0, 0.82, -0.44), "hold": ARMED_IDLE, "middle": 0.28},
+			"root": Vector3(0, 0.82, -0.06), "edge": Vector3(0, 0.82, -0.44), "hold": ARMED_IDLE, "middle": 0.28,
+			"two_hands": 0.32},
 	"pick": {"path": "res://art/weapons/pick.glb", "painted": false,  # tools/art/blender/scavenger.py
 			"root": Vector3(0, 0.77, 0), "edge": Vector3(0, 0.78, -0.24), "hold": ARMED_IDLE, "middle": 0.28},
 	"crystal_staff": {"path": "res://art/weapons/crystal_staff.glb", "painted": false,  # tools/art/blender/staff.py
@@ -110,7 +113,7 @@ const WEAPONS := {
 const UPPER_BODY := ["Spine", "Chest", "UpperChest", "Neck", "Head", "LeftShoulder", "LeftUpperArm",
 		"LeftLowerArm", "LeftHand", "RightShoulder", "RightUpperArm", "RightLowerArm", "RightHand"]
 const FINGERS := ["Thumb", "Index", "Middle", "Ring", "Little"]
-const LOOPS := ["idle_loop", "walk_loop", "jog_loop", "run_loop", "back_loop", "cast_loop", "fall_loop"]
+const LOOPS := ["idle_loop", "walk_loop", "jog_loop", "run_loop", "back_loop", "cast_loop", "fall_loop", "ready_loop"]
 ## The states that play once: a leap off the ground (then the fall loop), a standing landing.
 const ONCE := ["jump_start", "land"]
 ## Neck and head turn toward what the character fights (share of the turn each takes);
@@ -150,6 +153,7 @@ var _planter: FootPlanter
 var _upright: SpineUpright
 var _steady: HeadSteady
 var _fists: Fists
+var _two_hands: TwoHandGrip  # (a two-handed weapon's)
 var _weapon: Node3D
 var _in_hand: Transform3D  # the weapon's place in the fist
 var _on_back: Transform3D  # and across the back
@@ -224,6 +228,11 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_
 	model._upright = SpineUpright.new()  # first: the head turns from the straightened torso
 	model._upright.name = "SpineUpright"
 	skeleton.add_child(model._upright)
+	if model._armed and WEAPONS[weapon].get("two_hands", 0.0) > 0.0:
+		model._two_hands = TwoHandGrip.new()  # on the straightened torso
+		model._two_hands.name = "TwoHandGrip"
+		model._two_hands.in_hand = model._in_hand
+		skeleton.add_child(model._two_hands)
 	model._look_target.top_level = true
 	model.add_child(model._look_target)
 	for bone_name: String in LOOK:
@@ -568,6 +577,8 @@ func _process(delta: float) -> void:
 		_upright.weight = 0.0
 		_upright.sway_weight = 0.0
 		_steady.weight = 0.0 if _unit else 1.0
+		if _two_hands:
+			_two_hands.weight = 0.0
 		return
 	_steady.weight = 1.0
 	_steps.update(_skeleton, _unit, delta)
@@ -622,9 +633,17 @@ func _process(delta: float) -> void:
 			pace = 0.9
 		elif _unit.casting != null:
 			_go("cast_loop")
+		elif _two_hands and _sheathes and _drawn:
+			_go("ready_loop")  # the weapon held ready in both hands
 		else:
 			_go("idle_loop")
 	_tree.set("parameters/pace/scale", pace)
+	if _two_hands:
+		# both hands on the haft while standing ready; a swing takes the arms at once
+		var hold: bool = _state == "ready_loop" and _drawn and not _tree.get("parameters/attack_shot/active")
+		_two_hands.weight = move_toward(_two_hands.weight, 1.0 if hold else 0.0, delta * (4.0 if hold else 12.0))
+		if _drawn:  # the haft slides through the fists to hold it near its end
+			_weapon.transform = _in_hand.translated_local(Vector3.UP * WEAPONS[weapon_key].two_hands * _two_hands.weight)
 
 
 ## Like WoW, the body turns the way it moves: a quarter round for a diagonal, sideways for

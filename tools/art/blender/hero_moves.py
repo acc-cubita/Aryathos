@@ -55,6 +55,25 @@ RUN = {
 }
 
 
+## The two-handed weapon held ready (a fighter's stance, studied from a reference): feet
+## wide, the left a little ahead, toes out, knees bent and the hips down, the torso a little
+## forward and square to the front. Here the legs and body breathe over 2 s; the hands go
+## onto the haft in the game (TwoHandGrip), whatever the character's arms. Per key as RUN,
+## plus each leg's spread (deg out to the side) and toes turned out (deg).
+READY_2H = {
+    "length": 60,
+    "mirror": False,
+    "grounded": True,  # the hips sit as low as the bent legs leave them
+    "abduct_arm": 20.0, "abduct_forearm": 0.0, "across": 25.0, "adduct_leg": 0.0,
+    "keys": [
+        {"f": 0.0, "legL": (14, 32, -18), "legR": (-6, 18, -24), "armL": (30, 70), "armR": (15, 75),
+         "spreadL": 12, "spreadR": 12, "toeL": 15, "toeR": 25, "lean": 10, "bob": 0.0, "turn": 10},
+        {"f": 30.0, "legL": (15, 35, -20), "legR": (-5, 21, -26), "armL": (30, 72), "armR": (15, 77),
+         "spreadL": 12, "spreadR": 12, "toeL": 15, "toeR": 25, "lean": 11.5, "bob": 0.0, "turn": 10},
+    ],
+}
+
+
 def mirrored(key, frame):
     """The same key on the other leg, `frame` later."""
     return {"f": key["f"] + frame, "legL": key["legR"], "legR": key["legL"], "armL": key["armR"],
@@ -122,12 +141,21 @@ def pose(rig, key, spec):
         for joint, curl in ((2, 25.0), (3, 45.0)):
             set_aim(rig, "thumb_0%d_%s" % (joint, side), hand @ rot("Y", sign * curl))
         thigh, knee, foot = key["legL"] if side == "l" else key["legR"]
-        inward = rot("Y", sign * spec["adduct_leg"])
+        letter = "L" if side == "l" else "R"
+        inward = rot("Y", sign * (spec["adduct_leg"] - key.get("spread" + letter, 0.0)))
         set_aim(rig, "thigh_" + side, rot("X", -thigh) @ inward)
         set_aim(rig, "calf_" + side, rot("X", -(thigh - knee)) @ inward)
-        # the ankle bends from square to the shin (the rest foot stands square to an upright shin)
-        set_aim(rig, "foot_" + side, rot("X", -(thigh - knee) + foot))
-        set_aim(rig, "ball_" + side, rot("X", -(thigh - knee) + foot))
+        # the ankle bends from square to the shin (the rest foot stands square to an upright
+        # shin), then the toes turn out
+        toes = rot("Z", sign * key.get("toe" + letter, 0.0))
+        set_aim(rig, "foot_" + side, toes @ rot("X", -(thigh - knee) + foot))
+        set_aim(rig, "ball_" + side, toes @ rot("X", -(thigh - knee) + foot))
+    if spec.get("grounded"):
+        # the hips lowered until the lower ankle is as high as it stands at rest
+        low = min(rig.pose.bones["foot_" + s].head.z for s in ("l", "r"))
+        rest_low = min(rig.data.bones["foot_" + s].head_local.z for s in ("l", "r"))
+        pelvis.matrix = Matrix.Translation(Vector((0, 0, rest_low - low))) @ pelvis.matrix
+        bpy.context.view_layer.update()
 
 
 def key_all(rig, frame):
@@ -142,7 +170,9 @@ def make_cycle(rig, name, spec):
     for bone in rig.pose.bones:
         bone.rotation_mode = "QUATERNION"
     length = spec["length"]
-    keys = spec["keys"] + [mirrored(k, length / 2.0) for k in spec["keys"]]
+    keys = list(spec["keys"])
+    if spec.get("mirror", True):
+        keys += [mirrored(k, length / 2.0) for k in spec["keys"]]
     keys.append(dict(keys[0], f=float(length)))  # the loop closes on its first pose
     for key in keys:
         pose(rig, key, spec)
@@ -218,7 +248,8 @@ if __name__ == "__main__":
     rig = load_rig()
     run = make_cycle(rig, "Run_Loop", RUN)
     print("moves: Run_Loop made for %.2f m/s on the mannequin" % ground_speed(rig, run, "r", 8.5, 13.5))
+    ready = make_cycle(rig, "Ready2H_Loop", READY_2H)
     if "--shots" in args:
         shots(rig, run, args[args.index("--shots") + 1], [1, 4, 7, 10, 12, 15, 18, 21])
-    export(rig, [run])
+    export(rig, [run, ready])
     print("moves: exported", OUT)
