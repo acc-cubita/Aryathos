@@ -57,7 +57,7 @@ RUN = {
 
 ## The two-handed weapon held ready (a fighter's stance, studied from a reference): feet
 ## wide, the left a little ahead, toes out, knees bent and the hips down, the torso a little
-## forward and square to the front. Here the legs and body breathe over 2 s; the hands go
+## forward, the shoulders turned a little right. Here the legs and body breathe over 2 s; the hands go
 ## onto the haft in the game (TwoHandGrip), whatever the character's arms. Per key as RUN,
 ## plus each leg's spread (deg out to the side) and toes turned out (deg).
 READY_2H = {
@@ -67,9 +67,9 @@ READY_2H = {
     "abduct_arm": 20.0, "abduct_forearm": 0.0, "across": 25.0, "adduct_leg": 0.0,
     "keys": [
         {"f": 0.0, "legL": (14, 32, -18), "legR": (-6, 18, -24), "armL": (30, 70), "armR": (15, 75),
-         "spreadL": 12, "spreadR": 12, "toeL": 15, "toeR": 25, "lean": 10, "bob": 0.0, "turn": 10},
+         "spreadL": 12, "spreadR": 12, "toeL": 15, "toeR": 25, "lean": 10, "bob": 0.0, "turn": 0, "shoulders": -22},
         {"f": 30.0, "legL": (15, 35, -20), "legR": (-5, 21, -26), "armL": (30, 72), "armR": (15, 77),
-         "spreadL": 12, "spreadR": 12, "toeL": 15, "toeR": 25, "lean": 11.5, "bob": 0.0, "turn": 10},
+         "spreadL": 12, "spreadR": 12, "toeL": 15, "toeR": 25, "lean": 11.5, "bob": 0.0, "turn": 0, "shoulders": -22},
     ],
 }
 
@@ -82,7 +82,7 @@ READY_2H = {
 ## TwoHandGrip's "sweep" (the same times). 1 s; the blow at 0.31 s.
 _READY = READY_2H["keys"][0]
 STRIKE_2H = dict(READY_2H, length=30, keys=[
-    dict(_READY, f=0.0, shoulders=-0.8 * _READY["turn"]),  # as the ready stance holds them
+    dict(_READY, f=0.0),
     # coiled: the right knee bent, the left leg long
     dict(_READY, f=7.0, turn=-18, shoulders=-58, lean=10, legL=(12, 24, -12), legR=(-6, 30, -36)),
     # the blow: hips round first, square shoulders, both knees down

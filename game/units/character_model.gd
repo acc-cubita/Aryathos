@@ -106,7 +106,7 @@ const PAINTED := preload("res://units/shaders/character.gdshader")
 const WEAPONS := {
 	"rune_axe": {"path": "res://art/weapons/rune_axe.glb", "painted": true,
 			"root": Vector3(0, 0.82, -0.06), "edge": Vector3(0, 0.82, -0.44), "hold": ARMED_IDLE, "middle": 0.28,
-			"two_hands": 0.32},
+			"two_hands": 0.18},
 	"pick": {"path": "res://art/weapons/pick.glb", "painted": false,  # tools/art/blender/scavenger.py
 			"root": Vector3(0, 0.77, 0), "edge": Vector3(0, 0.78, -0.24), "hold": ARMED_IDLE, "middle": 0.28},
 	"crystal_staff": {"path": "res://art/weapons/crystal_staff.glb", "painted": false,  # tools/art/blender/staff.py

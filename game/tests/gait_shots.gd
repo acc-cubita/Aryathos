@@ -24,6 +24,9 @@ const GAITS := {
 	"ready_side": [],  # and from the side
 	"strike_front": [],  # a swing from the ready stance, seen from ahead
 	"strike_side": [],  # and from the side
+	"ready_close": [],  # held ready, close, from ahead and to its left (the arms by the body)
+	"strike_close": [],  # a swing, close, from ahead and to its left
+	"ready_rclose": [],  # held ready, close, from ahead and to its right
 }
 const FRAMES := 16
 const START := Vector3(-4, 0, -24)  # on the road north of the camp, open ground ahead
@@ -211,6 +214,8 @@ func _follow(player: Player, seconds: float, slides: PackedFloat32Array) -> void
 			_camera.global_position = player.global_position - motion.normalized() * 6.0 + Vector3.UP * 1.4
 		if motion.length() < 0.5 and _gait == "stand":  # from straight behind
 			_camera.global_position = player.global_position + player.global_transform.basis.z * 3.4 + Vector3.UP * 1.4
+		if motion.length() < 0.5 and _gait.ends_with("close"):  # close, ahead and to its left (rclose: right)
+			_camera.global_position = player.global_position - player.global_transform.basis.z * 1.7 					+ player.global_transform.basis.x * (1.1 if _gait.ends_with("rclose") else -1.1) + Vector3.UP * 1.3
 		if motion.length() < 0.5 and _gait.ends_with("_front"):  # from straight ahead
 			_camera.global_position = player.global_position - player.global_transform.basis.z * 3.4 + Vector3.UP * 1.4
 		_camera.look_at(player.global_position + Vector3.UP * 0.95)

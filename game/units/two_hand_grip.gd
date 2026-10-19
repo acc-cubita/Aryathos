@@ -1,8 +1,10 @@
 class_name TwoHandGrip
 extends SkeletonModifier3D
-## Both hands on a two-handed weapon's haft, held ready (WoW's two-handed stance): the
-## right fist low at the right hip, the haft rising up and out to the right, the left fist
-## just above the right. Each arm reaches its fist's place by two-bone IK, the hands turned
+## Both hands on a two-handed weapon's haft, held ready (WoW's two-handed stance): the fists
+## before the body (the shoulders turned a little right bring them to the right side), the
+## haft rising up and out to the right, the right fist above the left, the left near the
+## haft's end, as a right-handed fighter holds it. Each arm reaches its fist's place by
+## two-bone IK, the hands turned
 ## so the weapon (carried by the right hand) lies along the haft, edge to the front, so it
 ## fits any build; the collarbones follow the hands a little (up, forward, across), as
 ## shoulders do. `weight` (0..1) fades it in and out. A two-handed swing (strike()) moves
@@ -14,14 +16,21 @@ extends SkeletonModifier3D
 ## as a fighter's do.
 
 ## Ready: where the right fist's grip is, which way the haft rises, which way the edge looks.
-const GRIP := Vector3(-0.22, -0.2, 0.24)
-const HAFT := Vector3(-0.5, 0.85, 0.12)
+const GRIP := Vector3(-0.06, 0.06, 0.44)
+const HAFT := Vector3(-0.55, 0.83, 0.05)
 const EDGE := Vector3(0.0, 0.0, 1.0)
-## How far up the haft (m) the left fist holds, above the right.
-const LEFT_UP := 0.13
-## Which way each elbow bends: the right out and back, the left down across the body.
-const RIGHT_POLE := Vector3(-1.0, -0.4, -0.6)
-const LEFT_POLE := Vector3(0.6, -1.0, 0.1)
+## How far down the haft (m) the left fist holds, below the right. (Every place keeps both
+## wrists within the arms' reach, 0.57 m from the shoulder, and before the body: past
+## either, an arm would pass through it. The wrists sit some 8 cm behind the fists' grip.)
+const LEFT_DOWN := 0.13
+## The front of the chest and belly (with the tunic over them): within TORSO.x of the
+## middle, from TORSO.y below the chest joint up to it, the body reaches TORSO.z ahead
+## (measured on the hero); a wrist keeps WRIST_CLEAR before it, the fists pushed out if not.
+const TORSO := Vector3(0.2, 0.5, 0.23)
+const WRIST_CLEAR := 0.06
+## Which way each elbow bends: both out to their sides and down.
+const RIGHT_POLE := Vector3(-1.0, -0.5, -0.4)
+const LEFT_POLE := Vector3(0.8, -0.8, 0.2)
 ## Two-handed swings (studied from a reference; the body's turn is hero_moves.py's clip of
 ## the same times): keys of [seconds, grip, haft, edge, right pole, left pole]. "sweep":
 ## up to the right shoulder as the body coils right, the head laid back behind it; then the
@@ -32,13 +41,13 @@ const LEFT_POLE := Vector3(0.6, -1.0, 0.1)
 const STRIKES := {
 	"sweep": [
 		[0.0, GRIP, HAFT, EDGE, RIGHT_POLE, LEFT_POLE],
-		[0.14, Vector3(-0.25, 0.06, 0.22), Vector3(-0.25, 0.95, -0.2), Vector3(0, 0.2, 1), Vector3(-1, -0.6, -0.3), Vector3(0.2, -1, 0.3)],
-		[0.23, Vector3(-0.28, 0.18, 0.12), Vector3(-0.55, 0.3, -0.75), Vector3(-0.75, 0.3, 0.55), Vector3(-1, -0.7, -0.2), Vector3(0.2, -1, 0.4)],
-		[0.27, Vector3(-0.2, 0.08, 0.38), Vector3(-0.9, 0.05, 0.4), Vector3(0.4, 0, 0.9), Vector3(-0.6, -1, 0), Vector3(0.3, -1, 0.2)],
-		[0.31, Vector3(-0.08, 0.04, 0.48), Vector3(0.15, -0.08, 1.0), Vector3(1, 0, -0.15), Vector3(-0.4, -1, 0), Vector3(0.4, -1, 0)],
-		[0.36, Vector3(0.06, 0.0, 0.4), Vector3(0.9, -0.1, 0.3), Vector3(0.3, 0, -0.9), Vector3(-0.2, -1, 0.3), Vector3(0.8, -0.8, -0.2)],
-		[0.46, Vector3(0.1, -0.08, 0.26), Vector3(0.55, -0.35, -0.75), Vector3(-0.75, 0, -0.55), Vector3(-0.2, -1, 0.4), Vector3(1, -0.6, -0.4)],
-		[0.7, Vector3(0.1, -0.1, 0.26), Vector3(0.6, -0.3, -0.7), Vector3(-0.7, 0, -0.6), Vector3(-0.2, -1, 0.4), Vector3(1, -0.6, -0.4)],
+		[0.14, Vector3(-0.12, 0.16, 0.38), Vector3(-0.2, 0.95, -0.15), Vector3(0, 0.2, 1), Vector3(-1, -0.6, -0.3), Vector3(0.2, -1, 0.3)],
+		[0.23, Vector3(-0.28, 0.18, 0.26), Vector3(-0.55, 0.3, -0.75), Vector3(-0.75, 0.3, 0.55), Vector3(-1, -0.7, -0.2), Vector3(0.2, -1, 0.4)],
+		[0.27, Vector3(-0.18, 0.08, 0.46), Vector3(-0.9, 0.05, 0.4), Vector3(0.4, 0, 0.9), Vector3(-0.6, -1, 0), Vector3(0.3, -1, 0.2)],
+		[0.31, Vector3(-0.08, 0.08, 0.44), Vector3(0.15, -0.08, 1.0), Vector3(1, 0, -0.15), Vector3(-0.4, -1, 0), Vector3(0.4, -1, 0)],
+		[0.36, Vector3(0.06, 0.06, 0.34), Vector3(0.9, -0.1, 0.3), Vector3(0.3, 0, -0.9), Vector3(-0.2, -1, 0.3), Vector3(0.8, -0.8, -0.2)],
+		[0.46, Vector3(0.02, 0.04, 0.3), Vector3(0.55, -0.35, -0.75), Vector3(-0.75, 0, -0.55), Vector3(-0.2, -1, 0.4), Vector3(1, -0.6, -0.4)],
+		[0.7, Vector3(0.02, 0.02, 0.3), Vector3(0.6, -0.3, -0.7), Vector3(-0.7, 0, -0.6), Vector3(-0.2, -1, 0.4), Vector3(1, -0.6, -0.4)],
 		[1.0, GRIP, HAFT, EDGE, RIGHT_POLE, LEFT_POLE],
 	],
 }
@@ -113,8 +122,20 @@ func _process_modification() -> void:
 	edge = (edge - haft * edge.dot(haft)).normalized()
 	var weapon := Basis(haft.cross(-edge), haft, -edge)
 	var right_grip: Vector3 = chest.origin + body * key[1]
+	# no wrist inside the body (the curve between the keys may cut a corner)
+	var out := 0.0
+	for fist: Array in [[Vector3.ZERO, in_hand], [-haft * LEFT_DOWN, _left_in_hand]]:
+		var wrist: Vector3 = body.inverse() * (_wrist(Transform3D(weapon, right_grip + fist[0]), fist[1]) - chest.origin)
+		if absf(wrist.x) < TORSO.x and wrist.y > -TORSO.y and wrist.y < 0.25:
+			out = maxf(out, TORSO.z + WRIST_CLEAR - wrist.z)
+	right_grip += body * Vector3.BACK * out
 	_hold(skeleton, body, "Right", Transform3D(weapon, right_grip), in_hand, body * key[4])
-	_hold(skeleton, body, "Left", Transform3D(weapon, right_grip + haft * LEFT_UP), _left_in_hand, body * key[5])
+	_hold(skeleton, body, "Left", Transform3D(weapon, right_grip - haft * LEFT_DOWN), _left_in_hand, body * key[5])
+
+
+## Where a hand's wrist goes for `held` (a grip frame in the hand's frame) to be at `grip`.
+func _wrist(grip: Transform3D, held: Transform3D) -> Vector3:
+	return grip.origin - Basis((grip.basis * held.basis.orthonormalized().inverse()).get_rotation_quaternion()) * held.origin
 
 
 
