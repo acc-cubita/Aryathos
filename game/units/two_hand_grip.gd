@@ -4,11 +4,17 @@ extends SkeletonModifier3D
 ## right fist low at the right hip, the haft rising up and out to the right, the left fist
 ## just above the right. Each arm reaches its fist's place by two-bone IK, the hands turned
 ## so the weapon (carried by the right hand) lies along the haft, edge to the front, so it
-## fits any build. `weight` (0..1) fades it in and out (a swing takes the arms).
+## fits any build; the collarbones follow the hands a little (up, forward, across), as
+## shoulders do. `weight` (0..1) fades it in and out. A two-handed swing (strike()) moves
+## the weapon along one of STRIKES's paths, the hands with it.
+##
+## Places are in the chest's frame: from the UpperChest joint, the rig's axes turned the way
+## the chest faces (+Z ahead, +X to the left) but kept upright (+Y up; the chest leans 30
+## degrees and more), so the body's turn swings the weapon round and the arms only reach,
+## as a fighter's do.
 
-## In the rig's frame (it faces +Z, its left is +X), from the hips: where the right fist's
-## grip is, which way the haft rises, which way the edge looks.
-const GRIP := Vector3(-0.22, 0.0, 0.22)
+## Ready: where the right fist's grip is, which way the haft rises, which way the edge looks.
+const GRIP := Vector3(-0.22, -0.2, 0.24)
 const HAFT := Vector3(-0.5, 0.85, 0.12)
 const EDGE := Vector3(0.0, 0.0, 1.0)
 ## How far up the haft (m) the left fist holds, above the right.
@@ -16,23 +22,71 @@ const LEFT_UP := 0.13
 ## Which way each elbow bends: the right out and back, the left down across the body.
 const RIGHT_POLE := Vector3(-1.0, -0.4, -0.6)
 const LEFT_POLE := Vector3(0.6, -1.0, 0.1)
+## Two-handed swings (studied from a reference; the body's turn is hero_moves.py's clip of
+## the same times): keys of [seconds, grip, haft, edge, right pole, left pole]. "sweep":
+## up to the right shoulder as the body coils right, the head laid back behind it; then the
+## body unwinds and the arms reach out straight through a flat blow (square to the front at
+## 0.31 s), wrap round to the left low, hold, and come back to ready. (A sweeping edge
+## looks the way the head travels: round the body. The fists stay within the arms' reach,
+## so the arms straighten through the blow.)
+const STRIKES := {
+	"sweep": [
+		[0.0, GRIP, HAFT, EDGE, RIGHT_POLE, LEFT_POLE],
+		[0.14, Vector3(-0.25, 0.06, 0.22), Vector3(-0.25, 0.95, -0.2), Vector3(0, 0.2, 1), Vector3(-1, -0.6, -0.3), Vector3(0.2, -1, 0.3)],
+		[0.23, Vector3(-0.28, 0.18, 0.12), Vector3(-0.55, 0.3, -0.75), Vector3(-0.75, 0.3, 0.55), Vector3(-1, -0.7, -0.2), Vector3(0.2, -1, 0.4)],
+		[0.27, Vector3(-0.2, 0.08, 0.38), Vector3(-0.9, 0.05, 0.4), Vector3(0.4, 0, 0.9), Vector3(-0.6, -1, 0), Vector3(0.3, -1, 0.2)],
+		[0.31, Vector3(-0.08, 0.04, 0.48), Vector3(0.15, -0.08, 1.0), Vector3(1, 0, -0.15), Vector3(-0.4, -1, 0), Vector3(0.4, -1, 0)],
+		[0.36, Vector3(0.06, 0.0, 0.4), Vector3(0.9, -0.1, 0.3), Vector3(0.3, 0, -0.9), Vector3(-0.2, -1, 0.3), Vector3(0.8, -0.8, -0.2)],
+		[0.46, Vector3(0.1, -0.08, 0.26), Vector3(0.55, -0.35, -0.75), Vector3(-0.75, 0, -0.55), Vector3(-0.2, -1, 0.4), Vector3(1, -0.6, -0.4)],
+		[0.7, Vector3(0.1, -0.1, 0.26), Vector3(0.6, -0.3, -0.7), Vector3(-0.7, 0, -0.6), Vector3(-0.2, -1, 0.4), Vector3(1, -0.6, -0.4)],
+		[1.0, GRIP, HAFT, EDGE, RIGHT_POLE, LEFT_POLE],
+	],
+}
+## The collarbones: how far (radians per m the hand is past an easy reach, least, most) they
+## lift for a hand raised and come forward for one reaching out or across the body.
+const SHRUG := Vector3(deg_to_rad(45.0), deg_to_rad(-5.0), deg_to_rad(22.0))
+const REACH := Vector3(deg_to_rad(35.0), deg_to_rad(-5.0), deg_to_rad(16.0))
+## An easy reach: the hand this far from its shoulder (in the chest's frame, the side's x
+## toward the body's middle).
+const EASY := Vector3(0.0, -0.4, 0.2)
 
 var weight := 0.0
 ## The weapon in the right hand's frame (CharacterModel._in_hand).
 var in_hand := Transform3D.IDENTITY
 
-var _hips := -1
-var _arms := {}  # side -> [upper arm, lower arm, hand]
+var _chest := -1
+var _arms := {}  # side -> [collarbone, upper arm, lower arm, hand]
 var _left_in_hand := Transform3D.IDENTITY  # the left fist's grip, as the weapon would sit in it
+var _strike: Array = []  # the swing under way (STRIKES), and how far into it (s)
+var _strike_time := 0.0
+
+
+## Starts a two-handed swing along STRIKES[path].
+func strike(path: String) -> void:
+	_strike = STRIKES[path]
+	_strike_time = 0.0
+
+
+func striking() -> bool:
+	return not _strike.is_empty()
+
+
+## The swing's clock (CharacterModel moves it on every frame).
+func advance(delta: float) -> void:
+	if striking():
+		_strike_time += delta
+		if _strike_time >= _strike[-1][0]:
+			_strike = []
 
 
 func _ready() -> void:
 	var skeleton := get_skeleton()
 	if skeleton == null:
 		return
-	_hips = skeleton.find_bone("Hips")
+	_chest = skeleton.find_bone("UpperChest")
 	for side: String in ["Left", "Right"]:
-		_arms[side] = [skeleton.find_bone(side + "UpperArm"), skeleton.find_bone(side + "LowerArm"), skeleton.find_bone(side + "Hand")]
+		_arms[side] = [skeleton.find_bone(side + "Shoulder"), skeleton.find_bone(side + "UpperArm"),
+				skeleton.find_bone(side + "LowerArm"), skeleton.find_bone(side + "Hand")]
 	# the left fist's grip frame like the right's (CharacterModel._grip): along its grip
 	# markers toward the thumb, the fingers' way as the edge's
 	var hand := skeleton.get_bone_global_rest(skeleton.find_bone("LeftHand"))
@@ -46,34 +100,70 @@ func _ready() -> void:
 
 func _process_modification() -> void:
 	var skeleton := get_skeleton()
-	if skeleton == null or weight <= 0.0 or _hips < 0:
+	if skeleton == null or weight <= 0.0 or _chest < 0:
 		return
-	# the rig's frame as the hips carry it (their turn and lean), at the hips
-	var hips := skeleton.get_bone_global_pose(_hips)
-	var body := hips.basis.orthonormalized() * skeleton.get_bone_global_rest(_hips).basis.orthonormalized().inverse()
-	var haft := (body * HAFT).normalized()
-	var edge := body * EDGE
+	# the rig's frame turned as the upper chest faces, upright
+	var chest := skeleton.get_bone_global_pose(_chest)
+	var facing := chest.basis.orthonormalized() * skeleton.get_bone_global_rest(_chest).basis.orthonormalized().inverse() * Vector3.BACK
+	var ahead := Vector3(facing.x, 0.0, facing.z).normalized()
+	var body := Basis(Vector3.UP.cross(ahead), Vector3.UP, ahead)
+	var key: Array = _sample() if striking() else [0.0, GRIP, HAFT, EDGE, RIGHT_POLE, LEFT_POLE]
+	var haft: Vector3 = (body * key[2]).normalized()
+	var edge: Vector3 = body * key[3]
 	edge = (edge - haft * edge.dot(haft)).normalized()
 	var weapon := Basis(haft.cross(-edge), haft, -edge)
-	var right_grip := hips.origin + body * GRIP
-	_hold(skeleton, "Right", Transform3D(weapon, right_grip), in_hand, body * RIGHT_POLE)
-	_hold(skeleton, "Left", Transform3D(weapon, right_grip + haft * LEFT_UP), _left_in_hand, body * LEFT_POLE)
+	var right_grip: Vector3 = chest.origin + body * key[1]
+	_hold(skeleton, body, "Right", Transform3D(weapon, right_grip), in_hand, body * key[4])
+	_hold(skeleton, body, "Left", Transform3D(weapon, right_grip + haft * LEFT_UP), _left_in_hand, body * key[5])
 
 
 
-## One arm: its hand turned and brought so that `held` (a grip frame in the hand's frame)
-## comes to `grip`, the elbow bending toward `pole`; all by `weight`.
-func _hold(skeleton: Skeleton3D, side: String, grip: Transform3D, held: Transform3D, pole: Vector3) -> void:
+## The swing's key at its clock: each value on a Catmull-Rom curve through the keys.
+func _sample() -> Array:
+	var i := 0
+	while i < _strike.size() - 2 and _strike_time >= _strike[i + 1][0]:
+		i += 1
+	var a: Array = _strike[maxi(i - 1, 0)]
+	var b: Array = _strike[i]
+	var c: Array = _strike[i + 1]
+	var d: Array = _strike[mini(i + 2, _strike.size() - 1)]
+	var u := clampf((_strike_time - b[0]) / maxf(c[0] - b[0], 0.001), 0.0, 1.0)
+	var out := [_strike_time]
+	for k in range(1, 6):
+		out.append((b[k] as Vector3).cubic_interpolate(c[k], a[k], d[k], u))
+	return out
+
+
+## One arm: its collarbone turned a little toward where the hand goes, its hand turned and
+## brought so that `held` (a grip frame in the hand's frame) comes to `grip`, the elbow
+## bending toward `pole`; all by `weight`.
+func _hold(skeleton: Skeleton3D, body: Basis, side: String, grip: Transform3D, held: Transform3D, pole: Vector3) -> void:
 	var bones: Array = _arms[side]
-	var hand := skeleton.get_bone_global_pose(bones[2])
+	var hand := skeleton.get_bone_global_pose(bones[3])
 	var scale := hand.basis.get_scale()
 	var turned := Basis((grip.basis * held.basis.orthonormalized().inverse()).get_rotation_quaternion())
 	var wrist := grip.origin - turned.scaled(scale) * held.origin
-	var now := hand.basis.get_rotation_quaternion()
-	var want := now.slerp(turned.get_rotation_quaternion(), weight)
-	_reach(skeleton, bones[0], bones[1], bones[2], hand.origin.lerp(wrist, weight), pole)
-	var posed := skeleton.get_bone_global_pose(bones[2])
-	skeleton.set_bone_global_pose(bones[2], Transform3D(Basis(want).scaled(scale), posed.origin))
+	var target := hand.origin.lerp(wrist, weight)
+	_shrug(skeleton, body, bones, target, -1.0 if side == "Right" else 1.0)
+	var want := hand.basis.get_rotation_quaternion().slerp(turned.get_rotation_quaternion(), weight)
+	_reach(skeleton, bones[1], bones[2], bones[3], target, pole)
+	var posed := skeleton.get_bone_global_pose(bones[3])
+	skeleton.set_bone_global_pose(bones[3], Transform3D(Basis(want).scaled(scale), posed.origin))
+
+
+## The collarbone lifted for a hand above an easy reach, brought forward for one reaching
+## out or across the body (`out` is the side the shoulder is on: -1 right, +1 left).
+func _shrug(skeleton: Skeleton3D, body: Basis, bones: Array, target: Vector3, out: float) -> void:
+	var collar := skeleton.get_bone_global_pose(bones[0])
+	var shoulder := skeleton.get_bone_global_pose(bones[1]).origin
+	var off := body.inverse() * (target - shoulder) - Vector3(-out * EASY.x, EASY.y, EASY.z)
+	var lift := clampf(off.y * SHRUG.x, SHRUG.y, SHRUG.z) * weight
+	var forward := clampf((off.z + maxf(-out * off.x, 0.0)) * REACH.x, REACH.y, REACH.z) * weight
+	# up: a turn about the body's ahead axis (the right collarbone points -X, so it lifts by
+	# a turn about -ahead); forward: about the up axis (the left one about -up)
+	var turn := Basis(body * Vector3.UP, forward * -out) * Basis(body * Vector3.BACK, lift * out)
+	collar.basis = turn * collar.basis
+	skeleton.set_bone_global_pose(bones[0], collar)
 
 
 ## Two-bone IK: the upper and lower bones turned so the end bone's joint comes to `target`

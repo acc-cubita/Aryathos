@@ -74,6 +74,25 @@ READY_2H = {
 }
 
 
+## A two-handed sweep from the ready stance (studied from a reference): the body coils to
+## the right (hips a quarter, shoulders more than half a right angle) as the weapon comes
+## up over the right shoulder, the weight back on the right leg; then the hips lead the
+## unwinding, the knees drop into the blow and the shoulders come round past square to the
+## left, held, and back. Only the body: the weapon's path, and the arms with it, are
+## TwoHandGrip's "sweep" (the same times). 1 s; the blow at 0.31 s.
+_READY = READY_2H["keys"][0]
+STRIKE_2H = dict(READY_2H, length=30, keys=[
+    dict(_READY, f=0.0, shoulders=-0.8 * _READY["turn"]),  # as the ready stance holds them
+    # coiled: the right knee bent, the left leg long
+    dict(_READY, f=7.0, turn=-18, shoulders=-58, lean=10, legL=(12, 24, -12), legR=(-6, 30, -36)),
+    # the blow: hips round first, square shoulders, both knees down
+    dict(_READY, f=9.3, turn=12, shoulders=-4, lean=17, legL=(16, 40, -24), legR=(-4, 28, -32)),
+    # round to the left, the weight onto the left leg
+    dict(_READY, f=14.0, turn=26, shoulders=52, lean=15, legL=(16, 38, -22), legR=(-8, 16, -24)),
+    dict(_READY, f=21.0, turn=24, shoulders=46, lean=13, legL=(15, 36, -21), legR=(-7, 17, -24)),
+])
+
+
 def mirrored(key, frame):
     """The same key on the other leg, `frame` later."""
     return {"f": key["f"] + frame, "legL": key["legR"], "legR": key["legL"], "armL": key["armR"],
@@ -118,8 +137,14 @@ def pose(rig, key, spec):
     pelvis.matrix = Matrix.Translation(rest.to_translation() + Vector((0, 0, key["bob"]))) @ (turn @ rest.to_3x3().to_4x4())
     bpy.context.view_layer.update()
     # the spine carries the rest of the lean, the shoulders turning back against the hips
+    # the shoulders turn back against the hips (a runner), or, given "shoulders", turn that
+    # far (deg, + to the left) with the hips, the spine sharing it out (a swing)
     for name, share in (("spine_01", 0.45), ("spine_02", 0.75), ("spine_03", 1.0)):
-        set_aim(rig, name, rot("Z", -key["turn"] * share * 0.8) @ rot("X", key["lean"]))
+        if "shoulders" in key:
+            turn_here = key["turn"] + (key["shoulders"] - key["turn"]) * share
+        else:
+            turn_here = -key["turn"] * share * 0.8
+        set_aim(rig, name, rot("Z", turn_here) @ rot("X", key["lean"]))
     set_aim(rig, "neck_01", rot("X", key["lean"] * 0.4))
     set_aim(rig, "Head", Matrix.Identity(4))  # level, looking ahead
     for side, sign in (("l", 1.0), ("r", -1.0)):
@@ -249,7 +274,8 @@ if __name__ == "__main__":
     run = make_cycle(rig, "Run_Loop", RUN)
     print("moves: Run_Loop made for %.2f m/s on the mannequin" % ground_speed(rig, run, "r", 8.5, 13.5))
     ready = make_cycle(rig, "Ready2H_Loop", READY_2H)
+    strike = make_cycle(rig, "Strike2H", STRIKE_2H)
     if "--shots" in args:
         shots(rig, run, args[args.index("--shots") + 1], [1, 4, 7, 10, 12, 15, 18, 21])
-    export(rig, [run, ready])
+    export(rig, [run, ready, strike])
     print("moves: exported", OUT)

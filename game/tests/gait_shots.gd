@@ -22,6 +22,8 @@ const GAITS := {
 	"stand_side": [],  # standing, seen from the side (the shoulders over the chest)
 	"ready_front": [],  # the weapon out, held ready, seen from ahead
 	"ready_side": [],  # and from the side
+	"strike_front": [],  # a swing from the ready stance, seen from ahead
+	"strike_side": [],  # and from the side
 }
 const FRAMES := 16
 const START := Vector3(-4, 0, -24)  # on the road north of the camp, open ground ahead
@@ -93,7 +95,7 @@ func _run() -> void:
 		player.teleport(spot, 0.0)
 		if gait == "walk" and player.has_method("set_walking"):
 			player.set_walking(true)
-		player.model._drawn_until = Game.time + 60.0 if gait.begins_with("ready") else -1.0
+		player.model._drawn_until = Game.time + 60.0 if gait.begins_with("ready") or gait.begins_with("strike") else -1.0
 		await _wait(0.4)
 		for action: String in GAITS[gait]:
 			Input.action_press(action)
@@ -103,6 +105,9 @@ func _run() -> void:
 			leap.action = "jump"
 			leap.pressed = true
 			Input.parse_input_event(leap)
+		if gait.begins_with("strike"):
+			Engine.time_scale = 0.25  # slow motion: a swing is over in a few frames
+			player.model._on_attacked()  # (as a swing of the auto attack would)
 		var probe := HeadProbe.new()
 		player.model._skeleton.add_child(probe)
 		var sways := Vector2(INF, -INF)
@@ -149,6 +154,7 @@ func _run() -> void:
 			var inner := rad_to_deg(player.model._upright.leaning)
 			inner_lean = Vector2(minf(inner_lean.x, inner), maxf(inner_lean.y, inner))
 			raw_bob = Vector2(minf(raw_bob.x, raw_y), maxf(raw_bob.y, raw_y))
+		Engine.time_scale = 1.0
 		for action: String in GAITS[gait]:
 			Input.action_release(action)
 		if player.has_method("set_walking"):

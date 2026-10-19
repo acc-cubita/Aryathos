@@ -62,6 +62,8 @@ const CLIPS := {
 ## An armed character's weapon hand keeps this clip's closed fist whatever else it does.
 const ARMED_IDLE := "ual1/Sword_Idle"
 const SWINGS := ["ual2/Sword_Regular_A", "ual2/Sword_Regular_B", "ual2/Sword_Regular_C", "ual1/Sword_Attack"]
+## A two-handed weapon's swings: [the body's clip (hero_moves.py), the weapon's path (TwoHandGrip.STRIKES)].
+const SWINGS_2H := [["moves/Strike2H", "sweep"]]
 ## Ground speeds (m/s) of the clips on the library's mannequin, measured on the libraries'
 ## root-motion versions; strides scale with the character's leg length (MANNEQUIN_HIPS).
 const WALK_SPEED := 0.97
@@ -141,6 +143,7 @@ var _playback: AnimationNodeStateMachinePlayback
 var _state := ""
 var _cast_finished_at := -1.0
 var _attack_clip: AnimationNodeAnimation
+var _strike_clip: AnimationNodeAnimation  # (a two-handed weapon's whole-body swing)
 var _swing := 0
 var _trail: WeaponTrail
 var _hand_glows: Array[GPUParticles3D] = []
@@ -483,6 +486,19 @@ func _build_tree(scene: Node3D, skeleton: Skeleton3D) -> void:
 		blend.connect_node(shot_name + "_shot", 0, last)
 		blend.connect_node(shot_name + "_shot", 1, shot_name + "_clip")
 		last = shot_name + "_shot"
+	if _armed and WEAPONS[weapon_key].get("two_hands", 0.0) > 0.0:
+		# a two-handed swing from the ready stance moves the whole body, legs and all (on
+		# the move, attack_shot lays it on the upper body)
+		var strike := AnimationNodeOneShot.new()
+		strike.fadein_time = 0.08
+		strike.fadeout_time = 0.25
+		_strike_clip = AnimationNodeAnimation.new()
+		_strike_clip.animation = SWINGS_2H[0][0]
+		blend.add_node("strike_shot", strike)
+		blend.add_node("strike_clip", _strike_clip)
+		blend.connect_node("strike_shot", 0, last)
+		blend.connect_node("strike_shot", 1, "strike_clip")
+		last = "strike_shot"
 	blend.connect_node("output", 0, last)
 
 	_tree = AnimationTree.new()
@@ -640,8 +656,12 @@ func _process(delta: float) -> void:
 	_tree.set("parameters/pace/scale", pace)
 	if _two_hands:
 		# both hands on the haft while standing ready; a swing takes the arms at once
-		var hold: bool = _state == "ready_loop" and _drawn and not _tree.get("parameters/attack_shot/active")
+		# (a two-handed swing keeps both hands on the haft, whatever the legs do)
+		_two_hands.advance(delta)
+		var hold: bool = _drawn and (_two_hands.striking() or _state == "ready_loop")
 		_two_hands.weight = move_toward(_two_hands.weight, 1.0 if hold else 0.0, delta * (4.0 if hold else 12.0))
+		if _two_hands.striking():
+			_two_hands.weight = 1.0
 		if _drawn:  # the haft slides through the fists to hold it near its end
 			_weapon.transform = _in_hand.translated_local(Vector3.UP * WEAPONS[weapon_key].two_hands * _two_hands.weight)
 
@@ -746,8 +766,18 @@ func _on_attacked() -> void:
 		if _sheathes and not _drawn:  # a swing brings the weapon out
 			_drawn_until = Game.time + SHEATHE_AFTER
 			_set_drawn(true)
-		_swing = (_swing + 1) % SWINGS.size()
-		_attack_clip.animation = SWINGS[_swing]
-		_fire("attack")
+		if _two_hands and _drawn:
+			_swing = (_swing + 1) % SWINGS_2H.size()
+			_two_hands.strike(SWINGS_2H[_swing][1])
+			if _state == "ready_loop":
+				_strike_clip.animation = SWINGS_2H[_swing][0]
+				_fire("strike")
+			else:
+				_attack_clip.animation = SWINGS_2H[_swing][0]
+				_fire("attack")
+		else:
+			_swing = (_swing + 1) % SWINGS.size()
+			_attack_clip.animation = SWINGS[_swing]
+			_fire("attack")
 		if _trail:
 			_trail.swing(SWING_ARC.x, SWING_ARC.y)
