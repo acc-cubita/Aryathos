@@ -15,14 +15,14 @@ const BUSES := ["Effects", "Ambience", "Interface", "Music"]
 const POOL := 32
 ## How far (m) from the camera sounds are played at all.
 const HEARING := 45.0
-## What each kind of unit sounds like (sound sets); missing keys stay silent. "crystal"
-## beasts ring when struck; "steps" is their own footfall layered over the ground's.
-## Weapon swings and blows land silent for now (the punch and whoosh takes sounded silly).
+## What each kind of unit sounds like (sound sets); missing keys stay silent. "steps" is
+## their own footfall layered over the ground's.
+## Weapon swings and blows land silent for now (the punch, whoosh and ring takes sounded silly).
 const VOICES := {
 	"wolf": {"aggro": "wolf_aggro", "attack": "wolf_bite", "hurt": "wolf_hurt", "death": "wolf_death",
-			"crystal": true, "step_volume": -22.0},
+			"step_volume": -22.0},
 	"bear": {"aggro": "bear_aggro", "attack": "bear_attack", "hurt": "bear_hurt", "death": "bear_death",
-			"crystal": true, "steps": "paw_heavy", "step_volume": -10.0},
+			"steps": "paw_heavy", "step_volume": -10.0},
 	"scavenger": {"aggro": "human_aggro", "hurt": "human_hurt", "death": "human_death"},
 	"person": {"death": "human_death"},
 }
@@ -332,13 +332,10 @@ func _listen(unit: Unit) -> void:
 			table.erase(id))
 
 
-func _on_unit_damaged(target: Unit, _source: Unit, _amount: int, crit: bool, color: Color) -> void:
+func _on_unit_damaged(target: Unit, _source: Unit, _amount: int, _crit: bool, color: Color) -> void:
 	var at := target.global_position + Vector3.UP * target.body_height * 0.6
-	if not color.is_equal_approx(Color.WHITE):
-		play("hit_crystal", at, -6.0)  # a spell landing
-	var voice: Dictionary = VOICES.get(voice_of(target), {})
-	if voice.get("crystal", false):
-		play("hit_crystal", at, -12.0)
+	if not color.is_equal_approx(Color.WHITE):  # a spell landing (weapon blows are silent)
+		play("hit_crystal", at, -6.0)
 	var id := target.get_instance_id()
 	if not target.is_dead and Game.time - float(_hurt.get(id, -INF)) > HURT_PAUSE and randf() < 0.5:
 		_hurt[id] = Game.time

@@ -251,7 +251,7 @@ func _combat_checks(player: Player) -> void:
 	_check(heard.has("spell_cast") and heard.has("hit_crystal") and heard.has("wolf_death")
 			and not heard.has("swing") and not heard.has("hit")
 			and heard.keys().any(func(k: String) -> bool: return k.begins_with("step_")),
-			"the fight is heard: casts, the crystal wolf struck, footsteps, its death; swings silent (%s)" % ", ".join(heard.keys()))
+			"the fight is heard: casts, a spell landing, footsteps, the wolf's death; weapon blows silent (%s)" % ", ".join(heard.keys()))
 
 	var healed := [false]
 	Game.unit_healed.connect(func(unit: Unit, _s: Unit, _a: int, _c: bool) -> void: healed[0] = healed[0] or unit == player)
