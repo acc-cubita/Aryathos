@@ -34,3 +34,8 @@ enum ProjectileStyle { ORB, SHARD, BOLT }
 @export var projectile_style := ProjectileStyle.ORB
 ## AREA_AROUND_SELF only: every enemy this close (meters) is hit.
 @export var radius := 0.0
+
+
+## A blow of the weapon (or claws) in hand: damage dealt at arm's length, no missile, no area.
+func is_weapon_blow() -> bool:
+	return effect == Effect.DAMAGE and projectile_speed <= 0.0 and radius <= 0.0 and max_range <= 5.0

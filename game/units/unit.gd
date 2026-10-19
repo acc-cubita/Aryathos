@@ -31,6 +31,9 @@ const LAYER_CLICKABLE := 4
 @export var body_radius := 0.45
 @export var body_height := 1.95
 
+## True while this unit's weapon blow (an ability's, AbilityData.is_weapon_blow) lands, for
+## those listening to Game.unit_damaged to tell it from a spell.
+var landing_blow := false
 var max_health := 100
 var health := 100
 var max_mana := 0
@@ -222,7 +225,9 @@ func apply_ability(ability: AbilityData, on: Unit, amount: int, crit: bool) -> v
 		on.receive_heal(amount, self, crit)
 	else:
 		mark_combat()
+		landing_blow = ability.is_weapon_blow()
 		on.take_damage(amount, self, crit, ability.color)
+		landing_blow = false
 
 
 func _tick_cast() -> void:

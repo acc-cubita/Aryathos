@@ -332,9 +332,10 @@ func _listen(unit: Unit) -> void:
 			table.erase(id))
 
 
-func _on_unit_damaged(target: Unit, _source: Unit, _amount: int, _crit: bool, color: Color) -> void:
+func _on_unit_damaged(target: Unit, source: Unit, _amount: int, _crit: bool, color: Color) -> void:
 	var at := target.global_position + Vector3.UP * target.body_height * 0.6
-	if not color.is_equal_approx(Color.WHITE):  # a spell landing (weapon blows are silent)
+	var blow := color.is_equal_approx(Color.WHITE) or (is_instance_valid(source) and source.landing_blow)
+	if not blow:  # a spell landing (weapon blows, a swing's or an ability's, are silent)
 		play("hit_crystal", at, -6.0)
 	var id := target.get_instance_id()
 	if not target.is_dead and Game.time - float(_hurt.get(id, -INF)) > HURT_PAUSE and randf() < 0.5:
