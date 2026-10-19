@@ -19,6 +19,7 @@ const GAITS := {
 	"run_close": ["move_forward"],  # running, close beside (the hands)
 	"run_back": ["move_forward"],  # running, seen from behind
 	"stand_front": [],  # standing, seen from ahead (the build of the body)
+	"stand_side": [],  # standing, seen from the side (the shoulders over the chest)
 }
 const FRAMES := 16
 const START := Vector3(-4, 0, -24)  # on the road north of the camp, open ground ahead

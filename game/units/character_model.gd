@@ -18,7 +18,7 @@ const ARKANOR_FEMALE := "res://art/characters/arkanor/arkanor_female.glb"
 ## is the model as built), and the hair, skin and eye colours. Options are [shown name, parts].
 ## outfits: the parts each class wears (ClassData.outfit) over what every hero wears.
 const LOOKS := {
-	"male": {"path": ARKANOR_MALE,
+	"male": {"path": ARKANOR_MALE, "shoulders_forward": 12.0,
 		"hair": [["Ponytail", ["ponytail01"]], ["Short", ["short02"]], ["Long", ["long01"]], ["Braid", ["braid01"]]],
 		"beard": [["Scruffy", ["elvs_scruffy_beard1", "rehmanpolanski_moustache_viking"]], ["Full", ["grinsegold_full_beard"]],
 				["Braided", ["rehmanpolanski_beard_viking"]], ["None", []]],
@@ -33,7 +33,8 @@ const LOOKS := {
 				"aethermancer": ["donitz_monk_robe", "donitz_monk_robe_hood_off", "toigo_ankle_boots_female"]}},
 }
 ## (grip_roll: degrees the weapon turns about the fingers in that model's fist; the female
-## wrist rests rolled 13 degrees further in, which would tip the axe across her body.)
+## wrist rests rolled 13 degrees further in, which would tip the axe across her body.
+## shoulders_forward: degrees the collarbones turn forward, SpineUpright.shoulders_forward.)
 ## Arkanor are silver-haired even in youth: the hero hair is silvered bright and tinted down.
 const HAIR_COLORS := [["White", Color(1, 1, 1)], ["Silver", Color(0.78, 0.79, 0.82)], ["Ash", Color(0.66, 0.62, 0.56)],
 		["Steel", Color(0.55, 0.62, 0.74)], ["Smoke", Color(0.42, 0.42, 0.44)]]
@@ -258,6 +259,7 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_
 			full.merge(look, true)
 			full["gender"] = gender
 			model.apply_look(full)
+			model._upright.shoulders_forward = deg_to_rad(LOOKS[gender].get("shoulders_forward", 0.0))
 	return model
 
 

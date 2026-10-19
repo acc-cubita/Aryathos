@@ -8,6 +8,8 @@ extends SkeletonModifier3D
 ## the head. `weight` (0..1) fades the lean
 ## in with running speed; `sway_weight` the sway and the head while the character moves
 ## on the ground, so standing, swings and death keep the clip's own posture.
+## Last, the shoulders come forward over the chest by `shoulders_forward` (a build, so
+## always: a broad warrior's shoulders sit forward of a deep chest).
 
 ## Forward lean (radians) left to a runner.
 const MAX_LEAN := deg_to_rad(15.0)
@@ -27,6 +29,8 @@ const BONES := {"Spine": 0.5, "Chest": 0.5}
 
 var weight := 0.0
 var sway_weight := 0.0
+## How far (radians) each collarbone turns forward about the chest's up axis.
+var shoulders_forward := 0.0
 ## The torso's forward lean (radians) as last posed, after straightening.
 var leaning := 0.0
 ## And its sideways tilt (radians, + toward the rig's left), and the shoulders' turn.
@@ -37,6 +41,8 @@ var _hips := -1
 var _neck := -1
 var _head := -1
 var _shoulders := [-1, -1]  # left, right upper arms
+var _collarbones := [-1, -1]  # left, right
+var _chest := -1
 var _hips_side := Vector3.RIGHT  # the rig's side axis in the hips bone's frame
 var _shares := {}  # bone index -> share
 
@@ -49,6 +55,8 @@ func _ready() -> void:
 	_neck = skeleton.find_bone("Neck")
 	_head = skeleton.find_bone("Head")
 	_shoulders = [skeleton.find_bone("LeftUpperArm"), skeleton.find_bone("RightUpperArm")]
+	_collarbones = [skeleton.find_bone("LeftShoulder"), skeleton.find_bone("RightShoulder")]
+	_chest = skeleton.get_bone_parent(_collarbones[0])
 	_hips_side = (skeleton.get_bone_global_rest(_hips).basis.inverse() * Vector3.RIGHT).normalized()
 	for bone_name: String in BONES:
 		_shares[skeleton.find_bone(bone_name)] = BONES[bone_name]
@@ -103,9 +111,25 @@ func _process_modification() -> void:
 		var tilt := atan2(head.basis.y.x, head.basis.y.y) * sway_weight
 		var parent := skeleton.get_bone_global_pose(skeleton.get_bone_parent(_head))
 		skeleton.set_bone_pose_rotation(_head, (parent.basis.inverse() * (Basis(Vector3.BACK, tilt) * head.basis)).get_rotation_quaternion())
+	if shoulders_forward != 0.0 and _chest >= 0:
+		_bring_shoulders_forward(skeleton)
 	leaning = lean()
 	swaying = sway()
 	twisting = twist()
+
+
+## Each collarbone turned forward about the chest's own up axis (in the rig, which faces
+## +Z with its left at +X: the left one turns about -up, the right about +up).
+func _bring_shoulders_forward(skeleton: Skeleton3D) -> void:
+	var chest := skeleton.get_bone_global_pose(_chest)
+	var up := chest.basis * (skeleton.get_bone_global_rest(_chest).basis.inverse() * Vector3.UP)
+	for i in 2:
+		var bone: int = _collarbones[i]
+		if bone < 0:
+			continue
+		var pose := skeleton.get_bone_global_pose(bone)
+		pose.basis = Basis(up.normalized(), shoulders_forward * (-1.0 if i == 0 else 1.0)) * pose.basis
+		skeleton.set_bone_global_pose(bone, pose)
 
 
 ## The hips level and square: their tilt and turn (of the rig's side axis) held within
