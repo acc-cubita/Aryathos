@@ -42,9 +42,6 @@ SETS = {
     "step_sand": numbered(KI, "footstep_carpet_", 5),
     "paw_heavy": numbered(KI, "impactSoft_heavy_", 5),
     # combat
-    "swing": takes(RPG, ["blade_01", "blade_02", "blade_03"]),
-    "hit": numbered(KI, "impactPunch_medium_", 5),
-    "hit_crit": numbered(KI, "impactPunch_heavy_", 5),
     "hit_crystal": numbered(KI, "impactGlass_light_", 5),
     "spell_cast": takes(RPG, ["spell_01", "spell_02"]),
     "spell_shard": takes(RPG, ["item_gem_01", "item_gem_02", "item_gem_03", "item_gem_04"]),

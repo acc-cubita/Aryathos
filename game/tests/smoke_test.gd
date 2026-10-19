@@ -248,10 +248,10 @@ func _combat_checks(player: Player) -> void:
 	_check(weapon.get_parent() == player.model._hand_mount, "fighting hand to hand brought the axe out into the hand")
 	_check(wolf.tapped_by == player, "kill credit goes to the player")
 	var heard: Dictionary = Audio.played
-	var hits := ["hit", "hit_crit", "hit_crystal"].filter(func(k: String) -> bool: return heard.has(k))
-	_check((heard.has("swing") or heard.has("spell_cast")) and not hits.is_empty() and heard.has("wolf_death")
+	_check(heard.has("spell_cast") and heard.has("hit_crystal") and heard.has("wolf_death")
+			and not heard.has("swing") and not heard.has("hit")
 			and heard.keys().any(func(k: String) -> bool: return k.begins_with("step_")),
-			"the fight is heard: attacks, hits, footsteps, the wolf's death (%s)" % ", ".join(heard.keys()))
+			"the fight is heard: casts, the crystal wolf struck, footsteps, its death; swings silent (%s)" % ", ".join(heard.keys()))
 
 	var healed := [false]
 	Game.unit_healed.connect(func(unit: Unit, _s: Unit, _a: int, _c: bool) -> void: healed[0] = healed[0] or unit == player)
