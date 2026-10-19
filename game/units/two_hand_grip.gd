@@ -1,12 +1,11 @@
 class_name TwoHandGrip
 extends SkeletonModifier3D
-## Both hands on a two-handed weapon's haft, held ready (WoW's two-handed stance): the fists
-## before the body (the shoulders turned a little right bring them to the right side), the
-## haft rising up and out to the right, the right fist above the left, the left near the
-## haft's end, as a right-handed fighter holds it. Each arm reaches its fist's place by
-## two-bone IK, the hands turned
-## so the weapon (carried by the right hand) lies along the haft, edge to the front, so it
-## fits any build; the collarbones follow the hands a little (up, forward, across), as
+## Both hands on a two-handed weapon's haft, held ready (WoW's two-handed stance, as a
+## reference shows it): the fists at the right hip at the navel's height, the left forearm
+## across the belly, the haft rising up and out to the right, the right fist above the
+## left, the left near the haft's end, as a right-handed fighter holds it. Each arm reaches
+## its fist's place by two-bone IK, each hand wrapping the haft from its own arm's side and
+## the weapon turned in the right fist for its edge to look ahead, so it fits any build; the collarbones follow the hands a little (up, forward, across), as
 ## shoulders do. `weight` (0..1) fades it in and out. A two-handed swing (strike()) moves
 ## the weapon along one of STRIKES's paths, the hands with it.
 ##
@@ -16,12 +15,12 @@ extends SkeletonModifier3D
 ## as a fighter's do.
 
 ## Ready: where the right fist's grip is, which way the haft rises, which way the edge looks.
-const GRIP := Vector3(-0.06, 0.06, 0.44)
-const HAFT := Vector3(-0.55, 0.83, 0.05)
+const GRIP := Vector3(-0.12, -0.05, 0.34)
+const HAFT := Vector3(-0.35, 0.93, 0.08)
 const EDGE := Vector3(0.0, 0.0, 1.0)
 ## How far down the haft (m) the left fist holds, below the right. (Every place keeps both
 ## wrists within the arms' reach, 0.57 m from the shoulder, and before the body: past
-## either, an arm would pass through it. The wrists sit some 8 cm behind the fists' grip.)
+## either, an arm would pass through it.)
 const LEFT_DOWN := 0.13
 ## The front of the chest and belly (with the tunic over them): within TORSO.x of the
 ## middle, from TORSO.y below the chest joint up to it, the body reaches TORSO.z ahead
@@ -69,6 +68,9 @@ var contact: BodyContact
 const CLEAR_TRIES := 6
 
 var _clear := Vector3.ZERO  # how far the fists are moved for the body's sake (skeleton space)
+## How far (radians) the weapon turns about its haft in the right fist, for its edge to look
+## where the swing wants while the fist wraps the haft from the arm's side (CharacterModel).
+var roll := 0.0
 ## How far (m) a fist was off the haft at worst (one out of reach): a measure for tests.
 var gap := 0.0
 
@@ -129,29 +131,33 @@ func _process_modification() -> void:
 	var haft: Vector3 = (body * key[2]).normalized()
 	var edge: Vector3 = body * key[3]
 	edge = (edge - haft * edge.dot(haft)).normalized()
-	var weapon := Basis(haft.cross(-edge), haft, -edge)
 	var right_grip: Vector3 = chest.origin + body * key[1]
+	var shoulders := {}
+	for side: String in _arms:
+		shoulders[side] = skeleton.get_bone_global_pose(_arms[side][1]).origin
 	# no wrist inside the body (the curve between the keys may cut a corner)
 	var out := 0.0
-	for fist: Array in [[Vector3.ZERO, in_hand], [-haft * LEFT_DOWN, _left_in_hand]]:
-		var wrist: Vector3 = body.inverse() * (_wrist(Transform3D(weapon, right_grip + fist[0]), fist[1]) - chest.origin)
+	for fist: Array in _fists(right_grip, haft, edge, shoulders):
+		var wrist: Vector3 = body.inverse() * (_wrist(fist[1], fist[2]) - chest.origin)
 		if absf(wrist.x) < TORSO.x and wrist.y > -TORSO.y and wrist.y < 0.25:
 			out = maxf(out, TORSO.z + WRIST_CLEAR - wrist.z)
 	right_grip += body * Vector3.BACK * out
-	# then reach, and if a forearm or hand is in the body, bring the fists out and reach again
+	# then reach, and if a forearm or hand is in the body, or a fist short of its place on
+	# the haft (out of the arm's reach), move the weapon and reach again
 	var poses := []
 	for side: String in _arms:
 		for bone: int in _arms[side]:
 			poses.append([bone, skeleton.get_bone_pose(bone)])
 	var clear := _clear
+	var fists := []
 	for attempt in CLEAR_TRIES:
-		_hold(skeleton, body, "Right", Transform3D(weapon, right_grip + clear), in_hand, body * key[4])
-		_hold(skeleton, body, "Left", Transform3D(weapon, right_grip + clear - haft * LEFT_DOWN), _left_in_hand, body * key[5])
-		# a fist short of its place on the haft (out of the arm's reach) brings the weapon to it
+		fists = _fists(right_grip + clear, haft, edge, shoulders)
+		_hold(skeleton, body, "Right", fists[0][1], fists[0][2], body * key[4])
+		_hold(skeleton, body, "Left", fists[1][1], fists[1][2], body * key[5])
 		var miss := Vector3.ZERO
-		for fist: Array in [["Right", Vector3.ZERO, in_hand], ["Left", -haft * LEFT_DOWN, _left_in_hand]]:
+		for fist: Array in fists:
 			var hand := skeleton.get_bone_global_pose(_arms[fist[0]][3])
-			var off: Vector3 = hand * (fist[2] as Transform3D).origin - (right_grip + clear + fist[1])
+			var off: Vector3 = hand * (fist[2] as Transform3D).origin - (fist[1] as Transform3D).origin
 			if off.length() > miss.length():
 				miss = off
 		var push := contact.hands_push() if contact else Vector3.ZERO
@@ -165,10 +171,28 @@ func _process_modification() -> void:
 		for pose: Array in poses:
 			skeleton.set_bone_pose(pose[0], pose[1])
 	_clear = clear
+	# the weapon turned in the right fist so its edge looks where the swing wants
+	var grip_basis: Basis = (fists[0][1] as Transform3D).basis
+	roll = atan2(-edge.dot(grip_basis.x), -edge.dot(grip_basis.z))
 	if weight >= 0.99:  # (fading in, the fists are on their way)
-		for fist: Array in [["Right", Vector3.ZERO, in_hand], ["Left", -haft * LEFT_DOWN, _left_in_hand]]:
+		for fist: Array in fists:
 			var hand := skeleton.get_bone_global_pose(_arms[fist[0]][3])
-			gap = maxf(gap, (hand * (fist[2] as Transform3D).origin - (right_grip + clear + fist[1])).length())
+			gap = maxf(gap, (hand * (fist[2] as Transform3D).origin - (fist[1] as Transform3D).origin).length())
+
+
+## Where each fist closes on the haft (the right at `right_grip`, the left LEFT_DOWN below):
+## [side, its grip frame, the hand's grip frame in the hand]. Each hand wraps the haft from
+## its own arm's side, its fingers on round from where its forearm comes (from the shoulder,
+## a little toward the edge), so the wrist lies on the arm's side of the haft, never beyond.
+func _fists(right_grip: Vector3, haft: Vector3, edge: Vector3, shoulders: Dictionary) -> Array:
+	var out := []
+	for fist: Array in [["Right", right_grip, in_hand], ["Left", right_grip - haft * LEFT_DOWN, _left_in_hand]]:
+		var along: Vector3 = fist[1] - shoulders[fist[0]]
+		along -= haft * along.dot(haft)
+		var fingers := along.normalized() + edge * 0.35
+		fingers = (fingers - haft * fingers.dot(haft)).normalized()
+		out.append([fist[0], Transform3D(Basis(haft.cross(-fingers), haft, -fingers), fist[1]), fist[2]])
+	return out
 
 
 ## Where a hand's wrist goes for `held` (a grip frame in the hand's frame) to be at `grip`.

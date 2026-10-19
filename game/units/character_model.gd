@@ -676,8 +676,9 @@ func _process(delta: float) -> void:
 		_two_hands.weight = move_toward(_two_hands.weight, 1.0 if hold else 0.0, delta * (4.0 if hold else 12.0))
 		if _two_hands.striking():
 			_two_hands.weight = 1.0
-		if _drawn:  # the haft slides through the fists to hold it near its end
-			_weapon.transform = _in_hand.translated_local(Vector3.UP * WEAPONS[weapon_key].two_hands * _two_hands.weight)
+		if _drawn:  # the haft slides through the fists to hold it near its end, turned edge foremost
+			var held := _two_hands.weight
+			_weapon.transform = _in_hand * Transform3D(Basis(Vector3.UP, _two_hands.roll * held), Vector3.UP * WEAPONS[weapon_key].two_hands * held)
 
 
 ## Like WoW, the body turns the way it moves: a quarter round for a diagonal, sideways for
