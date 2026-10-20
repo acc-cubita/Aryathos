@@ -63,7 +63,7 @@ const CLIPS := {
 const ARMED_IDLE := "ual1/Sword_Idle"
 const SWINGS := ["ual2/Sword_Regular_A", "ual2/Sword_Regular_B", "ual2/Sword_Regular_C", "ual1/Sword_Attack"]
 ## A two-handed weapon's swings: [the body's clip (hero_moves.py), the weapon's path (TwoHandGrip.STRIKES)].
-const SWINGS_2H := [["moves/Strike2H", "sweep"]]
+const SWINGS_2H := [["moves/Strike2H", "sweep"], ["moves/Chop2H", "chop"]]
 ## Ground speeds (m/s) of the clips on the library's mannequin, measured on the libraries'
 ## root-motion versions; strides scale with the character's leg length (MANNEQUIN_HIPS).
 const WALK_SPEED := 0.97

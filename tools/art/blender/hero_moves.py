@@ -93,6 +93,20 @@ STRIKE_2H = dict(READY_2H, length=30, keys=[
 ])
 
 
+## A two-handed chop over the top (studied from a reference): the body coils to the LEFT as
+## the hands go up over the left shoulder, the head laid back behind the head; the weapon
+## comes round over the top and down before the body, the shoulders unwinding to the right
+## and the knees dropping deep, the torso bent over the blow (0.43 s); held low, and back.
+## Only the body: the weapon's path is TwoHandGrip's "chop" (the same times).
+CHOP_2H = dict(READY_2H, length=32, keys=[
+    dict(_READY, f=0.0),
+    dict(_READY, f=9.0, turn=14, shoulders=36, lean=8, legL=(14, 36, -22), legR=(-6, 22, -28)),
+    dict(_READY, f=13.0, turn=-6, shoulders=-18, lean=26, legL=(24, 62, -38), legR=(-2, 50, -52)),
+    dict(_READY, f=16.0, turn=-8, shoulders=-22, lean=28, legL=(24, 64, -40), legR=(-2, 52, -54)),
+    dict(_READY, f=23.0, turn=-6, shoulders=-20, lean=24, legL=(22, 58, -36), legR=(-3, 46, -49)),
+])
+
+
 def mirrored(key, frame):
     """The same key on the other leg, `frame` later."""
     return {"f": key["f"] + frame, "legL": key["legR"], "legR": key["legL"], "armL": key["armR"],
@@ -275,7 +289,8 @@ if __name__ == "__main__":
     print("moves: Run_Loop made for %.2f m/s on the mannequin" % ground_speed(rig, run, "r", 8.5, 13.5))
     ready = make_cycle(rig, "Ready2H_Loop", READY_2H)
     strike = make_cycle(rig, "Strike2H", STRIKE_2H)
+    chop = make_cycle(rig, "Chop2H", CHOP_2H)
     if "--shots" in args:
         shots(rig, run, args[args.index("--shots") + 1], [1, 4, 7, 10, 12, 15, 18, 21])
-    export(rig, [run, ready, strike])
+    export(rig, [run, ready, strike, chop])
     print("moves: exported", OUT)

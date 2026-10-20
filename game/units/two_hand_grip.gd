@@ -49,6 +49,19 @@ const STRIKES := {
 		[0.7, Vector3(0.04, 0.02, 0.34), Vector3(0.85, -0.25, 0.25), Vector3(0.25, 0, -0.85), Vector3(-0.2, -1, 0.4), Vector3(1, -0.6, -0.4)],
 		[1.0, GRIP, HAFT, EDGE, RIGHT_POLE, LEFT_POLE],
 	],
+	# "chop": up over the left shoulder, the head laid back behind the head to the right; round
+	# over the top (the haft upright at 0.38 s) and down before the body, square to the front
+	# at 0.43 s, on down to the left near the ground, the fists by the right knee; held, back.
+	"chop": [
+		[0.0, GRIP, HAFT, EDGE, RIGHT_POLE, LEFT_POLE],
+		[0.18, Vector3(0.12, 0.28, 0.34), Vector3(-0.75, 0.55, -0.35), Vector3(0, 1, 0), Vector3(-0.6, -0.8, -0.3), Vector3(0.9, -0.4, -0.2)],
+		[0.3, Vector3(0.1, 0.38, 0.3), Vector3(-0.85, 0.3, -0.4), Vector3(0, 1, 0), Vector3(-0.6, -0.8, -0.3), Vector3(0.9, -0.4, -0.2)],
+		[0.38, Vector3(0.0, 0.25, 0.44), Vector3(-0.1, 1.0, 0.1), Vector3(1, 0, 0), Vector3(-0.8, -0.6, 0), Vector3(0.8, -0.6, 0)],
+		[0.43, Vector3(-0.04, 0.0, 0.5), Vector3(0.9, -0.1, 0.4), Vector3(0, -1, 0), Vector3(-0.6, -1, 0), Vector3(0.6, -1, 0)],
+		[0.52, Vector3(-0.12, -0.22, 0.42), Vector3(0.6, -0.65, 0.4), Vector3(-0.4, -0.6, -0.7), Vector3(-0.8, -0.6, -0.2), Vector3(0.6, -1, 0.2)],
+		[0.75, Vector3(-0.12, -0.2, 0.42), Vector3(0.6, -0.62, 0.42), Vector3(-0.4, -0.6, -0.7), Vector3(-0.8, -0.6, -0.2), Vector3(0.6, -1, 0.2)],
+		[1.07, GRIP, HAFT, EDGE, RIGHT_POLE, LEFT_POLE],
+	],
 }
 ## The collarbones: how far (radians per m the hand is past an easy reach, least, most) they
 ## lift for a hand raised and come forward for one reaching out or across the body.

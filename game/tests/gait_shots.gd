@@ -24,6 +24,8 @@ const GAITS := {
 	"ready_side": [],  # and from the side
 	"strike_front": [],  # a swing from the ready stance, seen from ahead
 	"strike_side": [],  # and from the side
+	"chop_front": [],  # the second swing (a chop over the top), seen from ahead
+	"chop_side": [],  # and from the side
 	"ready_close": [],  # held ready, close, from ahead and to its left (the arms by the body)
 	"strike_close": [],  # a swing, close, from ahead and to its left
 	"ready_rclose": [],  # held ready, close, from ahead and to its right
@@ -110,7 +112,7 @@ func _run() -> void:
 		player.teleport(spot, 0.0)
 		if gait == "walk" and player.has_method("set_walking"):
 			player.set_walking(true)
-		player.model._drawn_until = Game.time + 60.0 if gait.begins_with("ready") or gait.begins_with("strike") else -1.0
+		player.model._drawn_until = Game.time + 60.0 if gait.begins_with("ready") or gait.begins_with("strike") or gait.begins_with("chop") else -1.0
 		await _wait(0.4)
 		for action: String in GAITS[gait]:
 			Input.action_press(action)
@@ -120,9 +122,11 @@ func _run() -> void:
 			leap.action = "jump"
 			leap.pressed = true
 			Input.parse_input_event(leap)
-		if gait.begins_with("strike"):
+		if gait.begins_with("strike") or gait.begins_with("chop"):
 			Engine.time_scale = 0.25  # slow motion: a swing is over in a few frames
-			player.model._on_attacked()  # (as a swing of the auto attack would)
+			# (as a swing of the auto attack would: the sweep, or the chop after it)
+			player.model._swing = -1 if gait.begins_with("strike") else 0
+			player.model._on_attacked()
 		var probe := HeadProbe.new()
 		player.model._skeleton.add_child(probe)
 		var sways := Vector2(INF, -INF)
