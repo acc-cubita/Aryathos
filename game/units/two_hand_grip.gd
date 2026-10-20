@@ -72,6 +72,9 @@ const REACH := Vector3(deg_to_rad(80.0), deg_to_rad(-5.0), deg_to_rad(25.0))
 const EASY := Vector3(0.0, -0.4, 0.2)
 
 var weight := 0.0
+## The ready stance's grip, haft and edge (GRIP, HAFT, EDGE unless the character holds it
+## its own way, CharacterModel.LOOKS "ready_2h"); every swing starts and ends there.
+var ready_pose := [GRIP, HAFT, EDGE]
 ## The weapon in the right hand's frame (CharacterModel._in_hand).
 var in_hand := Transform3D.IDENTITY
 ## The body's surface (BodyContact): a forearm or hand held in the body brings both fists
@@ -94,9 +97,11 @@ var _strike: Array = []  # the swing under way (STRIKES), and how far into it (s
 var _strike_time := 0.0
 
 
-## Starts a two-handed swing along STRIKES[path].
+## Starts a two-handed swing along STRIKES[path] (from and back to this character's ready).
 func strike(path: String) -> void:
-	_strike = STRIKES[path]
+	_strike = STRIKES[path].duplicate(true)
+	for i: int in [0, _strike.size() - 1]:
+		_strike[i] = [_strike[i][0], ready_pose[0], ready_pose[1], ready_pose[2], RIGHT_POLE, LEFT_POLE]
 	_strike_time = 0.0
 
 
@@ -140,7 +145,7 @@ func _process_modification() -> void:
 	var facing := chest.basis.orthonormalized() * skeleton.get_bone_global_rest(_chest).basis.orthonormalized().inverse() * Vector3.BACK
 	var ahead := Vector3(facing.x, 0.0, facing.z).normalized()
 	var body := Basis(Vector3.UP.cross(ahead), Vector3.UP, ahead)
-	var key: Array = _sample() if striking() else [0.0, GRIP, HAFT, EDGE, RIGHT_POLE, LEFT_POLE]
+	var key: Array = _sample() if striking() else [0.0, ready_pose[0], ready_pose[1], ready_pose[2], RIGHT_POLE, LEFT_POLE]
 	var haft: Vector3 = (body * key[2]).normalized()
 	var edge: Vector3 = body * key[3]
 	edge = (edge - haft * edge.dot(haft)).normalized()

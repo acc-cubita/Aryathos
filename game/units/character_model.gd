@@ -26,6 +26,7 @@ const LOOKS := {
 		"outfits": {"runeknight": ["rehmanpolanski_viking_tunic", "rehmanpolanski_viking_pants"],
 				"aethermancer": ["donitz_monk_robe", "donitz_monk_robe_hood_off"]}},
 	"female": {"path": ARKANOR_FEMALE, "grip_roll": 13.0,
+		"ready_2h": {"clip": "moves/Ready2HF", "grip": Vector3(-0.12, -0.17, 0.26), "haft": Vector3(-0.58, 0.8, 0.12)},
 		"hair": [["Braided Bun", ["elvs_braid_bun"]], ["Long", ["long01"]], ["Braid", ["braid01"]], ["Short", ["short03"]]],
 		"beard": [["None", []]],
 		"face": [["Determined", ""], ["Noble", "face_noble"], ["Fierce", "face_fierce"], ["Gentle", "face_gentle"]],
@@ -34,7 +35,9 @@ const LOOKS := {
 }
 ## (grip_roll: degrees the weapon turns about the fingers in that model's fist; the female
 ## wrist rests rolled 13 degrees further in, which would tip the axe across her body.
-## shoulders_forward: degrees the collarbones turn forward, SpineUpright.shoulders_forward.)
+## shoulders_forward: degrees the collarbones turn forward, SpineUpright.shoulders_forward.
+## ready_2h: a two-handed weapon held ready that character's own way: the stance's clip, and
+## the right fist's grip and the haft's way in TwoHandGrip's frame.)
 ## Arkanor are silver-haired even in youth: the hero hair is silvered bright and tinted down.
 const HAIR_COLORS := [["White", Color(1, 1, 1)], ["Silver", Color(0.78, 0.79, 0.82)], ["Ash", Color(0.66, 0.62, 0.56)],
 		["Steel", Color(0.55, 0.62, 0.74)], ["Smoke", Color(0.42, 0.42, 0.44)]]
@@ -158,6 +161,7 @@ var _steady: HeadSteady
 var _fists: Fists
 var _two_hands: TwoHandGrip  # (a two-handed weapon's)
 var _contact: BodyContact
+var _ready_clip := ""  # (a character's own two-handed ready stance, LOOKS "ready_2h")
 ## Beyond this far (m) from the camera, arms are not kept out of the body (too small to see).
 const CONTACT_RANGE := 15.0
 var _weapon: Node3D
@@ -272,6 +276,12 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_
 	skeleton.add_child(model._contact)
 	if model._two_hands:
 		model._two_hands.contact = model._contact
+	for gender: String in LOOKS:
+		if LOOKS[gender].path == path and LOOKS[gender].has("ready_2h"):
+			var own: Dictionary = LOOKS[gender].ready_2h
+			model._ready_clip = own.clip
+			if model._two_hands:
+				model._two_hands.ready_pose = [own.grip, own.haft, TwoHandGrip.EDGE]
 	model._build_tree(scene, skeleton)
 	for gender: String in LOOKS:
 		if LOOKS[gender].path == path:  # a hero: one hair style, one beard, its tints
@@ -405,6 +415,8 @@ func _build_tree(scene: Node3D, skeleton: Skeleton3D) -> void:
 		player.add_animation_library(library, load(LIBRARIES[library]))
 	_stride = skeleton.motion_scale / MANNEQUIN_HIPS
 	var clips := CLIPS.duplicate()
+	if _ready_clip != "":
+		clips["ready_loop"] = _ready_clip
 	for anim_name: String in LOOPS:
 		player.get_animation(clips[anim_name]).loop_mode = Animation.LOOP_LINEAR
 	var states := AnimationNodeStateMachine.new()

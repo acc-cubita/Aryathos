@@ -107,6 +107,18 @@ CHOP_2H = dict(READY_2H, length=32, keys=[
 ])
 
 
+## A woman's two-handed ready stance (studied from a reference): taller and lighter on her
+## feet than the man's, the torso upright, the legs nearly straight, the feet a shoulder
+## and a half apart, toes out, the left a little ahead; the hips square, the shoulders turned
+## a little right toward the weapon at the right hip.
+READY_2H_F = dict(READY_2H, keys=[
+    {"f": 0.0, "legL": (10, 12, -6), "legR": (-6, 8, -10), "armL": (30, 70), "armR": (15, 75),
+     "spreadL": 12, "spreadR": 12, "toeL": 12, "toeR": 22, "lean": 3, "bob": 0.0, "turn": 0, "shoulders": -16},
+    {"f": 30.0, "legL": (10, 14, -7), "legR": (-6, 10, -11), "armL": (30, 72), "armR": (15, 77),
+     "spreadL": 12, "spreadR": 12, "toeL": 12, "toeR": 22, "lean": 4, "bob": 0.0, "turn": 0, "shoulders": -16},
+])
+
+
 def mirrored(key, frame):
     """The same key on the other leg, `frame` later."""
     return {"f": key["f"] + frame, "legL": key["legR"], "legR": key["legL"], "armL": key["armR"],
@@ -290,7 +302,8 @@ if __name__ == "__main__":
     ready = make_cycle(rig, "Ready2H_Loop", READY_2H)
     strike = make_cycle(rig, "Strike2H", STRIKE_2H)
     chop = make_cycle(rig, "Chop2H", CHOP_2H)
+    ready_f = make_cycle(rig, "Ready2HF_Loop", READY_2H_F)
     if "--shots" in args:
         shots(rig, run, args[args.index("--shots") + 1], [1, 4, 7, 10, 12, 15, 18, 21])
-    export(rig, [run, ready, strike, chop])
+    export(rig, [run, ready, strike, chop, ready_f])
     print("moves: exported", OUT)
