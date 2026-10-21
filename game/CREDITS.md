@@ -16,7 +16,7 @@ reference; CC-BY assets must be credited in the game's credits.
 - MakeHuman / MPFB base mesh, skins, eyes, eyebrows, eyelashes, teeth, ponytail01 hair and
   the viking moustache, beard (Quartermaster Bren), tattooed skin and clothes (rehmanpolanski), the heroine suit and boots and the
   male boots (culturalibre), the monk robe and hood (donitz) - MakeHuman community asset packs.
-- Sky, rocks, cliffs, camp props (crate, barrel, fire pit), the scavenger's pick (picke_dirty_01) and the zealot's mace (ornate_medieval_mace) - Poly Haven.
+- Sky, rocks, cliffs, camp props (crate, barrel, fire pit), the scavenger's pick (picke_dirty_01), the zealot's mace (ornate_medieval_mace) and the longsword's grip leather (brown_leather) - Poly Haven.
 - Hammerfall Hold: the castle door, war hammer and sledgehammer, chest, barrels, crates, table, bucket and
   desert boulders; sandstone block, red sandstone paving, rusty metal and weathered plank textures - Poly Haven.
 - Ground, bark, leaf, wood, linen and stone textures - ambientCG.

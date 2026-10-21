@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 id = &"rune_strike"
 display_name = "Rune Strike"
-description = "Strike with your rune-charged axe. Starts your auto-attack."
+description = "Strike with your rune-charged blade. Starts your auto-attack."
 icon_color = Color(0.55, 0.6, 0.75, 1)
 icon_glyph = "RS"
 effect = 0

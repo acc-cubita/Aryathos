@@ -22,7 +22,7 @@ func _run() -> void:
 	var side := player.global_transform.basis.x
 	for i in count:
 		var path := CharacterModel.ARKANOR_MALE if i % 2 == 0 else CharacterModel.ARKANOR_FEMALE
-		var model := CharacterModel.create(path, Color(0.4, 0.85, 1.0), "rune_axe" if i % 2 == 0 else "")
+		var model := CharacterModel.create(path, Color(0.4, 0.85, 1.0), "longsword" if i % 2 == 0 else "")
 		get_tree().root.add_child(model)
 		# rows from 6 m to ~60 m in front of the camera
 		var row := i / 8

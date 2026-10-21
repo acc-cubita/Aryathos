@@ -105,7 +105,7 @@ func _class_checks(player: Player) -> void:
 			and not wears.call("culturalibre_heroine_boots_1"), "she wears the Concord's robe and ankle boots")
 	var weapon: Node = player.model.find_child("Weapon", true, false)
 	_check(player.equipment.get(ItemData.Slot.WEAPON).id == &"stormcaller_axe" and weapon != null
-			and weapon.scene_file_path.ends_with("rune_axe.glb"), "she keeps the better axe she wore (not the staff)")
+			and weapon.scene_file_path.ends_with("longsword.glb"), "she keeps the better sword she wore (not the staff)")
 	var axe_slot := player.bags.find(null)
 	player.unequip(ItemData.Slot.WEAPON)
 	_check(player.model.find_child("Weapon", true, false) == null, "with no weapon she has empty hands")

@@ -5,12 +5,12 @@
 [resource]
 script = ExtResource("1_script")
 id = &"worn_rune_axe"
-display_name = "Worn Rune Axe"
+display_name = "Worn Runeblade"
 flavor_text = "Every Arkanor recruit gets one. Most lose it."
 quality = 1
 slot = 1
-weapon_model = "rune_axe"
-icon_glyph = "Ax"
+weapon_model = "longsword"
+icon_glyph = "Sw"
 icon_color = Color(0.55, 0.5, 0.45, 1)
 health_bonus = 0
 mana_bonus = 0

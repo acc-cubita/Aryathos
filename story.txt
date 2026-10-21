@@ -24,7 +24,7 @@ When an Aether crystal turns **volatile**, it darkens from within and its light 
 * **Capital City:** *Aetheria, the Shining Citadel*
 * **Core Goal:** Harness the Aether to stabilize the world and eradicate the chaotic corruptions of the Primal Edge.
 * **Playable Races:**
-  1. **Arkanor:** Tall, long-lived and noble, silver-haired even in youth, grave and proud. They are the people most deeply bound to raw arcane magic. They carve Aether into runes on their arms and on their great rune-axes, and they raised the first Wardstones. Their warrior-mages are the **Runeknights**, who fight with rune-axe, Aether and storm-light.
+  1. **Arkanor:** Tall, long-lived and noble, silver-haired even in youth, grave and proud. They are the people most deeply bound to raw arcane magic. They carve Aether into runes on their arms and on their long runeblades, and they raised the first Wardstones. Their warrior-mages are the **Runeknights**, who fight with runeblade, Aether and storm-light.
   2. **Sylvari / Luminar:** Graceful guardians of cosmic light and sacred forests.
   3. **Arkanite Mechanists:** Genius engineers who fuse mechanical cybernetics with Aether crystal energy, often replacing their own limbs with crystal-powered ones.
   4. **Valenar:** Resilient humans who serve as the political and martial backbone of the Covenant.
@@ -129,7 +129,7 @@ Facing total annihilation, players from both factions must navigate a tense, uns
 
 ## 6. CLASSES
 
-* **Runeknight** (Arkanor): A rune-axe warrior who binds Aether into runes. *Rune Strike* for melee; *Aether Shard* and *Storm Surge* (storm-light) from range; *Crystal Mending* to heal; *Storm Nova* to blast everything around. Three talent paths: **Aether** (raw power and crits), **Storm** (storm-light), **Warding** (crystal skin and mending).
+* **Runeknight** (Arkanor): A warrior of the two-handed runeblade who binds Aether into runes. *Rune Strike* for melee; *Aether Shard* and *Storm Surge* (storm-light) from range; *Crystal Mending* to heal; *Storm Nova* to blast everything around. Three talent paths: **Aether** (raw power and crits), **Storm** (storm-light), **Warding** (crystal skin and mending).
 * **Aethermancer** (Arkanor): A mage of the **Azure Concord**, Magister Ivren's order, who shapes raw Aether and crystal from afar with a crystal staff. *Aether Bolt* (a slow, heavy bolt), *Crystal Lance* (instant), *Shardburst* (shards bursting around the mage) and *Crystal Mending*; frail up close but with deep reserves of mana. Three talent paths: **Aether** (the bolt, crits and mana), **Crystal** (lance and shards, ending in *Starshard*, a great shard of crystal-light called down the sky), **Warding** (shared with the Runeknights).
 
 ---

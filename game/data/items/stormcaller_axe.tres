@@ -5,12 +5,12 @@
 [resource]
 script = ExtResource("1_script")
 id = &"stormcaller_axe"
-display_name = "Stormcaller's Axe"
+display_name = "Stormcaller's Blade"
 flavor_text = "It hums before the thunder."
 quality = 3
 slot = 1
-weapon_model = "rune_axe"
-icon_glyph = "Ax"
+weapon_model = "longsword"
+icon_glyph = "Sw"
 icon_color = Color(0.35, 0.55, 0.95, 1)
 health_bonus = 0
 mana_bonus = 0

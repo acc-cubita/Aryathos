@@ -107,6 +107,8 @@ const PAINTED := preload("res://units/shaders/character.gdshader")
 ## weapon, held ready in both hands (TwoHandGrip) this far (m) further down the haft than
 ## the one-handed grip, near its end.
 const WEAPONS := {
+	"longsword": {"path": "res://art/weapons/longsword.glb", "painted": false,  # tools/art/blender/sword.py
+			"hold": ARMED_IDLE, "middle": 0.37, "two_hands": 0.02},
 	"rune_axe": {"path": "res://art/weapons/rune_axe.glb", "painted": true, "hold": ARMED_IDLE, "middle": 0.28,
 			"two_hands": 0.18},
 	"pick": {"path": "res://art/weapons/pick.glb", "painted": false,  # tools/art/blender/humans.py
@@ -181,7 +183,7 @@ var _lean := 0.0
 
 ## path: a character scene (ARKANOR_*, the scavenger...). weapon: a WEAPONS key, or empty
 ## for empty hands. glow tints the swing arcs (and the placeholder axe's rune).
-static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_axe", look := {}) -> CharacterModel:
+static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "longsword", look := {}) -> CharacterModel:
 	var model := CharacterModel.new()
 	model.name = "Model"
 	model._armed = weapon != ""
@@ -287,7 +289,7 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_
 
 
 ## A hero (an Arkanor of either gender) dressed in `look` (see LOOKS; DEFAULT_LOOK's keys).
-static func create_hero(look: Dictionary, glow := Color(0.4, 0.85, 1.0), weapon := "rune_axe") -> CharacterModel:
+static func create_hero(look: Dictionary, glow := Color(0.4, 0.85, 1.0), weapon := "longsword") -> CharacterModel:
 	var gender: String = look.get("gender", "male")
 	return create(LOOKS.get(gender, LOOKS.male).path, glow, weapon, look)
 

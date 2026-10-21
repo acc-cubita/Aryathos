@@ -26,7 +26,7 @@
 script = ExtResource("1_script")
 id = &"runeknight"
 display_name = "Runeknight"
-description = "A rune-axe warrior who binds Aether into runes: the axe up close, shards and storm-light from afar, crystal to mend wounds."
+description = "A warrior of the two-handed runeblade who binds Aether into runes: the blade up close, shards and storm-light from afar, crystal to mend wounds."
 sort_order = 0
 abilities = Array[ExtResource("1_ability")]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5")])
 talent_trees = Array[String](["Aether", "Storm", "Warding"])

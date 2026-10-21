@@ -10,7 +10,7 @@ signal created
 
 ## [name, playable, description]
 const RACES := [
-	["Arkanor", true, "Tall, long-lived and noble, silver-haired even in youth. They carve Aether into runes on their arms and their great rune-axes, and raised the first Wardstones."],
+	["Arkanor", true, "Tall, long-lived and noble, silver-haired even in youth. They carve Aether into runes on their arms and their long runeblades, and raised the first Wardstones."],
 	["Sylvari / Luminar", false, "Graceful guardians of cosmic light and sacred forests."],
 	["Arkanite Mechanists", false, "Engineers who fuse their own bodies with crystal-powered machines."],
 	["Valenar", false, "Resilient humans: the political and martial backbone of the Covenant."],
