@@ -1,15 +1,14 @@
-"""The Runeknight's longsword, modelled and exported for Godot.
+"""The Runeknight's sword, modelled and exported for Godot.
 
     blender -b --factory-startup --python tools/art/blender/sword.py [-- --shots <folder>]
 
-A hand-and-a-half sword of plain steel: a lenticular blade with a fuller down two thirds
+A one-handed arming sword of plain steel: a lenticular blade with a fuller down two thirds
 of its length and edges bevelled to an ogive point, a straight crossguard with flared
 ends, a grip wrapped in a spiral of brown leather (Poly Haven brown_leather, CC0) and a
 wheel pommel. The steel's textures are made here: brushed along the blade, with fine
 scratches and a few smudges (colour, roughness, normal). Frame (Blender): the right fist's
 centre at the origin, just under the guard, the blade up +Z, the edges toward +-Y (+Y
-leads a swing), like the rune axe; the left fist holds the grip below. Exports
-game/art/weapons/longsword.glb.
+leads a swing), like the rune axe. Exports game/art/weapons/sword.glb.
 """
 import math
 import sys
@@ -23,14 +22,14 @@ from mathutils import Vector
 ROOT = Path(__file__).resolve().parents[3]
 LEATHER = ROOT / "art" / "vendor" / "polyhaven" / "textures" / "brown_leather"
 SKY = ROOT / "game" / "art" / "sky" / "kloofendal_partly_cloudy_4k_clamped.exr"
-OUT = ROOT / "game" / "art" / "weapons" / "longsword.glb"
+OUT = ROOT / "game" / "art" / "weapons" / "sword.glb"
 
 ## Metres from the right fist's centre: the guard, the blade, the grip and pommel.
 GUARD = 0.062
-BLADE = (0.068, 0.99)
-GRIP = (-0.196, 0.056)
-POMMEL = -0.226
-BLADE_WIDTH = (0.054, 0.036)  # at the guard, and where the point begins
+BLADE = (0.068, 0.84)
+GRIP = (-0.085, 0.056)
+POMMEL = -0.115
+BLADE_WIDTH = (0.05, 0.034)  # at the guard, and where the point begins
 BLADE_THICK = (0.0078, 0.0042)
 POINT = 0.8  # share of the blade's length before the point curves in
 FULLER = (0.6, 0.72)  # the fuller runs full depth to here, fades out by there
@@ -242,12 +241,12 @@ def build():
     lathe(bm, uv, [(POMMEL - 0.036, 0.0), (POMMEL - 0.036, 0.006), (POMMEL - 0.03, 0.0075),
                    (POMMEL - 0.026, 0.0)], "z", HILT, u_scale=0.1, v_scale=4.0, sides=12)
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-6)
-    mesh = bpy.data.meshes.new("longsword")
+    mesh = bpy.data.meshes.new("sword")
     bm.to_mesh(mesh)
     bm.free()
     for mat in materials():
         mesh.materials.append(mat)
-    obj = bpy.data.objects.new("longsword", mesh)
+    obj = bpy.data.objects.new("sword", mesh)
     bpy.context.scene.collection.objects.link(obj)
     bpy.context.view_layer.objects.active = obj
     obj.select_set(True)
@@ -263,7 +262,7 @@ def export(obj):
     bpy.ops.export_scene.gltf(filepath=str(OUT), use_selection=True, export_format="GLB", export_yup=True,
                               export_apply=True, export_image_format="JPEG")
     tris = sum(len(p.vertices) - 2 for p in obj.data.polygons)
-    print("longsword: %d tris, %.2f m long -> %s" % (tris, BLADE[1] - (POMMEL - 0.036), OUT))
+    print("sword: %d tris, %.2f m long -> %s" % (tris, BLADE[1] - (POMMEL - 0.036), OUT))
 
 
 def shots(obj, folder):

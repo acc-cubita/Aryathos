@@ -101,11 +101,10 @@ func _class_checks(player: Player) -> void:
 	var wears := func(part: String) -> bool:
 		return player.model.find_children("*", "MeshInstance3D", true, false).any(
 				func(m: MeshInstance3D) -> bool: return m.visible and String(m.name).ends_with("_" + part))
-	_check(wears.call("donitz_monk_robe") and wears.call("toigo_ankle_boots_female")
-			and not wears.call("culturalibre_heroine_boots_1"), "she wears the Concord's robe and ankle boots")
+	_check(wears.call("peasant") and not wears.call("ranger"), "she wears the Aethermancer's clothes, not the ranger's")
 	var weapon: Node = player.model.find_child("Weapon", true, false)
 	_check(player.equipment.get(ItemData.Slot.WEAPON).id == &"stormcaller_axe" and weapon != null
-			and weapon.scene_file_path.ends_with("longsword.glb"), "she keeps the better sword she wore (not the staff)")
+			and weapon.scene_file_path.ends_with("sword.glb"), "she keeps the better sword she wore (not the staff)")
 	var axe_slot := player.bags.find(null)
 	player.unequip(ItemData.Slot.WEAPON)
 	_check(player.model.find_child("Weapon", true, false) == null, "with no weapon she has empty hands")
@@ -143,8 +142,8 @@ func _class_checks(player: Player) -> void:
 	player.set_class(Database.hero_class(&"runeknight"))
 	_check(player.hero_class.id == &"runeknight" and player.abilities.size() == 4 and player.talent_trees[1] == "Storm",
 			"(a Runeknight again for the moment)")
-	_check(not wears.call("donitz_monk_robe") and wears.call("culturalibre_heroine_boots_1"),
-			"a Runeknight wears no robe")
+	_check(not wears.call("peasant") and wears.call("ranger") and not wears.call("hood"),
+			"a Runeknight wears the ranger's leathers (hood down)")
 	player.load_save_data(saved)
 	_check(saved["class"] == "aethermancer" and player.hero_class == mage
 			and player.abilities.any(func(a: AbilityData) -> bool: return a.id == &"starshard")
@@ -255,15 +254,13 @@ func _combat_checks(player: Player) -> void:
 		t += get_physics_process_delta_time() * Engine.time_scale
 	_check(wolf.is_dead, "wolf killed (%.0f s)" % t)
 	_check(weapon.get_parent() == player.model._hand_mount, "fighting hand to hand brought the axe out into the hand")
-	# arms and body know each other's surface: held ready, no arm in the body, both fists on the haft
-	player.model._two_hands.gap = 0.0
+	# arms and body know each other's surface: held ready, no arm in the body
 	var probe := ContactProbe.new()
 	player.model._skeleton.add_child(probe)
 	await _wait(0.8)
 	probe.queue_free()
-	_check(player.model._state == "ready_loop" and probe.deepest < 0.04 and player.model._two_hands.gap < 0.05,
-			"standing ready, the arms stay out of the body (%.1f cm in) and both fists on the haft (%.1f cm off)" % [
-			probe.deepest * 100.0, player.model._two_hands.gap * 100.0])
+	_check(player.model._state == "ready_loop" and probe.deepest < 0.04,
+			"standing ready, the arms stay out of the body (%.1f cm in)" % [probe.deepest * 100.0])
 	_check(wolf.tapped_by == player, "kill credit goes to the player")
 	var heard := get_tree().root.find_children("*", "AudioStreamPlayer3D", true, false)
 	_check(heard.is_empty() and Audio.played.keys().all(func(k: String) -> bool: return k.ends_with("music")),
@@ -493,38 +490,37 @@ func _creation_checks(player: Player) -> void:
 	var mira: Npc = Game.zone.get_node("NPCs/HerbalistMira")
 	var hairs := func(model: Node) -> Array:
 		return model.find_children("*", "MeshInstance3D", true, false).filter(func(m: MeshInstance3D) -> bool:
-			return m.visible and ["_elvs_braid_bun", "_long01", "_braid01", "_short03", "_ponytail01", "_short02"].any(
+			return m.visible and ["_buns", "_long", "_simpleparted", "_buzzed", "_buzzedfemale"].any(
 					func(end: String) -> bool: return String(m.name).ends_with(end)))
 	_check(hairs.call(mira.model).size() == 1, "Herbalist Mira shows one hair style, not all of them")
 	var old_name := player.unit_name
 	var screen := CharacterCreation.new(player)
 	add_child(screen)
-	screen.look = {"gender": "female", "face": 2, "hair": 3, "hair_color": 2, "skin": 1, "eyes": 5, "beard": 0}
+	screen.look = {"gender": "female", "face": 0, "hair": 2, "hair_color": 2, "skin": 1, "eyes": 5, "beard": 0}
 	_check(screen.create("x") != "" and screen.create("Ly ra") != "", "names that are too short or not letters are refused")
 	_check(screen.create("seraphine") == "" and player.unit_name == "Seraphine" and player.look.gender == "female",
 			"Create names the hero (Seraphine) and gives her the chosen look")
 	var shown: Array = hairs.call(player.model)
-	_check(shown.size() == 1 and String(shown[0].name).ends_with("_short03"), "her chosen short hair is the only one showing")
-	var fierce := func(mesh: MeshInstance3D) -> bool:
-		var shape := mesh.find_blend_shape_by_name("face_fierce")
-		var other := mesh.find_blend_shape_by_name("face_gentle")
-		return shape >= 0 and mesh.get_blend_shape_value(shape) == 1.0 and mesh.get_blend_shape_value(other) == 0.0
-	var body: MeshInstance3D = player.model.find_children("arkanor_female", "MeshInstance3D", true, false)[0]
-	_check(fierce.call(body) and fierce.call(shown[0]), "her Fierce face shapes the body and the hair fitted to it")
+	_check(shown.size() == 1 and String(shown[0].name).ends_with("_buzzedfemale"), "her chosen short hair is the only one showing")
+	var body: MeshInstance3D = player.model.find_children("hero_female", "MeshInstance3D", true, false)[0]
 	var eyes: StandardMaterial3D
 	for surface in body.mesh.get_surface_count():
 		var material := body.get_surface_override_material(surface) as StandardMaterial3D
-		if material.resource_name.begins_with("high-poly"):
+		if material.resource_name.begins_with("eyes"):
 			eyes = material
 	_check(eyes != null and eyes.albedo_texture.resource_path.ends_with("/green.png"), "her eyes are the green she chose")
 	_check(not get_tree().paused, "the game goes on after Create")
 	var saved: Variant = JSON.parse_string(FileAccess.get_file_as_string(Game.save_path))
-	_check(saved is Dictionary and saved.get("name") == "Seraphine" and (saved.get("look") as Dictionary).get("hair") == 3,
+	_check(saved is Dictionary and saved.get("name") == "Seraphine" and (saved.get("look") as Dictionary).get("hair") == 2,
 			"the new hero is saved with her name and look")
 	player.set_look({"gender": "male", "beard": 1})
 	var beards := player.model.find_children("*", "MeshInstance3D", true, false).filter(func(m: MeshInstance3D) -> bool:
-		return m.visible and ("beard" in String(m.name) or "moustache" in String(m.name)))
-	_check(beards.size() == 1 and String(beards[0].name).ends_with("_grinsegold_full_beard"), "a male hero wears the one beard chosen")
+		return m.visible and "beard" in String(m.name))
+	_check(beards.is_empty(), "a male hero chosen beardless wears no beard")
+	player.set_look({"gender": "male", "beard": 0})
+	beards = player.model.find_children("*", "MeshInstance3D", true, false).filter(func(m: MeshInstance3D) -> bool:
+		return m.visible and "beard" in String(m.name))
+	_check(beards.size() == 1 and String(beards[0].name).ends_with("_beard"), "and with the beard, the one beard")
 	player.set_look(CharacterModel.DEFAULT_LOOK)
 	player.unit_name = old_name
 	screen.queue_free()

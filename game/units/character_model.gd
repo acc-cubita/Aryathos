@@ -1,52 +1,45 @@
 class_name CharacterModel
 extends Node3D
-## A rigged character (glTF made by tools/art/blender/arkanor_mh.py + arkanor_game.py:
-## MakeHuman body on a Godot humanoid skeleton) animated from its Unit with clips from the
-## Quaternius Universal Animation Libraries (art/animations, retargeted onto the humanoid
-## profile at import): idle / walk / jog / sprint by ground speed (backpedal when moving
+## A rigged character on a Godot humanoid skeleton (the heroes: Quaternius' CC0 kits,
+## tools/art/blender/quaternius_hero.py, made on the animation libraries' own skeleton; the
+## other people: MakeHuman bodies, arkanor_mh.py + humans.py) animated from its Unit with
+## clips from the Quaternius Universal Animation Libraries (art/animations, retargeted onto
+## the humanoid profile at import): idle / walk / jog / sprint by ground speed (backpedal when moving
 ## backwards), a channel pose while casting, death and revive. Swings, spell releases and
 ## hits play on the upper body only, so the legs keep running. On top of the clips the neck
 ## and head turn toward the target, the feet are planted on uneven ground (FootPlanter) and
-## a runner leans into turns. Swings leave a glowing arc behind the weapon's head; casting
-## lights the hands and a rune circle. Faces -Z like every unit model.
+## a runner leans into turns. Casting lights the hands and a rune circle. Faces -Z like
+## every unit model.
 
-const ARKANOR_MALE := "res://art/characters/arkanor/arkanor_male.glb"
-const ARKANOR_FEMALE := "res://art/characters/arkanor/arkanor_female.glb"
-## A hero's look (character creation): which hair and beard meshes show, by the MakeHuman
-## asset they were made from (tools/art/blender/arkanor_game.py HERO_VARIANTS), the face
-## (a blend shape made from MakeHuman's face sliders, arkanor_mh.py "faces"; the first face
-## is the model as built), and the hair, skin and eye colours. Options are [shown name, parts].
-## outfits: the parts each class wears (ClassData.outfit) over what every hero wears.
+const HERO_MALE := "res://art/characters/hero/hero_male.glb"
+const HERO_FEMALE := "res://art/characters/hero/hero_female.glb"
+## A hero's look (character creation): which hair and beard meshes show (the parts
+## hero_<gender>_<part>, quaternius_hero.py), the face (a blend shape; one face for now) and
+## the hair, skin and eye colours. Options are [shown name, parts]. outfits: the parts each
+## class wears (ClassData.outfit); spare: parts no look shows yet (the ranger's hood).
 const LOOKS := {
-	"male": {"path": ARKANOR_MALE, "shoulders_forward": 12.0,
-		"hair": [["Ponytail", ["ponytail01"]], ["Short", ["short02"]], ["Long", ["long01"]], ["Braid", ["braid01"]]],
-		"beard": [["Scruffy", ["elvs_scruffy_beard1", "rehmanpolanski_moustache_viking"]], ["Full", ["grinsegold_full_beard"]],
-				["Braided", ["rehmanpolanski_beard_viking"]], ["None", []]],
-		"face": [["Weathered", ""], ["Noble", "face_noble"], ["Stern", "face_stern"], ["Hawk", "face_hawk"]],
-		"outfits": {"runeknight": ["rehmanpolanski_viking_tunic", "rehmanpolanski_viking_pants"],
-				"aethermancer": ["donitz_monk_robe", "donitz_monk_robe_hood_off"]}},
-	"female": {"path": ARKANOR_FEMALE, "grip_roll": 13.0,
-		"ready_2h": {"clip": "moves/Ready2HF", "grip": Vector3(-0.12, -0.17, 0.26), "haft": Vector3(-0.58, 0.8, 0.12)},
-		"hair": [["Braided Bun", ["elvs_braid_bun"]], ["Long", ["long01"]], ["Braid", ["braid01"]], ["Short", ["short03"]]],
+	"male": {"path": HERO_MALE,
+		"hair": [["Long", ["long"]], ["Parted", ["simpleparted"]], ["Buzzed", ["buzzed"]]],
+		"beard": [["Full", ["beard"]], ["None", []]],
+		"face": [["Noble", ""]],
+		"outfits": {"runeknight": ["ranger"], "aethermancer": ["peasant"]},
+		"spare": ["hood"]},
+	"female": {"path": HERO_FEMALE,
+		"hair": [["Buns", ["buns"]], ["Long", ["long"]], ["Buzzed", ["buzzedfemale"]]],
 		"beard": [["None", []]],
-		"face": [["Determined", ""], ["Noble", "face_noble"], ["Fierce", "face_fierce"], ["Gentle", "face_gentle"]],
-		"outfits": {"runeknight": ["culturalibre_heroine_boots_1"],
-				"aethermancer": ["donitz_monk_robe", "donitz_monk_robe_hood_off", "toigo_ankle_boots_female"]}},
+		"face": [["Noble", ""]],
+		"outfits": {"runeknight": ["ranger"], "aethermancer": ["peasant"]},
+		"spare": ["hood"]},
 }
-## (grip_roll: degrees the weapon turns about the fingers in that model's fist; the female
-## wrist rests rolled 13 degrees further in, which would tip the axe across her body.
-## shoulders_forward: degrees the collarbones turn forward, SpineUpright.shoulders_forward.
-## ready_2h: a two-handed weapon held ready that character's own way: the stance's clip, and
-## the right fist's grip and the haft's way in TwoHandGrip's frame.)
-## Arkanor are silver-haired even in youth: the hero hair is silvered bright and tinted down.
+## Arkanor are silver-haired even in youth: the hero hair is grey-white and tinted down.
 const HAIR_COLORS := [["White", Color(1, 1, 1)], ["Silver", Color(0.78, 0.79, 0.82)], ["Ash", Color(0.66, 0.62, 0.56)],
 		["Steel", Color(0.55, 0.62, 0.74)], ["Smoke", Color(0.42, 0.42, 0.44)]]
 const SKIN_TONES := [["Fair", Color(1, 1, 1)], ["Light", Color(0.94, 0.86, 0.78)], ["Tan", Color(0.82, 0.68, 0.56)],
 		["Bronze", Color(0.66, 0.52, 0.42)]]
-## MakeHuman's eye textures (CC0), art/characters/arkanor/eyes/<file>.png.
+## The hero eye recoloured (tools/art/hero_eyes.py), art/characters/hero/eyes/<file>.png.
 const EYE_COLORS := [["Ice", "ice"], ["Pale Blue", "lightblue"], ["Blue", "blue"], ["Deep Blue", "deepblue"],
 		["Blue-Green", "bluegreen"], ["Green", "green"], ["Grey", "grey"], ["Amber", "brownlight"], ["Brown", "brown"]]
-const EYES := "res://art/characters/arkanor/eyes/%s.png"
+const EYES := "res://art/characters/hero/eyes/%s.png"
 const DEFAULT_LOOK := {"gender": "male", "face": 0, "hair": 0, "hair_color": 1, "skin": 0, "eyes": 1, "beard": 0}
 const LIBRARIES := {
 	"ual1": "res://art/animations/ual1.glb",
@@ -56,11 +49,11 @@ const LIBRARIES := {
 }
 ## state -> clip
 const CLIPS := {
-	"idle_loop": "ual1/Idle", "walk_loop": "ual1/Walk", "jog_loop": "moves/Run", "run_loop": "ual1/Sprint",
+	"idle_loop": "ual1/Idle", "walk_loop": "ual1/Walk", "jog_loop": "ual1/Jog_Fwd", "run_loop": "ual1/Sprint",
 	"back_loop": "ual1/Jog_Fwd", "cast_loop": "ual1/Spell_Simple_Idle", "death": "ual1/Death01",
 	"hit": "ual1/Hit_Chest", "spell": "ual1/Spell_Simple_Shoot",
 	"jump_start": "ual1/Jump_Start", "fall_loop": "ual1/Jump", "land": "ual1/Jump_Land",
-	"ready_loop": "moves/Ready2H",  # standing with a two-handed weapon out (TwoHandGrip holds it)
+	"ready_loop": "ual1/Sword_Idle",  # standing with the weapon out, held ready
 }
 ## An armed character's weapon hand keeps this clip's closed fist whatever else it does.
 const ARMED_IDLE := "ual1/Sword_Idle"
@@ -74,11 +67,9 @@ const RUN_SPEED := 8.25 ## the sprint
 ## the backwards walk/jog mix (BACK_JOG), from the two clips' strides over BACK_CYCLE
 const BACK_SPEED := (0.97 * 1.333 * (1.0 - BACK_JOG) + 5.36 * 0.933 * BACK_JOG) / BACK_CYCLE
 const MANNEQUIN_HIPS := 0.917
-## the hero's run (hero_moves.py RUN), as that script measures it on the mannequin
-const JOG_SPEED := 5.0
+const JOG_SPEED := 5.36
 const RUN_FROM := 2.8 ## m/s where walking turns into a jog
-## m/s where the run turns into a sprint. A hero's run (6.4 m/s, WoW's 7 yards) is our
-## own run cycle (hero_moves.py), keyed from a study of a reference run.
+## m/s where the run turns into a sprint (a hero runs 6.4 m/s, WoW's 7 yards: a jog).
 const SPRINT_FROM := 7.6
 ## How fast (1/s) the body turns toward the way it moves (a strafe, a diagonal).
 const STRAFE_TURN := 10.0
@@ -107,8 +98,8 @@ const PAINTED := preload("res://units/shaders/character.gdshader")
 ## weapon, held ready in both hands (TwoHandGrip) this far (m) further down the haft than
 ## the one-handed grip, near its end.
 const WEAPONS := {
-	"longsword": {"path": "res://art/weapons/longsword.glb", "painted": false,  # tools/art/blender/sword.py
-			"hold": ARMED_IDLE, "middle": 0.37, "two_hands": 0.02},
+	"sword": {"path": "res://art/weapons/sword.glb", "painted": false,  # tools/art/blender/sword.py
+			"hold": ARMED_IDLE, "middle": 0.35},
 	"rune_axe": {"path": "res://art/weapons/rune_axe.glb", "painted": true, "hold": ARMED_IDLE, "middle": 0.28,
 			"two_hands": 0.18},
 	"pick": {"path": "res://art/weapons/pick.glb", "painted": false,  # tools/art/blender/humans.py
@@ -146,7 +137,7 @@ var _playback: AnimationNodeStateMachinePlayback
 var _state := ""
 var _cast_finished_at := -1.0
 var _attack_clip: AnimationNodeAnimation
-var _strike_clip: AnimationNodeAnimation  # (a two-handed weapon's whole-body swing)
+var _strike_clip: AnimationNodeAnimation  # (a whole-body swing, standing)
 var _swing := 0
 var _hand_glows: Array[GPUParticles3D] = []
 var _armed := false
@@ -160,7 +151,6 @@ var _steady: HeadSteady
 var _fists: Fists
 var _two_hands: TwoHandGrip  # (a two-handed weapon's)
 var _contact: BodyContact
-var _ready_clip := ""  # (a character's own two-handed ready stance, LOOKS "ready_2h")
 ## Beyond this far (m) from the camera, arms are not kept out of the body (too small to see).
 const CONTACT_RANGE := 15.0
 var _weapon: Node3D
@@ -181,9 +171,9 @@ var _last_yaw := 0.0
 var _lean := 0.0
 
 
-## path: a character scene (ARKANOR_*, the scavenger...). weapon: a WEAPONS key, or empty
+## path: a character scene (HERO_*, the scavenger...). weapon: a WEAPONS key, or empty
 ## for empty hands. glow tints the swing arcs (and the placeholder axe's rune).
-static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "longsword", look := {}) -> CharacterModel:
+static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "sword", look := {}) -> CharacterModel:
 	var model := CharacterModel.new()
 	model.name = "Model"
 	model._armed = weapon != ""
@@ -209,9 +199,6 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "longs
 		else:
 			axe = PlaceholderModel.axe(glow)
 		axe.transform = _grip(skeleton)
-		for gender: String in LOOKS:
-			if LOOKS[gender].path == path:
-				axe.transform = axe.transform.rotated_local(Vector3.FORWARD, deg_to_rad(LOOKS[gender].get("grip_roll", 0.0)))
 		hand.add_child(axe)
 		model._weapon = axe
 		model._in_hand = axe.transform
@@ -253,8 +240,9 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "longs
 		aim.influence = LOOK[bone_name]
 		skeleton.add_child(aim)
 		aim.target_node = aim.get_path_to(model._look_target)
-	model._fists = Fists.new()
+	model._fists = Fists.new()  # (the heroes' fingers close in their own clips)
 	model._fists.name = "Fists"
+	model._fists.active = not LOOKS.values().any(func(spec: Dictionary) -> bool: return spec.path == path)
 	skeleton.add_child(model._fists)
 	model._steady = HeadSteady.new()  # after the look-at: the head calm and level
 	model._steady.name = "HeadSteady"
@@ -268,12 +256,6 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "longs
 	skeleton.add_child(model._contact)
 	if model._two_hands:
 		model._two_hands.contact = model._contact
-	for gender: String in LOOKS:
-		if LOOKS[gender].path == path and LOOKS[gender].has("ready_2h"):
-			var own: Dictionary = LOOKS[gender].ready_2h
-			model._ready_clip = own.clip
-			if model._two_hands:
-				model._two_hands.ready_pose = [own.grip, own.haft, TwoHandGrip.EDGE]
 	model._build_tree(scene, skeleton)
 	for gender: String in LOOKS:
 		if LOOKS[gender].path == path:  # a hero: one hair style, one beard, its tints
@@ -281,7 +263,6 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "longs
 			full.merge(look, true)
 			full["gender"] = gender
 			model.apply_look(full)
-			model._upright.shoulders_forward = deg_to_rad(LOOKS[gender].get("shoulders_forward", 0.0))
 	# the body's shape as worn
 	model._contact.setup(skeleton, scene.find_children("*", "MeshInstance3D", true, false).filter(
 			func(m: MeshInstance3D) -> bool: return m.visible and m.skin != null))
@@ -289,7 +270,7 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "longs
 
 
 ## A hero (an Arkanor of either gender) dressed in `look` (see LOOKS; DEFAULT_LOOK's keys).
-static func create_hero(look: Dictionary, glow := Color(0.4, 0.85, 1.0), weapon := "longsword") -> CharacterModel:
+static func create_hero(look: Dictionary, glow := Color(0.4, 0.85, 1.0), weapon := "sword") -> CharacterModel:
 	var gender: String = look.get("gender", "male")
 	return create(LOOKS.get(gender, LOOKS.male).path, glow, weapon, look)
 
@@ -312,6 +293,7 @@ func apply_look(look: Dictionary) -> void:
 	var variants := strands.duplicate()
 	for parts: Array in spec.outfits.values():
 		variants.append_array(parts)
+	variants.append_array(spec.get("spare", []))
 	for mesh: MeshInstance3D in find_children("*", "MeshInstance3D", true, false):
 		if mesh.mesh == null:
 			continue  # the weapon's trail, before its first swing
@@ -334,7 +316,7 @@ func apply_look(look: Dictionary) -> void:
 				material.albedo_color = hair_tint
 			elif name.begins_with("body"):
 				material.albedo_color = skin_tint
-			elif name.begins_with("high-poly"):
+			elif name.begins_with("eyes"):
 				material.albedo_texture = eyes
 
 
@@ -407,8 +389,6 @@ func _build_tree(scene: Node3D, skeleton: Skeleton3D) -> void:
 		player.add_animation_library(library, load(LIBRARIES[library]))
 	_stride = skeleton.motion_scale / MANNEQUIN_HIPS
 	var clips := CLIPS.duplicate()
-	if _ready_clip != "":
-		clips["ready_loop"] = _ready_clip
 	for anim_name: String in LOOPS:
 		player.get_animation(clips[anim_name]).loop_mode = Animation.LOOP_LINEAR
 	var states := AnimationNodeStateMachine.new()
@@ -501,14 +481,14 @@ func _build_tree(scene: Node3D, skeleton: Skeleton3D) -> void:
 		blend.connect_node(shot_name + "_shot", 0, last)
 		blend.connect_node(shot_name + "_shot", 1, shot_name + "_clip")
 		last = shot_name + "_shot"
-	if _armed and WEAPONS[weapon_key].get("two_hands", 0.0) > 0.0:
-		# a two-handed swing from the ready stance moves the whole body, legs and all (on
-		# the move, attack_shot lays it on the upper body)
+	if _armed:
+		# a swing standing moves the whole body, legs and all (on the move, attack_shot
+		# lays it on the upper body)
 		var strike := AnimationNodeOneShot.new()
 		strike.fadein_time = 0.08
 		strike.fadeout_time = 0.25
 		_strike_clip = AnimationNodeAnimation.new()
-		_strike_clip.animation = SWINGS_2H[0][0]
+		_strike_clip.animation = SWINGS_2H[0][0] if WEAPONS[weapon_key].has("two_hands") else SWINGS[0]
 		blend.add_node("strike_shot", strike)
 		blend.add_node("strike_clip", _strike_clip)
 		blend.connect_node("strike_shot", 0, last)
@@ -663,8 +643,8 @@ func _process(delta: float) -> void:
 			pace = 0.9
 		elif _unit.casting != null:
 			_go("cast_loop")
-		elif _two_hands and _sheathes and _drawn:
-			_go("ready_loop")  # the weapon held ready in both hands
+		elif _sheathes and _drawn:
+			_go("ready_loop")  # the weapon held ready
 		else:
 			_go("idle_loop")
 	_tree.set("parameters/pace/scale", pace)
@@ -795,5 +775,9 @@ func _on_attacked() -> void:
 				_fire("attack")
 		else:
 			_swing = (_swing + 1) % SWINGS.size()
-			_attack_clip.animation = SWINGS[_swing]
-			_fire("attack")
+			if _state in ["ready_loop", "idle_loop"]:
+				_strike_clip.animation = SWINGS[_swing]
+				_fire("strike")
+			else:
+				_attack_clip.animation = SWINGS[_swing]
+				_fire("attack")

@@ -167,7 +167,7 @@ static func _measure(skeleton: Skeleton3D, meshes: Array) -> Dictionary:
 
 
 ## A bone's frame in its own space: y down the bone (NEXT), x across as the rig's left lies,
-## z ahead.
+## z ahead (a bone lying along the rig's x, an arm in a T-pose rest: x up).
 static func _bone_frame(skeleton: Skeleton3D, bone: int) -> Basis:
 	var rest := skeleton.get_bone_global_rest(bone)
 	var along := Vector3.UP
@@ -177,7 +177,8 @@ static func _bone_frame(skeleton: Skeleton3D, bone: int) -> Basis:
 	else:
 		along = rest.origin - skeleton.get_bone_global_rest(skeleton.get_bone_parent(bone)).origin
 	along = along.normalized()
-	var across := Vector3.RIGHT - along * along.x
+	var side := Vector3.RIGHT if absf(along.x) < 0.9 else Vector3.UP
+	var across := side - along * along.dot(side)
 	var ahead := across.normalized().cross(along).normalized()
 	across = along.cross(ahead).normalized()
 	# into the bone's own space

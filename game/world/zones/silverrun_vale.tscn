@@ -417,7 +417,7 @@ quests = Array[ExtResource("10_quest")]([ExtResource("q_silverleaf_for_the_wound
 unit_name = "Herbalist Mira"
 armor_color = Color(0.35, 0.5, 0.3, 1)
 glow_color = Color(0.5, 1, 0.45, 1)
-model_scene = "res://art/characters/arkanor/arkanor_female.glb"
+model_scene = "res://art/characters/hero/hero_female.glb"
 
 [node name="GatherSpawners" type="Node3D" parent="."]
 
