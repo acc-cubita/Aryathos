@@ -18,8 +18,7 @@ parts (decimate), renders previews with --shots (art/characters/<key>/preview), 
 game character (arkanor_game.convert: humanoid bone names, one mesh, grip markers) and
 exports game/art/characters/<key>/<key>.glb. A character's "weapon" (a WEAPONS key; alone
 on the command line it is made by itself) becomes game/art/weapons/<weapon>.glb in the
-weapon frame of the rune axe (grip at the origin, haft +Z, point +Y), with the trail points
-CharacterModel needs printed in Godot's frame.
+weapon frame of the rune axe (grip at the origin, haft +Z, point +Y).
 """
 import sys
 from pathlib import Path
@@ -326,18 +325,14 @@ def weapon(name):
     obj.data.update()
     obj.name = obj.data.name = name
     co = np.array([v.co[:] for v in obj.data.vertices])
-    top = co[:, 2].max()
-    tip = co[np.argmax(co[:, 1])]
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
     path.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.export_scene.gltf(filepath=str(path), use_selection=True, export_format="GLB", export_yup=True,
                               export_apply=False, export_animations=False, export_image_format="AUTO")
-    # Godot frame: (x, z, -y)
-    print("%s: %d tris, %.2f m long; trail root (0, %.2f, 0), edge (%.2f, %.2f, %.2f) -> %s" % (
-        name, sum(len(p.vertices) - 2 for p in obj.data.polygons), top - co[:, 2].min(),
-        top - 0.06, tip[0], tip[2], -tip[1], path))
+    print("%s: %d tris, %.2f m long -> %s" % (
+        name, sum(len(p.vertices) - 2 for p in obj.data.polygons), co[:, 2].max() - co[:, 2].min(), path))
 
 
 def make(key, shots):

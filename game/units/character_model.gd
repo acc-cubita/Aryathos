@@ -99,23 +99,22 @@ const FIST := 0.75
 const SHEATHE_AFTER := 4.0
 const PAINTED := preload("res://units/shaders/character.gdshader")
 ## What a character can hold in its right fist. In weapon space +Y runs along the haft from
-## the fist and -Z points the way the edge faces; root -> edge is where the swing's glow arc
-## runs. "painted" weapons use the hand-painted character shader, the others their own
-## scanned materials. "hold": the weapon arm keeps that clip's pose while the weapon is out
-## (held ready, not swung about by the run); "channel": its pose while channelling a spell;
-## "middle": how far up the haft from the grip the weapon's middle is (it sits mid-back
-## when sheathed). "two_hands": a two-handed weapon, held ready in both hands (TwoHandGrip)
-## this far (m) further down the haft than the one-handed grip, near its end.
+## the fist and -Z points the way the edge faces. "painted" weapons use the hand-painted
+## character shader, the others their own scanned materials. "hold": the weapon arm keeps
+## that clip's pose while the weapon is out (held ready, not swung about by the run);
+## "channel": its pose while channelling a spell; "middle": how far up the haft from the
+## grip the weapon's middle is (it sits mid-back when sheathed). "two_hands": a two-handed
+## weapon, held ready in both hands (TwoHandGrip) this far (m) further down the haft than
+## the one-handed grip, near its end.
 const WEAPONS := {
-	"rune_axe": {"path": "res://art/weapons/rune_axe.glb", "painted": true,
-			"root": Vector3(0, 0.82, -0.06), "edge": Vector3(0, 0.82, -0.44), "hold": ARMED_IDLE, "middle": 0.28,
+	"rune_axe": {"path": "res://art/weapons/rune_axe.glb", "painted": true, "hold": ARMED_IDLE, "middle": 0.28,
 			"two_hands": 0.18},
-	"pick": {"path": "res://art/weapons/pick.glb", "painted": false,  # tools/art/blender/scavenger.py
-			"root": Vector3(0, 0.77, 0), "edge": Vector3(0, 0.78, -0.24), "hold": ARMED_IDLE, "middle": 0.28},
+	"pick": {"path": "res://art/weapons/pick.glb", "painted": false,  # tools/art/blender/humans.py
+			"hold": ARMED_IDLE, "middle": 0.28},
 	"mace": {"path": "res://art/weapons/mace.glb", "painted": false,  # tools/art/blender/humans.py
-			"root": Vector3(0, 0.4, 0), "edge": Vector3(0, 0.53, 0), "hold": ARMED_IDLE, "middle": 0.2},
+			"hold": ARMED_IDLE, "middle": 0.2},
 	"crystal_staff": {"path": "res://art/weapons/crystal_staff.glb", "painted": false,  # tools/art/blender/staff.py
-			"root": Vector3(0, 0.6, 0), "edge": Vector3(0, 1.12, 0), "channel": "ual1/Idle_Torch", "middle": 0.22},
+			"channel": "ual1/Idle_Torch", "middle": 0.22},
 }
 const UPPER_BODY := ["Spine", "Chest", "UpperChest", "Neck", "Head", "LeftShoulder", "LeftUpperArm",
 		"LeftLowerArm", "LeftHand", "RightShoulder", "RightUpperArm", "RightLowerArm", "RightHand"]
@@ -135,9 +134,6 @@ const LEAN := 0.012
 const STRANDS := ["beard", "moustache", "ponytail", "braid", "bun", "hair", "eyebrow", "eyelash", "short0", "long0", "bob0", "afro"]
 ## Loose cloth seen from inside too (into a hood, up a sleeve).
 const DOUBLE_SIDED := ["hood", "robe", "cloak", "cape"]
-## While a swing may leave a glow arc (seconds after it starts, how long); the arc itself
-## appears where the weapon's head moves fast (WeaponTrail.speed_range).
-const SWING_ARC := Vector2(0.1, 0.75)
 
 ## The WEAPONS key held ("" empty hands).
 var weapon_key := ""
@@ -150,7 +146,6 @@ var _cast_finished_at := -1.0
 var _attack_clip: AnimationNodeAnimation
 var _strike_clip: AnimationNodeAnimation  # (a two-handed weapon's whole-body swing)
 var _swing := 0
-var _trail: WeaponTrail
 var _hand_glows: Array[GPUParticles3D] = []
 var _armed := false
 ## the character's leg length against the mannequin's
@@ -224,11 +219,6 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_
 		model._back_mount = BoneAttachment3D.new()
 		model._back_mount.bone_name = "UpperChest"
 		skeleton.add_child(model._back_mount)
-		model._trail = WeaponTrail.new()
-		model._trail.base = spec.root
-		model._trail.tip = spec.edge
-		model._trail.tint = glow
-		axe.add_child(model._trail)
 	for bone_name: String in ["LeftHand", "RightHand"]:
 		var palm := BoneAttachment3D.new()
 		palm.bone_name = bone_name
@@ -808,5 +798,3 @@ func _on_attacked() -> void:
 			_swing = (_swing + 1) % SWINGS.size()
 			_attack_clip.animation = SWINGS[_swing]
 			_fire("attack")
-		if _trail:
-			_trail.swing(SWING_ARC.x, SWING_ARC.y)
