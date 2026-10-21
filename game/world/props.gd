@@ -187,15 +187,6 @@ static func campfire() -> Node3D:
 		var log_piece := _add_mesh(root, _cylinder(0.09, 0.11, 1.1), BARK, Vector3(0, 0.25, 0), Vector3(62, i * 120, 0))
 		log_piece.position += log_piece.basis.y * 0.15
 	root.add_child(_flames())
-	var crackle := AudioStreamPlayer3D.new()  # tools/art/audio_pack.py
-	crackle.stream = load("res://audio/ambience/fire.wav")
-	crackle.bus = "Ambience"
-	crackle.unit_size = 2.5
-	crackle.max_distance = 22.0
-	crackle.volume_db = -6.0
-	crackle.position = Vector3(0, 0.4, 0)
-	crackle.ready.connect(func() -> void: crackle.play(randf() * 20.0))  # campfires out of step
-	root.add_child(crackle)
 	var light := FireLight.new()
 	light.light_color = Color(1.0, 0.62, 0.3)
 	light.omni_range = 9.0

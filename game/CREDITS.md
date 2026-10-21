@@ -20,9 +20,6 @@ reference; CC-BY assets must be credited in the game's credits.
 - Hammerfall Hold: the castle door, war hammer and sledgehammer, chest, barrels, crates, table, bucket and
   desert boulders; sandstone block, red sandstone paving, rusty metal and weathered plank textures - Poly Haven.
 - Ground, bark, leaf, wood, linen and stone textures - ambientCG.
-- Sound effects - Kenney (Impact Sounds, RPG Audio, Interface Sounds) and rubberduck
-  (80 CC0 RPG SFX, 80 CC0 creature SFX, 100 CC0 SFX, OpenGameArt).
-- Ambience - "Birds and Wind - Ambient" by Spring Spring and "fireplace sound loop" by PagDev (OpenGameArt).
 - Music (OpenGameArt) - "Treasure Hunter" and "Once Upon a Time" by TAD, "Forest Whisper Theme" by
   Cleyton Kauffman (https://soundcloud.com/cleytonkauffman), "Orchestra Loop" by Brandon Morris,
   "Determined Pursuit" by Emma_MA (Grimjaw's fight).

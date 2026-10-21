@@ -57,7 +57,6 @@ const COYOTE := {
 	"coat": Color(1.55, 1.2, 0.82),
 	"paws": WOLF_PAWS,
 	"crystals": [],
-	"voice": "wolf",
 }
 const BEASTS := {"wolf": WOLF, "bear": BEAR, "coyote": COYOTE}
 ## Below this ground speed (m/s) the beast stands.
@@ -78,7 +77,6 @@ var _attack_clip: AnimationNodeAnimation
 var _attack := 0
 var _tilt := Vector2.ZERO
 var _skeleton: Skeleton3D
-var _steps: Footsteps
 
 
 ## beast: a BEASTS key. glow colours the crystals; scale multiplies the beast's own size.
@@ -95,7 +93,6 @@ static func create(beast: String, glow: Color, scale_by := 1.0) -> BeastModel:
 	var skeleton := scene.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
 	_grow_crystals(beast, scene, skeleton, glow)
 	model._skeleton = skeleton
-	model._steps = Footsteps.new(skeleton, model._spec.paws)
 	model._build_tree(scene)
 	return model
 
@@ -312,7 +309,6 @@ func _process(delta: float) -> void:
 	_lean_with_ground(delta)
 	if _unit.is_dead:
 		return
-	_steps.update(_skeleton, _unit, delta)
 	var speed := Vector2(_unit.velocity.x, _unit.velocity.z).length()
 	var pace := 1.0
 	if _unit.casting != null and _spec.has("rear") and _unit.casting.cast_time > 0.0:

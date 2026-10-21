@@ -78,13 +78,6 @@ func _run() -> void:
 			var p := skeleton.global_transform * skeleton.get_bone_global_pose(skeleton.find_bone(foot_name)).origin
 			gaps.append(snappedf(p.y - Game.zone.terrain.get_height(p.x, p.z), 0.005))
 		print("slope %.2f: ankle / toe heights above the ground (m) L, R, L toe, R toe: %s" % [Game.zone.terrain.get_slope(slope.x, slope.z), gaps])
-		# running on from there in the open: about 2.5 steps a second should be heard
-		var steps_before := _steps_heard()
-		var start := player.global_position
-		player.autorun = true
-		await _wait(3.0)
-		player.autorun = false
-		print("footsteps heard running 3 s (%.1f m): %d" % [player.global_position.distance_to(start), _steps_heard() - steps_before])
 	player.die(null)
 	await _wait(1.8)
 	await _shot(player, folder, "death", 3.4)
@@ -192,14 +185,6 @@ func _find_slope() -> Vector3:
 			if slope > 0.08 and slope < 0.2 and terrain.get_height(x, z) > terrain.water_level + 0.5:
 				return Vector3(x, terrain.get_height(x, z) + 0.3, z)
 	return Vector3.INF
-
-
-func _steps_heard() -> int:
-	var count := 0
-	for set_name: String in Audio.played:
-		if set_name.begins_with("step_"):
-			count += Audio.played[set_name]
-	return count
 
 
 func _enemy(id: StringName) -> Enemy:

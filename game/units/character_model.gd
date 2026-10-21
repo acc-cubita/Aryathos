@@ -175,7 +175,6 @@ var _turn_rate := 0.0
 var _air_time := 0.0
 var _landed_at := -1.0
 var _skeleton: Skeleton3D
-var _steps: Footsteps
 var _last_yaw := 0.0
 var _lean := 0.0
 
@@ -259,7 +258,6 @@ static func create(path: String, glow := Color(0.4, 0.85, 1.0), weapon := "rune_
 	model._steady.name = "HeadSteady"
 	skeleton.add_child(model._steady)
 	model._skeleton = skeleton
-	model._steps = Footsteps.new(skeleton, ["LeftFoot", "RightFoot"])
 	model._planter = FootPlanter.new()
 	model._planter.name = "FootPlanter"
 	skeleton.add_child(model._planter)
@@ -612,7 +610,6 @@ func _process(delta: float) -> void:
 			_two_hands.weight = 0.0
 		return
 	_steady.weight = 1.0
-	_steps.update(_skeleton, _unit, delta)
 	var ground := Vector2(_unit.velocity.x, _unit.velocity.z)
 	var speed := ground.length()
 	_aim_look()

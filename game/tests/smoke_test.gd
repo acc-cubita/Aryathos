@@ -265,11 +265,9 @@ func _combat_checks(player: Player) -> void:
 			"standing ready, the arms stay out of the body (%.1f cm in) and both fists on the haft (%.1f cm off)" % [
 			probe.deepest * 100.0, player.model._two_hands.gap * 100.0])
 	_check(wolf.tapped_by == player, "kill credit goes to the player")
-	var heard: Dictionary = Audio.played
-	_check(heard.has("spell_cast") and heard.has("hit_crystal") and heard.has("wolf_death")
-			and not heard.has("swing") and not heard.has("hit")
-			and heard.keys().any(func(k: String) -> bool: return k.begins_with("step_")),
-			"the fight is heard: casts, a spell landing, footsteps, the wolf's death; weapon blows silent (%s)" % ", ".join(heard.keys()))
+	var heard := get_tree().root.find_children("*", "AudioStreamPlayer3D", true, false)
+	_check(heard.is_empty() and Audio.played.keys().all(func(k: String) -> bool: return k.ends_with("music")),
+			"the fight is silent: no sound effects, only music (%s)" % ", ".join(Audio.played.keys()))
 
 	var healed := [false]
 	Game.unit_healed.connect(func(unit: Unit, _s: Unit, _a: int, _c: bool) -> void: healed[0] = healed[0] or unit == player)

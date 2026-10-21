@@ -1,10 +1,9 @@
 class_name SoundWindow
 extends GameWindow
-## Sound (from the game menu): a volume slider for everything and for each kind of sound.
+## Sound (from the game menu): volume sliders for everything and for the music.
 ## Changes are heard at once and kept (Audio saves them).
 
-const SLIDERS := [["Master", "Everything"], ["Music", "Music"], ["Effects", "Effects (combat, steps, creatures)"],
-		["Ambience", "Ambience (wind, birds, fires)"], ["Interface", "Interface"]]
+const SLIDERS := [["Master", "Everything"], ["Music", "Music"]]
 
 
 func _init() -> void:
