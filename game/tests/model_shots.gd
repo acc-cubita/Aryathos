@@ -59,7 +59,7 @@ func _run() -> void:
 	await _shot(player, folder, "cast", 2.8)
 	player.interrupt_cast()
 	# the head turns toward a target standing off to the side
-	var npc := Game.zone.get_node("NPCs/HerbalistMira") as Unit
+	var npc := Game.zone.get_node("NPCs").get_child(0) as Unit  # (any of the zone's NPCs)
 	player.target = npc
 	player.look_at(npc.global_position + (npc.global_position - player.global_position).cross(Vector3.UP).normalized() * 6.0, Vector3.UP)
 	await _wait(1.0)
@@ -93,6 +93,11 @@ func _run() -> void:
 
 ## The NPCs and creatures.
 func _world_shots(folder: String, player: Player) -> void:
+	if Game.zone.zone_name == "Crystal Canyons":  # (--zone=crystal_canyons) the canyon's people
+		for npc_name in ["ThaneDurgan", "HildeEmberhand"]:
+			await _shot(Game.zone.get_node("NPCs/" + npc_name), folder, npc_name.to_lower(), 2.6)
+			await _shot(Game.zone.get_node("NPCs/" + npc_name), folder, npc_name.to_lower() + "_face", 0.9, 1.4)
+		return
 	await _shot(Game.zone.get_node("NPCs/HerbalistMira"), folder, "mira", 2.6)
 	for npc_name in ["WardenThalos", "MagisterIvren", "QuartermasterBren"]:
 		await _shot(Game.zone.get_node("NPCs/" + npc_name), folder, npc_name.to_lower(), 2.6)

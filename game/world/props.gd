@@ -22,7 +22,25 @@ const IRON := Color(0.22, 0.22, 0.25)
 ## camp's colour with a trim.
 const STYLES := {
 	"watch": {"tent": Color(1.0, 0.97, 0.9), "canvas": Color(0.45, 0.6, 1.0), "trim": Color(1.0, 0.82, 0.45)},
+	# the Orebound: Azure Concord blue with copper
+	"orebound": {"tent": Color(0.86, 0.74, 0.6), "canvas": Color(0.3, 0.42, 0.95), "trim": Color(1.0, 0.58, 0.3)},
 	"gloomshard": {"tent": Color(0.62, 0.56, 0.58), "canvas": Color(0.62, 0.5, 0.58), "trim": Color(0.7, 0.5, 1.0)},
+}
+
+## Buildings (tools/art/blender/hammerfall.py): glTF scenes with their own solid bodies
+## ("-col" meshes) and "Fire*" markers where flames burn.
+const BUILDINGS := {
+	"HoldGate": "res://art/buildings/hammerfall_gate.gltf",
+	"Forge": "res://art/buildings/hammerfall_forge.gltf",
+}
+## Scanned CC0 props (art/props, Poly Haven; tools/art/polyhaven.py): [model, scale, solid].
+const SCANNED := {
+	"Chest": ["treasure_chest", 1.0, true],
+	"Barrels": ["wooden_barrels_01", 1.2, true],
+	"Supplies": ["wooden_crate_02", 1.3, true],
+	"Table": ["wooden_table_02", 1.0, true],
+	"Bucket": ["wooden_bucket_02", 1.0, false],
+	"Boulders": ["namaqualand_boulders_01", 1.0, true],
 }
 
 static var _materials := {}
@@ -49,8 +67,43 @@ static func build(kind: String, style: String, data: Dictionary, terrain: Terrai
 			return boulder(data.get("size", 2.0), data.get("seed", 5))
 		"Bones":
 			return bones()
+	if BUILDINGS.has(kind):
+		return building(BUILDINGS[kind])
+	if SCANNED.has(kind):
+		var spec: Array = SCANNED[kind]
+		return scanned_prop(spec[0], spec[1] * data.get("size", 1.0), spec[2])
 	push_warning("Unknown prop kind: " + kind)
 	return Node3D.new()
+
+
+## A building: its scene, and flames with their light at each "Fire*" marker.
+static func building(path: String) -> Node3D:
+	var root := Node3D.new()
+	var scene: Node3D = (load(path) as PackedScene).instantiate()
+	root.add_child(scene)
+	for spot: Node3D in scene.find_children("Fire*", "Node3D", true, false):
+		var flames := _flames()
+		flames.position = spot.position + Vector3.DOWN * 0.25
+		spot.get_parent().add_child(flames)
+		var light := FireLight.new()
+		light.light_color = Color(1.0, 0.6, 0.28)
+		light.omni_range = 8.0
+		light.position = spot.position + Vector3.UP * 0.6
+		spot.get_parent().add_child(light)
+	# the glTF importer's solid bodies on the world layer, like every prop's
+	for body: StaticBody3D in scene.find_children("*", "StaticBody3D", true, false):
+		body.collision_layer = Unit.LAYER_WORLD
+		body.collision_mask = 0
+	return root
+
+
+## A scanned prop (art/props/<model>), its bounding box solid unless `solid` is false.
+static func scanned_prop(model: String, factor: float, solid: bool) -> Node3D:
+	var root := Node3D.new()
+	var box := _scanned(root, model, factor)
+	if solid:
+		_solid(root, _box_shape(box.size), box.get_center())
+	return root
 
 
 ## A ridge tent of sagging canvas, 2.9 m wide and 3.4 m deep, opening toward +Z: two

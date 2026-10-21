@@ -5,7 +5,7 @@ extends Node3D
 ## and its metadata holds extra settings (e.g. size for "Crate", radius/from/to for
 ## "FenceArc"). Move the markers in the editor to rearrange a camp.
 
-@export_enum("watch", "gloomshard") var style := "watch"
+@export_enum("watch", "gloomshard", "orebound") var style := "watch"
 
 
 func build(terrain: Terrain) -> void:

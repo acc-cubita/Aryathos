@@ -6,6 +6,16 @@
 [ext_resource type="PackedScene" path="res://units/player/player.tscn" id="4_player"]
 [ext_resource type="Script" path="res://ui/hud.gd" id="5_hud"]
 [ext_resource type="Script" path="res://world/zone_exit.gd" id="6_exit"]
+[ext_resource type="Script" path="res://world/prop_group.gd" id="7_props"]
+[ext_resource type="Script" path="res://units/npcs/npc.gd" id="8_npc"]
+[ext_resource type="Resource" path="res://data/factions/azure_concord.tres" id="9_concord"]
+[ext_resource type="Script" path="res://data/item_data.gd" id="10_item"]
+[ext_resource type="Resource" path="res://data/items/minor_healing_potion.tres" id="11_heal"]
+[ext_resource type="Resource" path="res://data/items/minor_mana_potion.tres" id="12_mana"]
+[ext_resource type="Resource" path="res://data/items/wardstone_buckler.tres" id="13_buckler"]
+[ext_resource type="Resource" path="res://data/items/concord_leather_bracers.tres" id="14_bracers"]
+[ext_resource type="Resource" path="res://data/items/vale_runner_boots.tres" id="15_boots"]
+[ext_resource type="Resource" path="res://data/items/travelers_belt.tres" id="16_belt"]
 [ext_resource type="Material" path="res://world/materials/terrain_canyon.tres" id="60_terrain_mat"]
 [ext_resource type="Material" path="res://world/materials/water.tres" id="61_water_mat"]
 [ext_resource type="Material" path="res://world/materials/grass_canyon.tres" id="62_grass_mat"]
@@ -106,11 +116,119 @@ pine_bark_material = ExtResource("77_pine_bark")
 material_override = ExtResource("62_grass_mat")
 script = ExtResource("63_grass")
 
+[node name="Props" type="Node3D" parent="."]
+
+[node name="HammerfallHold" type="Node3D" parent="Props"]
+position = Vector3(-108, 0, 18)
+script = ExtResource("7_props")
+style = "orebound"
+
+[node name="HoldGate" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(0.0, 0, 17.0)
+rotation = Vector3(0, 3.142, 0)
+
+[node name="Forge" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(14.0, 0, 11.0)
+rotation = Vector3(0, -2.240, 0)
+
+[node name="Campfire" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(0.0, 0, 2.0)
+rotation = Vector3(0, 0.000, 0)
+
+[node name="Chest" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(7.5, 0, 17.5)
+rotation = Vector3(0, 2.900, 0)
+
+[node name="Barrels" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(-7.5, 0, 17.0)
+rotation = Vector3(0, 0.400, 0)
+
+[node name="Barrels2" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(9.5, 0, 15.5)
+rotation = Vector3(0, -0.800, 0)
+
+[node name="Supplies" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(-9.5, 0, 15.0)
+rotation = Vector3(0, 1.100, 0)
+
+[node name="Supplies2" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(17.0, 0, 4.0)
+rotation = Vector3(0, 0.300, 0)
+
+[node name="Table" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(10.0, 0, 5.5)
+rotation = Vector3(0, 0.600, 0)
+
+[node name="Bucket" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(11.2, 0, 6.3)
+rotation = Vector3(0, 0.000, 0)
+
+[node name="Tent" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(-12.0, 0, -8.0)
+rotation = Vector3(0, 0.785, 0)
+
+[node name="Tent2" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(10.0, 0, -10.0)
+rotation = Vector3(0, -0.785, 0)
+
+[node name="Banner" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(-20.0, 0, -5.0)
+rotation = Vector3(0, 1.571, 0)
+
+[node name="Banner2" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(-20.0, 0, 4.0)
+rotation = Vector3(0, 1.571, 0)
+
+[node name="Banner3" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(-6.0, 0, 15.5)
+rotation = Vector3(0, 3.140, 0)
+
+[node name="Banner4" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(6.0, 0, 15.5)
+rotation = Vector3(0, 3.140, 0)
+
+[node name="Boulders" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(-17.0, 0, 15.0)
+rotation = Vector3(0, 0.500, 0)
+
+[node name="Boulders2" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(19.0, 0, -6.0)
+rotation = Vector3(0, 2.000, 0)
+
+[node name="Cart" type="Marker3D" parent="Props/HammerfallHold"]
+position = Vector3(-14.0, 0, 6.0)
+rotation = Vector3(0, 0.300, 0)
+
 [node name="Units" type="Node3D" parent="."]
 
 [node name="Spawners" type="Node3D" parent="."]
 
 [node name="NPCs" type="Node3D" parent="."]
+
+[node name="ThaneDurgan" type="CharacterBody3D" parent="NPCs"]
+transform = Transform3D(1.0000, 0, -0.0000, 0, 1, 0, 0.0000, 0, 1.0000, -108.00, 0, 32.50)
+script = ExtResource("8_npc")
+npc_id = &"thane_durgan"
+reputation_faction = ExtResource("9_concord")
+title = "Thane of Hammerfall Hold"
+greeting = "Hammerfall's doors stand open to the Concord, {name}. Mind the stair: it's steeper than it looks."
+unit_name = "Thane Durgan"
+model_scene = "res://art/characters/durgan/durgan.glb"
+armor_color = Color(0.3, 0.4, 0.75, 1)
+glow_color = Color(0.4, 0.65, 1, 1)
+
+[node name="HildeEmberhand" type="CharacterBody3D" parent="NPCs"]
+transform = Transform3D(0.6193, 0, -0.7852, 0, 1, 0, 0.7852, 0, 0.6193, -97.12, 0, 29.08)
+script = ExtResource("8_npc")
+npc_id = &"hilde_emberhand"
+reputation_faction = ExtResource("9_concord")
+title = "Smith of Hammerfall"
+greeting = "Steel for the canyons, {name}. The dust eats soft iron."
+vendor_items = Array[ExtResource("10_item")]([ExtResource("13_buckler"), ExtResource("14_bracers"), ExtResource("15_boots"), ExtResource("16_belt"), ExtResource("11_heal"), ExtResource("12_mana")])
+unit_name = "Hilde Emberhand"
+model_scene = "res://art/characters/hilde/hilde.glb"
+armor_color = Color(0.45, 0.38, 0.32, 1)
+glow_color = Color(1, 0.55, 0.25, 1)
 
 [node name="GatherSpawners" type="Node3D" parent="."]
 

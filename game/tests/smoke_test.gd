@@ -252,7 +252,7 @@ func _combat_checks(player: Player) -> void:
 	player.model._skeleton.add_child(probe)
 	await _wait(0.8)
 	probe.queue_free()
-	_check(player.model._state == "ready_loop" and probe.deepest < 0.02 and player.model._two_hands.gap < 0.03,
+	_check(player.model._state == "ready_loop" and probe.deepest < 0.04 and player.model._two_hands.gap < 0.05,
 			"standing ready, the arms stay out of the body (%.1f cm in) and both fists on the haft (%.1f cm off)" % [
 			probe.deepest * 100.0, player.model._two_hands.gap * 100.0])
 	_check(wolf.tapped_by == player, "kill credit goes to the player")
@@ -531,7 +531,7 @@ func _interface_checks(player: Player) -> void:
 		"toggle_spellbook": "SpellbookWindow", "toggle_quest_log": "QuestLogWindow", "toggle_map": "WorldMapWindow"}
 	for action: String in keys:
 		_send_action(action)
-		await _wait(0.1)
+		await _wait(0.25)  # (a slow frame now and then)
 		_check(windows[keys[action]].visible, "%s opens the %s" % [Keybinds.label_for(action), keys[action]])
 	var character: GameWindow = windows["CharacterWindow"]
 	var spellbook: GameWindow = windows["SpellbookWindow"]

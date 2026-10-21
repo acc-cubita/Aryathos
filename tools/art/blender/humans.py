@@ -150,7 +150,48 @@ BREN = {
     "grime": {"rehmanpolanski_beard_viking": ((0.48, 0.24, 0.12), False), "short02": ((0.36, 0.18, 0.09), False)},
     "tint": {"rehmanpolanski_viking_tunic": (1.25, 1.0, 0.72), "rehmanpolanski_viking_pants": (1.2, 1.0, 0.75)},
 }
-CHARACTERS = {"scavenger": SCAVENGER, "acolyte": ACOLYTE, "thalos": THALOS, "ivren": IVREN, "bren": BREN}
+DURGAN = {
+    # Thane of Hammerfall Hold, an old Orebound: short, very broad, bald, a long iron-grey
+    # beard, in the Azure Concord's deep blue
+    "phenotype": {"gender": 1.0, "age": 0.85, "muscle": 0.95, "weight": 0.9, "proportions": 0.2,
+                  "height": 0.0, "cupsize": 0.5, "firmness": 0.5,
+                  "race": {"asian": 0.0, "caucasian": 1.0, "african": 0.0}},
+    "skin_mhmat": "old_caucasian_male/old_caucasian_male.mhmat",
+    "targets": {"head-square": 0.7, "nose-width1-incr": 0.6, "nose-volume-incr": 0.5, "chin-width-incr": 0.5,
+                "eyebrows-trans-down": 0.5, "eyebrows-angle-down": 0.4, "head-age-incr": 0.4},
+    "eyebrows": "eyebrow010/eyebrow010.mhclo",
+    "eyes": "grey",
+    "hair": "",
+    "clothes": ["grinsegold_full_beard/grinsegold_full_beard.mhclo",  # CC-BY grinsegold, see game/CREDITS.md
+                "rehmanpolanski_viking_tunic/rehmanpolanski_viking_tunic.mhclo",
+                "rehmanpolanski_viking_pants/rehmanpolanski_viking_pants.mhclo",
+                "rehmanpolanski_viking_boots/rehmanpolanski_viking_boots.mhclo"],
+    "silver": False,
+    "x": 0.0,
+    "grime": {"grinsegold_full_beard": ((0.64, 0.63, 0.6), False)},
+    "tint": {"rehmanpolanski_viking_tunic": (0.55, 0.75, 1.5), "rehmanpolanski_viking_pants": (0.75, 0.7, 0.75)},
+}
+HILDE = {
+    # Hilde Emberhand, smith of Hammerfall: an Orebound woman, short and strong-armed, copper
+    # hair cropped short, in soot-dark working clothes
+    "phenotype": {"gender": 0.0, "age": 0.55, "muscle": 0.85, "weight": 0.75, "proportions": 0.3,
+                  "height": 0.05, "cupsize": 0.45, "firmness": 0.6,
+                  "race": {"asian": 0.0, "caucasian": 1.0, "african": 0.0}},
+    "skin_mhmat": "toigo_light_skin_female_freckles/toigo_light_skin_female_freckles.mhmat",
+    "targets": {"head-square": 0.4, "nose-width1-incr": 0.3, "chin-width-incr": 0.3},
+    "eyebrows": "eyebrow001/eyebrow001.mhclo",
+    "eyes": "brown",
+    "hair": "short02/short02.mhclo",
+    "clothes": ["rehmanpolanski_viking_tunic/rehmanpolanski_viking_tunic.mhclo",
+                "rehmanpolanski_viking_pants/rehmanpolanski_viking_pants.mhclo",
+                "rehmanpolanski_viking_boots/rehmanpolanski_viking_boots.mhclo"],
+    "silver": False,
+    "x": 0.0,
+    "grime": {"short02": ((0.5, 0.22, 0.1), False)},
+    "tint": {"rehmanpolanski_viking_tunic": (0.7, 0.62, 0.55), "rehmanpolanski_viking_pants": (0.6, 0.55, 0.5)},
+}
+CHARACTERS = {"scavenger": SCAVENGER, "acolyte": ACOLYTE, "thalos": THALOS, "ivren": IVREN, "bren": BREN,
+              "durgan": DURGAN, "hilde": HILDE}
 
 
 def part(rig, asset):

@@ -17,6 +17,8 @@ reference; CC-BY assets must be credited in the game's credits.
   the viking moustache, beard (Quartermaster Bren), tattooed skin and clothes (rehmanpolanski), the heroine suit and boots and the
   male boots (culturalibre), the monk robe and hood (donitz) - MakeHuman community asset packs.
 - Sky, rocks, cliffs, camp props (crate, barrel, fire pit) and the scavenger's pick (picke_dirty_01) - Poly Haven.
+- Hammerfall Hold: the castle door, war hammer and sledgehammer, chest, barrels, crates, table, bucket and
+  desert boulders; sandstone block, red sandstone paving, rusty metal and weathered plank textures - Poly Haven.
 - Ground, bark, leaf, wood, linen and stone textures - ambientCG.
 - Sound effects - Kenney (Impact Sounds, RPG Audio, Interface Sounds) and rubberduck
   (80 CC0 RPG SFX, 80 CC0 creature SFX, 100 CC0 SFX, OpenGameArt).
