@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://data/quest_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/faction_data.gd" id="2_faction"]
+[ext_resource type="Resource" path="res://data/factions/azure_concord.tres" id="10_concord"]
+[ext_resource type="Resource" path="res://data/items/hammerfall_pauldrons.tres" id="4_reward"]
+[ext_resource type="Resource" path="res://data/quests/dust_on_the_wind.tres" id="5_requires"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"the_robed_procession"
+title = "The Robed Procession"
+offer_text = "My lookouts on the gorge rim have counted them for a week: men in violet-black, heads shaven, maces at their belts, marching down into Duskreach Gorge in twos and threes. None come back out.
+
+Zealots of this Eclipse Hand of yours. Whatever they do at the gorge's end, they do it with steel to hand. Go down into Duskreach, {name}, and break six of them. Then we'll talk about what they're guarding."
+progress_text = "The lookouts still count robes going down. Count me some that won't come up."
+complete_text = "Six! And by the look of you, they didn't kneel quietly.
+
+These were cut for my own shoulders when I was younger and broader, if you'll believe it. Hammerfall steel. Wear them into the gorge next time. There will be a next time."
+kind = 0
+enemy_id = &"eclipse_zealot"
+objective = "Eclipse Hand Zealot slain"
+required = 6
+xp_reward = 900
+reward_item = ExtResource("4_reward")
+reputation_factions = Array[ExtResource("2_faction")]([ExtResource("10_concord")])
+reputation_amounts = PackedInt32Array(300)
+min_level = 6
+requires = ExtResource("5_requires")

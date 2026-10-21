@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://data/quest_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/faction_data.gd" id="2_faction"]
+[ext_resource type="Resource" path="res://data/factions/azure_concord.tres" id="10_concord"]
+[ext_resource type="Resource" path="res://data/items/emberhand_gauntlets.tres" id="4_reward"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hides_for_the_bellows"
+title = "Hides for the Bellows"
+offer_text = "My bellows are cracking, {name}. Canyon heat bakes leather like bread. Coyote hide is the only thing that stands it: thin, tough, and the dust has already done its worst to it.
+
+Bring me six good hides. The packs run east of the hold. Skin them clean; I'll not patch my forge with rags."
+progress_text = "The forge breathes through a cracked lung until you're back. Hides?"
+complete_text = "Good hides. Clean cuts, too. You've done this before.
+
+Take these: forge gauntlets, made for my own hands before they grew too big for them. They'll turn a blade as well as a coal."
+kind = 1
+enemy_id = &"dust_coyote"
+objective = "Clean Coyote Hide"
+required = 6
+drop_chance = 0.6
+xp_reward = 600
+reward_item = ExtResource("4_reward")
+reputation_factions = Array[ExtResource("2_faction")]([ExtResource("10_concord")])
+reputation_amounts = PackedInt32Array(200)
+min_level = 5

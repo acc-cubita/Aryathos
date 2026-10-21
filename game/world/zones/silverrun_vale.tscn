@@ -51,6 +51,7 @@
 [ext_resource type="Resource" path="res://data/quests/the_sigil_in_the_den.tres" id="q_the_sigil_in_the_den"]
 [ext_resource type="Resource" path="res://data/quests/hand_of_the_eclipse.tres" id="q_hand_of_the_eclipse"]
 [ext_resource type="Resource" path="res://data/quests/a_name_in_the_dark.tres" id="q_a_name_in_the_dark"]
+[ext_resource type="Resource" path="res://data/quests/word_to_hammerfall.tres" id="q_word_to_hammerfall"]
 [ext_resource type="Resource" path="res://data/enemies/eclipse_acolyte.tres" id="e_acolyte"]
 
 [sub_resource type="PanoramaSkyMaterial" id="sky_material"]
@@ -372,7 +373,7 @@ npc_id = &"thalos"
 reputation_faction = ExtResource("22_watch")
 title = "Keeper of the Wardstone"
 greeting = "Stay close to the Wardstone's light, {name}."
-quests = Array[ExtResource("10_quest")]([ExtResource("q_concord_supplies"), ExtResource("11_wolves"), ExtResource("q_eyes_on_the_vale"), ExtResource("12_light"), ExtResource("q_the_sigil_in_the_den")])
+quests = Array[ExtResource("10_quest")]([ExtResource("q_concord_supplies"), ExtResource("11_wolves"), ExtResource("q_eyes_on_the_vale"), ExtResource("12_light"), ExtResource("q_the_sigil_in_the_den"), ExtResource("q_word_to_hammerfall")])
 unit_name = "Warden Thalos"
 model_scene = "res://art/characters/thalos/thalos.glb"
 armor_color = Color(0.5, 0.55, 0.65, 1)

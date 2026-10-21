@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://data/enemy_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/item_data.gd" id="2_item"]
+[ext_resource type="Script" path="res://data/ability_data.gd" id="3_ability"]
+[ext_resource type="Resource" path="res://data/abilities/dusk_smite.tres" id="4_smite"]
+[ext_resource type="Resource" path="res://data/factions/azure_concord.tres" id="40_concord"]
+[ext_resource type="Resource" path="res://data/items/minor_healing_potion.tres" id="30_heal"]
+[ext_resource type="Resource" path="res://data/items/minor_mana_potion.tres" id="31_mana"]
+[ext_resource type="Resource" path="res://data/items/cracked_shard.tres" id="32_shard"]
+[ext_resource type="Resource" path="res://data/items/dark_sun_pendant.tres" id="33_pendant"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"eclipse_zealot"
+display_name = "Eclipse Hand Zealot"
+character = "res://art/characters/zealot/zealot.glb"
+weapon = "mace"
+min_level = 7
+max_level = 8
+body = 0
+main_color = Color(0.16, 0.1, 0.22, 1)
+glow_color = Color(0.62, 0.35, 1, 1)
+base_health = 175
+health_per_level = 18
+min_damage = 11
+max_damage = 16
+attack_interval = 2.4
+move_speed = 5.5
+abilities = Array[ExtResource("3_ability")]([ExtResource("4_smite")])
+aggro_radius = 12.0
+social_radius = 10.0
+wander_radius = 3.0
+money_min = 45
+money_max = 90
+loot_items = Array[ExtResource("2_item")]([ExtResource("30_heal"), ExtResource("31_mana"), ExtResource("32_shard"), ExtResource("33_pendant")])
+loot_chances = PackedFloat32Array(0.12, 0.12, 0.3, 0.03)
+reputation_faction = ExtResource("40_concord")
+reputation_on_kill = 15

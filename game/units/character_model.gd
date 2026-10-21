@@ -112,6 +112,8 @@ const WEAPONS := {
 			"two_hands": 0.18},
 	"pick": {"path": "res://art/weapons/pick.glb", "painted": false,  # tools/art/blender/scavenger.py
 			"root": Vector3(0, 0.77, 0), "edge": Vector3(0, 0.78, -0.24), "hold": ARMED_IDLE, "middle": 0.28},
+	"mace": {"path": "res://art/weapons/mace.glb", "painted": false,  # tools/art/blender/humans.py
+			"root": Vector3(0, 0.4, 0), "edge": Vector3(0, 0.53, 0), "hold": ARMED_IDLE, "middle": 0.2},
 	"crystal_staff": {"path": "res://art/weapons/crystal_staff.glb", "painted": false,  # tools/art/blender/staff.py
 			"root": Vector3(0, 0.6, 0), "edge": Vector3(0, 1.12, 0), "channel": "ual1/Idle_Torch", "middle": 0.22},
 }

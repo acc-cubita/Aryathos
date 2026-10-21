@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hammerfall_pauldrons"
+display_name = "Hammerfall Pauldrons"
+flavor_text = "Hammerfall steel, cut for a thane's shoulders."
+quality = 2
+slot = 8
+icon_glyph = "Sh"
+icon_color = Color(0.38, 0.45, 0.62, 1)
+health_bonus = 30
+mana_bonus = 18
+spell_power = 0
+sell_price = 130

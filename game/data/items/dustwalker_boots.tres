@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"dustwalker_boots"
+display_name = "Dustwalker Boots"
+flavor_text = "Hobnailed for canyon stone."
+quality = 2
+slot = 6
+icon_glyph = "Bo"
+icon_color = Color(0.62, 0.48, 0.32, 1)
+health_bonus = 18
+mana_bonus = 12
+spell_power = 0
+sell_price = 85

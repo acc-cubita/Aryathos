@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"dark_sun_pendant"
+display_name = "Dark Sun Pendant"
+flavor_text = "A black disc rimmed in violet. It is cold to the touch, always."
+quality = 3
+slot = 7
+icon_glyph = "Ne"
+icon_color = Color(0.45, 0.25, 0.65, 1)
+health_bonus = 16
+mana_bonus = 26
+spell_power = 6
+sell_price = 160

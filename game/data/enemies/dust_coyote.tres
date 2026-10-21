@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://data/enemy_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://data/item_data.gd" id="2_item"]
+[ext_resource type="Resource" path="res://data/items/dusty_coyote_fang.tres" id="3_fang"]
+[ext_resource type="Resource" path="res://data/items/minor_healing_potion.tres" id="4_heal"]
+[ext_resource type="Resource" path="res://data/items/dustwalker_boots.tres" id="5_boots"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"dust_coyote"
+display_name = "Dust Coyote"
+beast = "coyote"
+wander_speed = 1.1
+min_level = 5
+max_level = 6
+body = 1
+main_color = Color(0.62, 0.5, 0.36, 1)
+glow_color = Color(1, 0.7, 0.35, 1)
+base_health = 120
+health_per_level = 16
+min_damage = 7
+max_damage = 11
+attack_interval = 2.0
+move_speed = 6.5
+aggro_radius = 11.0
+social_radius = 9.0
+money_min = 20
+money_max = 45
+loot_items = Array[ExtResource("2_item")]([ExtResource("3_fang"), ExtResource("4_heal"), ExtResource("5_boots")])
+loot_chances = PackedFloat32Array(0.55, 0.08, 0.02)

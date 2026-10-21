@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://data/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"emberhand_gauntlets"
+display_name = "Emberhand Gauntlets"
+flavor_text = "Made for a smith's hands, before they grew too big for them."
+quality = 2
+slot = 4
+icon_glyph = "Gl"
+icon_color = Color(0.7, 0.38, 0.2, 1)
+health_bonus = 22
+mana_bonus = 10
+spell_power = 0
+sell_price = 90

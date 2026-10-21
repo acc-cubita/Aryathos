@@ -174,6 +174,15 @@ func _travel_checks(player: Player) -> void:
 	for frame in 3:  # (the zone's frame took seconds: count frames, not time)
 		await get_tree().process_frame
 	_check(not Game._loading.visible, "the loading screen is gone")
+	var foes := {}
+	for enemy: Enemy in get_tree().get_nodes_in_group("enemies"):
+		foes[enemy.data.id] = foes.get(enemy.data.id, 0) + 1
+	_check(foes.get(&"dust_coyote", 0) == 12 and foes.get(&"eclipse_zealot", 0) == 9,
+			"dust coyotes run the canyons, Eclipse Zealots hold Duskreach Gorge")
+	var thane: Npc = canyons.get_node("NPCs/ThaneDurgan")
+	var smith: Npc = canyons.get_node("NPCs/HildeEmberhand")
+	_check(thane.quests.has(Database.quest(&"dust_on_the_wind")) and thane.quests.has(Database.quest(&"the_robed_procession"))
+			and smith.quests.has(Database.quest(&"hides_for_the_bellows")), "Thane Durgan and Hilde have work for the hero")
 	Game.player.teleport(canyons.get_node("Exits/ToSilverrunVale").global_position + Vector3.UP * 0.5, 0.0)
 	await Game.zone_ready
 	var back: Node3D = Game.zone.get_node_or_null("Arrivals/FromCrystalCanyons")

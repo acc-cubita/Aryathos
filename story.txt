@@ -67,6 +67,17 @@ Crystal storms have begun to rise over the Vale, and the Wardstone hums uneasily
 
 The missive leads straight into Act I: the Eclipse Hand has been feeding the **Veiled Core**, and its trail runs to the Crystal Canyons.
 
+### Act I (Covenant): The Crystal Canyons
+East of the Vale's pass lie the **Crystal Canyons**, red-walled gorges where Aether crystal sings in the rock. The **Orebound** hold them for the Azure Concord from **Hammerfall Hold**, a gate cut high into the canyon wall above a stair of twenty steps, with a forge at its foot.
+* **Word to Hammerfall:** Warden Thalos sends the champion through the pass with the missive's words for **Thane Durgan**. Durgan knows the old Orebound tale of a sealed stone door at the end of **Duskreach Gorge**: the **First Seal**. *(Warden Thalos, then Thane Durgan)*
+* **Dust on the Wind:** Since the crystal began to sing, the **Dust Coyotes** run in bold packs down the east canyon and over the **Dustwind Mesas**. *(Thane Durgan)*
+* **Hides for the Bellows:** Coyote hide is the only leather that stands the forge's heat. *(Hilde Emberhand, smith of Hammerfall)*
+* **The Robed Procession:** Shaven men in violet-black, maces at their belts, march down into Duskreach Gorge and never come back: **Eclipse Hand Zealots**, the cult's warriors, guarding the way to the First Seal. *(Thane Durgan)*
+
+**People of Hammerfall Hold:**
+* **Thane Durgan**, Thane of Hammerfall Hold: an old, broad Orebound, bald, with an iron-grey beard; gruff and dry.
+* **Hilde Emberhand**, smith of Hammerfall: short, strong-armed, copper-haired; she sells the Concord's gear.
+
 **People of Wardstone Post:**
 * **Warden Thalos**, Keeper of the Wardstone (Wardstone Watch): stern, tired, devoted to the light he guards.
 * **Magister Ivren**, Arcanist of the Spire, sent from Aetheria to study the storms. She is the first to suspect the shards are being gathered on purpose.

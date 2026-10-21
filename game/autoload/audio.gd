@@ -251,7 +251,7 @@ func voice_of(unit: Unit) -> String:
 	var enemy := unit as Enemy
 	if enemy != null:
 		if enemy.data.beast != "":
-			return enemy.data.beast
+			return BeastModel.BEASTS[enemy.data.beast].get("voice", enemy.data.beast)
 		if enemy.data.character != "":
 			return "scavenger"
 	return "person"

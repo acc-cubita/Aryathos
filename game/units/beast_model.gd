@@ -13,13 +13,16 @@ extends Node3D
 ## and the crystals: [bone, spot beside its head (scene space, m: x sideways, y forward),
 ## lean (deg: x back/forward, z sideways), radius, height]; each grows from the coat
 ## right above its spot.
+const WOLF_FRONT := ["Brust", "Hals", "Kopf", "Unterkiefer", "Ohr", "Mau", "MundW", "Bauch.003"]
+const WOLF_PAWS := ["Vorderpfote_L_Wolf_Skeleton", "Vorderpfote_R_Wolf_Skeleton", "Pfote2_L_Wolf_Skeleton",
+		"Pfote2_R_Wolf_Skeleton"]
 const WOLF := {
 	"path": "res://art/creatures/wolf.glb", "size": 1.45,
 	"gaits": [["walk", 0.40, 0.0], ["run", 3.57, 2.2]],
 	"attacks": ["bite"], "hit": "hit", "death": "death",
-	"front": ["Brust", "Hals", "Kopf", "Unterkiefer", "Ohr", "Mau", "MundW", "Bauch.003"],
+	"front": WOLF_FRONT,
 	"fur": Color(0.55, 0.52, 0.5),
-	"paws": ["Vorderpfote_L_Wolf_Skeleton", "Vorderpfote_R_Wolf_Skeleton", "Pfote2_L_Wolf_Skeleton", "Pfote2_R_Wolf_Skeleton"],
+	"paws": WOLF_PAWS,
 	"crystals": [
 		["Brust_Wolf_Skeleton", Vector2(0.0, 0.0), Vector3(-25, 0, 10), 0.03, 0.2],
 		["Brust_Wolf_Skeleton", Vector2(0.025, -0.05), Vector3(-35, 0, -25), 0.022, 0.14],
@@ -43,7 +46,20 @@ const BEAR := {
 		["RigSpine1_011", Vector2(0.07, 0.05), Vector3(-40, 0, -18), 0.05, 0.3],
 	],
 }
-const BEASTS := {"wolf": WOLF, "bear": BEAR}
+## The canyons' dust coyote: the wolf, smaller, short-coated (no fur cards: no ruff), its
+## coat (`coat` tints the body's skin) the canyon's sandy tan, no crystals.
+const COYOTE := {
+	"path": "res://art/creatures/wolf.glb", "size": 1.1,
+	"gaits": [["walk", 0.40, 0.0], ["run", 3.57, 2.2]],
+	"attacks": ["bite"], "hit": "hit", "death": "death",
+	"front": WOLF_FRONT,
+	"fur": Color.TRANSPARENT,
+	"coat": Color(1.55, 1.2, 0.82),
+	"paws": WOLF_PAWS,
+	"crystals": [],
+	"voice": "wolf",
+}
+const BEASTS := {"wolf": WOLF, "bear": BEAR, "coyote": COYOTE}
 ## Below this ground speed (m/s) the beast stands.
 const MOVING := 0.3
 ## How far (m, at size 1) ahead of and behind its middle the beast feels the ground's slope.
@@ -75,7 +91,7 @@ static func create(beast: String, glow: Color, scale_by := 1.0) -> BeastModel:
 	scene.rotation.y = PI  # glTF faces +Z, units face -Z
 	scene.scale = Vector3.ONE * model._size
 	model.add_child(scene)
-	_dress(scene, model._spec.get("fur", Color.WHITE))
+	_dress(scene, model._spec.get("fur", Color.WHITE), model._spec.get("coat", Color.WHITE))
 	var skeleton := scene.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
 	_grow_crystals(beast, scene, skeleton, glow)
 	model._skeleton = skeleton
@@ -85,13 +101,21 @@ static func create(beast: String, glow: Color, scale_by := 1.0) -> BeastModel:
 
 
 ## Fur cards are alpha-tested strands seen from both sides, tinted by `fur` to blend into
-## the coat; every mesh joins the units layer.
-static func _dress(root: Node3D, fur: Color) -> void:
+## the coat (a transparent `fur`: none), which `coat` tints (not eyes, teeth or claws);
+## every mesh joins the units layer.
+static func _dress(root: Node3D, fur: Color, coat: Color) -> void:
 	for mesh: MeshInstance3D in root.find_children("*", "MeshInstance3D", true, false):
 		mesh.layers = PlaceholderModel.RENDER_LAYER
 		for surface in mesh.mesh.get_surface_count():
 			var imported := mesh.mesh.surface_get_material(surface) as StandardMaterial3D
-			if imported == null or imported.transparency == BaseMaterial3D.TRANSPARENCY_DISABLED:
+			if imported == null:
+				continue
+			if imported.transparency == BaseMaterial3D.TRANSPARENCY_DISABLED:
+				var part := imported.resource_name.to_lower()
+				if coat != Color.WHITE and not ["eye", "teeth", "claw"].any(func(skip: String) -> bool: return skip in part):
+					var skin := imported.duplicate() as StandardMaterial3D
+					skin.albedo_color *= coat
+					mesh.set_surface_override_material(surface, skin)
 				continue
 			var material := imported.duplicate() as StandardMaterial3D
 			material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
@@ -100,6 +124,7 @@ static func _dress(root: Node3D, fur: Color) -> void:
 			material.cull_mode = BaseMaterial3D.CULL_DISABLED
 			material.albedo_color *= fur
 			mesh.set_surface_override_material(surface, material)
+			mesh.visible = fur.a > 0.0
 
 
 ## Glowing shards on the back, carried by the spine bones.

@@ -16,6 +16,13 @@
 [ext_resource type="Resource" path="res://data/items/concord_leather_bracers.tres" id="14_bracers"]
 [ext_resource type="Resource" path="res://data/items/vale_runner_boots.tres" id="15_boots"]
 [ext_resource type="Resource" path="res://data/items/travelers_belt.tres" id="16_belt"]
+[ext_resource type="Script" path="res://units/enemies/enemy_spawner.gd" id="17_spawner"]
+[ext_resource type="Resource" path="res://data/enemies/dust_coyote.tres" id="18_coyote"]
+[ext_resource type="Resource" path="res://data/enemies/eclipse_zealot.tres" id="19_zealot"]
+[ext_resource type="Script" path="res://data/quest_data.gd" id="20_quest"]
+[ext_resource type="Resource" path="res://data/quests/dust_on_the_wind.tres" id="21_dust"]
+[ext_resource type="Resource" path="res://data/quests/the_robed_procession.tres" id="22_robed"]
+[ext_resource type="Resource" path="res://data/quests/hides_for_the_bellows.tres" id="23_hides"]
 [ext_resource type="Material" path="res://world/materials/terrain_canyon.tres" id="60_terrain_mat"]
 [ext_resource type="Material" path="res://world/materials/water.tres" id="61_water_mat"]
 [ext_resource type="Material" path="res://world/materials/grass_canyon.tres" id="62_grass_mat"]
@@ -203,6 +210,48 @@ rotation = Vector3(0, 0.300, 0)
 
 [node name="Spawners" type="Node3D" parent="."]
 
+[node name="CoyotesEastCanyon" type="Marker3D" parent="Spawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -62, 0, 26)
+script = ExtResource("17_spawner")
+enemy_data = ExtResource("18_coyote")
+count = 4
+radius = 7.0
+
+[node name="CoyotesCanyonBend" type="Marker3D" parent="Spawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 0, 23)
+script = ExtResource("17_spawner")
+enemy_data = ExtResource("18_coyote")
+count = 4
+radius = 7.0
+
+[node name="CoyotesMesas" type="Marker3D" parent="Spawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 0)
+script = ExtResource("17_spawner")
+enemy_data = ExtResource("18_coyote")
+count = 4
+radius = 8.0
+
+[node name="ZealotsGorgeMouth" type="Marker3D" parent="Spawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 0, 49)
+script = ExtResource("17_spawner")
+enemy_data = ExtResource("19_zealot")
+count = 3
+radius = 4.0
+
+[node name="ZealotsGorge" type="Marker3D" parent="Spawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, 0, 68)
+script = ExtResource("17_spawner")
+enemy_data = ExtResource("19_zealot")
+count = 3
+radius = 4.0
+
+[node name="ZealotsSealRoad" type="Marker3D" parent="Spawners"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 95, 0, 97)
+script = ExtResource("17_spawner")
+enemy_data = ExtResource("19_zealot")
+count = 3
+radius = 4.0
+
 [node name="NPCs" type="Node3D" parent="."]
 
 [node name="ThaneDurgan" type="CharacterBody3D" parent="NPCs"]
@@ -212,6 +261,7 @@ npc_id = &"thane_durgan"
 reputation_faction = ExtResource("9_concord")
 title = "Thane of Hammerfall Hold"
 greeting = "Hammerfall's doors stand open to the Concord, {name}. Mind the stair: it's steeper than it looks."
+quests = Array[ExtResource("20_quest")]([ExtResource("21_dust"), ExtResource("22_robed")])
 unit_name = "Thane Durgan"
 model_scene = "res://art/characters/durgan/durgan.glb"
 armor_color = Color(0.3, 0.4, 0.75, 1)
@@ -224,6 +274,7 @@ npc_id = &"hilde_emberhand"
 reputation_faction = ExtResource("9_concord")
 title = "Smith of Hammerfall"
 greeting = "Steel for the canyons, {name}. The dust eats soft iron."
+quests = Array[ExtResource("20_quest")]([ExtResource("23_hides")])
 vendor_items = Array[ExtResource("10_item")]([ExtResource("13_buckler"), ExtResource("14_bracers"), ExtResource("15_boots"), ExtResource("16_belt"), ExtResource("11_heal"), ExtResource("12_mana")])
 unit_name = "Hilde Emberhand"
 model_scene = "res://art/characters/hilde/hilde.glb"

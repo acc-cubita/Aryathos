@@ -97,6 +97,19 @@ func _world_shots(folder: String, player: Player) -> void:
 		for npc_name in ["ThaneDurgan", "HildeEmberhand"]:
 			await _shot(Game.zone.get_node("NPCs/" + npc_name), folder, npc_name.to_lower(), 2.6)
 			await _shot(Game.zone.get_node("NPCs/" + npc_name), folder, npc_name.to_lower() + "_face", 0.9, 1.4)
+		var coyote := _enemy(&"dust_coyote")
+		if coyote:
+			await _shot(coyote, folder, "coyote", 2.2, 0.6)
+			coyote.attacked.emit()  # a bite
+			await _wait(0.36)
+			await _shot(coyote, folder, "coyote_bite", 2.2, 0.6)
+		var zealot := _enemy(&"eclipse_zealot")
+		if zealot:
+			await _shot(zealot, folder, "zealot", 2.6)
+			await _shot(zealot, folder, "zealot_face", 0.9, 1.6)
+			zealot.attacked.emit()  # a swing of the mace
+			await _wait(0.42)
+			await _shot(zealot, folder, "zealot_strike", 2.8)
 		return
 	await _shot(Game.zone.get_node("NPCs/HerbalistMira"), folder, "mira", 2.6)
 	for npc_name in ["WardenThalos", "MagisterIvren", "QuartermasterBren"]:

@@ -5,17 +5,21 @@ clothes through MPFB, like the Arkanor bodies (CHARACTERS):
   * acolyte: a woman of the Eclipse Hand cult in a hood and robe of deep violet;
   * thalos: Warden Thalos, an old Arkanor warden in mail and the Watch's blue;
   * ivren: Magister Ivren, an Arkanor arcanist of the Spire in white and blue robes;
-  * bren: Quartermaster Bren, a short, broad Orebound with a braided copper beard.
+  * bren: Quartermaster Bren, a short, broad Orebound with a braided copper beard;
+  * durgan, hilde: Thane Durgan and Hilde Emberhand of Hammerfall Hold (Orebound);
+  * zealot: a shaven, tattooed warrior of the Eclipse Hand in violet-black, with an ornate
+    mace (Poly Haven ornate_medieval_mace, CC0).
 
     set BLENDER_USER_RESOURCES=D:/my game/art/vendor/makehuman/blender_env
-    blender -b --python tools/art/blender/humans.py -- [scavenger] [acolyte] [--shots]
+    blender -b --python tools/art/blender/humans.py -- [scavenger] [acolyte] [mace] [--shots]
 
 Per character: builds the body (arkanor_mh.build), dyes its cloth (grime), thins hidden
 parts (decimate), renders previews with --shots (art/characters/<key>/preview), makes it a
 game character (arkanor_game.convert: humanoid bone names, one mesh, grip markers) and
-exports game/art/characters/<key>/<key>.glb. The scavenger also makes
-game/art/weapons/pick.glb in the weapon frame of the rune axe (grip at the origin, haft +Z,
-point +Y) and prints the trail points CharacterModel needs, in Godot's frame.
+exports game/art/characters/<key>/<key>.glb. A character's "weapon" (a WEAPONS key; alone
+on the command line it is made by itself) becomes game/art/weapons/<weapon>.glb in the
+weapon frame of the rune axe (grip at the origin, haft +Z, point +Y), with the trail points
+CharacterModel needs printed in Godot's frame.
 """
 import sys
 from pathlib import Path
@@ -29,12 +33,14 @@ import arkanor_game as game  # noqa: E402
 import arkanor_mh as mh  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
-PICK_SOURCE = ROOT / "art" / "vendor" / "polyhaven" / "models" / "picke_dirty_01" / "picke_dirty_01_1k.gltf"
-PICK = ROOT / "game" / "art" / "weapons" / "pick.glb"
-## the scan is 1.12 m long: a little shorter swings with one hand
-PICK_SCALE = 0.85
-## the fist holds the haft this far (m, after scaling) from its end
-PICK_GRIP = 0.12
+SCANS = ROOT / "art" / "vendor" / "polyhaven" / "models"
+## Scanned weapons (Poly Haven, CC0; tools/art/polyhaven.py sources <id>): the scan, its
+## scale, and how far (m, after scaling) from the haft's end the fist holds it.
+WEAPONS = {
+    # the pick scan is 1.12 m long: a little shorter swings with one hand
+    "pick": (SCANS / "picke_dirty_01" / "picke_dirty_01_1k.gltf", 0.85, 0.12),
+    "mace": (SCANS / "ornate_medieval_mace" / "ornate_medieval_mace_1k.gltf", 1.0, 0.1),
+}
 
 SCAVENGER = {
     # a lean, wiry man past his prime
@@ -62,6 +68,7 @@ SCAVENGER = {
               "elvs_scruffy_beard1": ((0.17, 0.13, 0.1), False)},
     # share of triangles kept: the boots (30k triangles) hide under the robe
     "decimate": {"culturalibre_male_boots": 0.1},
+    "weapon": "pick",
 }
 ACOLYTE = {
     # a slight, pale young woman with violet paint around the eyes
@@ -190,8 +197,36 @@ HILDE = {
     "grime": {"short02": ((0.5, 0.22, 0.1), False)},
     "tint": {"rehmanpolanski_viking_tunic": (0.7, 0.62, 0.55), "rehmanpolanski_viking_pants": (0.6, 0.55, 0.5)},
 }
+ZEALOT = {
+    # a warrior of the Eclipse Hand: a hard man in his prime, head shaven, the cult's
+    # tattoos on his arms, a short dark beard, in violet-black
+    "phenotype": {"gender": 1.0, "age": 0.5, "muscle": 0.8, "weight": 0.5, "proportions": 0.75,
+                  "height": 0.6, "cupsize": 0.5, "firmness": 0.5,
+                  "race": {"asian": 0.0, "caucasian": 0.9, "african": 0.1}},
+    "skin_mhmat": "rehmanpolanski_skin_viking_tattoos/rehmanpolanski_skin_viking_tattoos.mhmat",
+    # gaunt cheeks, a heavy brow pulled down: the stare of the true believer
+    "targets": {"l-cheek-volume-decr": 0.4, "r-cheek-volume-decr": 0.4, "l-cheek-bones-incr": 0.4,
+                "r-cheek-bones-incr": 0.4, "eyebrows-trans-down": 0.4, "eyebrows-angle-down": 0.45,
+                "chin-prominent-incr": 0.3},
+    "eyebrows": "eyebrow006/eyebrow006.mhclo",
+    "eyes": "grey",
+    "hair": "",
+    "clothes": ["elvs_scruffy_beard1/elvs_scruffy_beard1.mhclo",  # CC-BY Elvaerwyn, see game/CREDITS.md
+                "rehmanpolanski_viking_tunic/rehmanpolanski_viking_tunic.mhclo",
+                "rehmanpolanski_viking_pants/rehmanpolanski_viking_pants.mhclo",
+                "rehmanpolanski_viking_boots/rehmanpolanski_viking_boots.mhclo"],
+    "silver": False,
+    "x": 0.0,
+    # the tunic violet-black, the pants and boots near black (repainted: the tunic's own
+    # embroidery would show through a tint)
+    "grime": {"elvs_scruffy_beard1": ((0.08, 0.07, 0.07), False),
+              "rehmanpolanski_viking_tunic": ((0.2, 0.12, 0.27), True),
+              "rehmanpolanski_viking_pants": ((0.1, 0.085, 0.11), False),
+              "rehmanpolanski_viking_boots": ((0.13, 0.1, 0.1), False)},
+    "weapon": "mace",
+}
 CHARACTERS = {"scavenger": SCAVENGER, "acolyte": ACOLYTE, "thalos": THALOS, "ivren": IVREN, "bren": BREN,
-              "durgan": DURGAN, "hilde": HILDE}
+              "durgan": DURGAN, "hilde": HILDE, "zealot": ZEALOT}
 
 
 def part(rig, asset):
@@ -259,10 +294,13 @@ def tint(rig, key, asset, factors):
         node.image = out
 
 
-def pick():
-    """Imports the scanned pick, puts it in the weapon frame and exports it alone."""
+def weapon(name):
+    """Imports a scanned weapon, puts it in the weapon frame and exports it alone."""
+    source, scale, hold = WEAPONS[name]
+    path = ROOT / "game" / "art" / "weapons" / (name + ".glb")
+    mh.clear_scene()
     before = set(bpy.data.objects)
-    bpy.ops.import_scene.gltf(filepath=str(PICK_SOURCE))
+    bpy.ops.import_scene.gltf(filepath=str(source))
     new = [o for o in bpy.data.objects if o not in before]
     meshes = [o for o in new if o.type == "MESH"]
     bpy.ops.object.select_all(action="DESELECT")
@@ -283,23 +321,23 @@ def pick():
     head = co[co[:, 2] > top - 0.15]
     point = head[np.argmax(np.abs(head[:, 0] - axis[0]))]
     turn = np.pi / 2 if point[0] > axis[0] else -np.pi / 2  # the point turns to +Y
-    grip = Vector((axis[0], axis[1], low + PICK_GRIP / PICK_SCALE))
-    obj.data.transform(Matrix.Rotation(turn, 4, "Z") @ Matrix.Scale(PICK_SCALE, 4) @ Matrix.Translation(-grip))
+    grip = Vector((axis[0], axis[1], low + hold / scale))
+    obj.data.transform(Matrix.Rotation(turn, 4, "Z") @ Matrix.Scale(scale, 4) @ Matrix.Translation(-grip))
     obj.data.update()
-    obj.name = obj.data.name = "pick"
+    obj.name = obj.data.name = name
     co = np.array([v.co[:] for v in obj.data.vertices])
     top = co[:, 2].max()
     tip = co[np.argmax(co[:, 1])]
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
-    PICK.parent.mkdir(parents=True, exist_ok=True)
-    bpy.ops.export_scene.gltf(filepath=str(PICK), use_selection=True, export_format="GLB", export_yup=True,
+    path.parent.mkdir(parents=True, exist_ok=True)
+    bpy.ops.export_scene.gltf(filepath=str(path), use_selection=True, export_format="GLB", export_yup=True,
                               export_apply=False, export_animations=False, export_image_format="AUTO")
     # Godot frame: (x, z, -y)
-    print("pick: %d tris, %.2f m long; trail root (0, %.2f, 0), edge (%.2f, %.2f, %.2f) -> %s" % (
-        sum(len(p.vertices) - 2 for p in obj.data.polygons), top - co[:, 2].min(),
-        top - 0.06, tip[0], tip[2], -tip[1], PICK))
+    print("%s: %d tris, %.2f m long; trail root (0, %.2f, 0), edge (%.2f, %.2f, %.2f) -> %s" % (
+        name, sum(len(p.vertices) - 2 for p in obj.data.polygons), top - co[:, 2].min(),
+        top - 0.06, tip[0], tip[2], -tip[1], path))
 
 
 def make(key, shots):
@@ -324,11 +362,13 @@ def make(key, shots):
     print("%s: %d bones, %d tris, materials %s -> %s" % (
         key, len(rig.data.bones), sum(len(p.vertices) - 2 for p in body.data.polygons),
         [m.name for m in body.data.materials], game.export(key, ROOT / "game" / "art" / "characters" / key)))
-    if key == "scavenger":
-        pick()
+    if "weapon" in spec:
+        weapon(spec["weapon"])
 
 
 if __name__ == "__main__":
     args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-    for key in [a for a in args if a in CHARACTERS] or list(CHARACTERS):
+    for key in [a for a in args if a in WEAPONS]:
+        weapon(key)
+    for key in [a for a in args if a in CHARACTERS] or ([] if any(a in WEAPONS for a in args) else list(CHARACTERS)):
         make(key, "--shots" in args)
