@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://dxmf8k6tngp0j"
-path="res://.godot/imported/arkanor_male.glb-ca7ed2a1a99b7db7947b96f0cdac9831.scn"
+uid="uid://dpqsmnpiwbnci"
+path="res://.godot/imported/hero_male.glb-25b8966f933f3aa79ca10a929bb8009f.scn"
 
 [deps]
 
-source_file="res://art/characters/arkanor/arkanor_male.glb"
-dest_files=["res://.godot/imported/arkanor_male.glb-ca7ed2a1a99b7db7947b96f0cdac9831.scn"]
+source_file="res://art/characters/hero/hero_male.glb"
+dest_files=["res://.godot/imported/hero_male.glb-25b8966f933f3aa79ca10a929bb8009f.scn"]
 
 [params]
 
@@ -41,7 +41,7 @@ materials/extract_format=0
 materials/extract_path=""
 _subresources={
 "nodes": {
-"PATH:arkanor_male_rig/Skeleton3D": {
+"PATH:hero_male_rig/Skeleton3D": {
 "retarget/bone_map": Resource("res://art/characters/arkanor/humanoid_bone_map.tres"),
 "retarget/rest_fixer/fix_silhouette/enable": true
 }
